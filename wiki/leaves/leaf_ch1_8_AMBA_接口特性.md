@@ -1,0 +1,22 @@
+---
+id: leaf_ch1_8
+chapter_id: ch1
+chapter_title: 产品概述
+topic: AMBA 接口特性
+confidence: high
+source: QA enrichment
+created_at: 2026-05-21T10:49:34.403942
+access_count: 0
+---
+
+# AMBA 接口特性
+
+> Chapter: [[产品概述]]  
+> Source: `QA enrichment`  
+> Confidence: `high`
+
+AHB Master: 32/64/128-bit 数据，支持 Split/Retry/Error 响应，1K boundary burst splitting，不支持 Wrap burst 和 Locked/Protected transfers。AHB Slave (CSR): 32/64/128-bit 接口，仅支持 <=32-bit 访问，支持所有 burst types，不生成 Split/Retry 响应。AXI Master: AXI3/AXI4，32/40/48-bit 地址，支持 OKAY/SLVERR/DECERR，最多32个 outstanding Read/Write transactions，支持 posted writes。不支持 burst interleaving/reordering、atomic/exclusive/locked/cache/protected accesses。AXI Slave (CSR): AXI3/AXI4-Lite，32-bit 地址，支持 Narrow burst 和 FIXED/INCR burst。APB Slave: 32-bit access，支持 APB3 (pready) 和 APB4 (pstrb, pprot)。
+
+## Connections
+
+- [[ch1]] — Parent chapter

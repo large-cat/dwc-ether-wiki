@@ -3,7 +3,7 @@
 > **Document**: DWC_ether_qos Databook v5.10a (December 2017) — 1418 pages  
 > **Source**: `raw/DWC_ether_qos_databook.pdf`  
 > **Knowledge Tree**: `wiki/growing_knowledge_tree.json`  
-> **Last Synced**: 2026-05-21 11:21
+> **Last Synced**: 2026-05-21 10:50
 
 ## What is DWC_ether_qos?
 
@@ -15,18 +15,19 @@ DWC_ether_qos is Synopsys's DesignWare Cores Ethernet Quality-of-Service control
 | Metric | Value |
 |--------|-------|
 | Total Chapters | 23 |
-| Seeded | 21 |
+| Seeded | 20 |
 | Explored | 1 |
 | Growing | 1 |
-| Mature | 0 |
-| PDF Reads | 2 |
-| Knowledge Leaves | 7 |
-| Cache Entries | 2 |
+| Mature | 1 |
+| PDF Reads | 6 |
+| Knowledge Leaves | 19 |
+| Cache Entries | 6 |
 | Questions Answered | 0 |
 
 ### Explored Chapters
 | Chapter | Title | Status | Reads | Leaves |
 |---------|-------|--------|-------|--------|
+| ch1 | 产品概述 | mature | 4 | 12 |
 | ch5 | PHY接口使用 | growing | 1 | 3 |
 | ch7 | IEEE 1588时间戳支持 | explored | 1 | 2 |
 
