@@ -2,7 +2,7 @@
 
 基于 [llm-wiki](https://github.com/Pratiyush/llm-wiki) 三层架构的 DWC_ether_qos 知识库。
 
-**在线演示**: https://u6iskyha3hewe.ok.kimi.link
+**在线演示**: https://large-cat.github.io/dwc-ether-wiki/
 
 ---
 
