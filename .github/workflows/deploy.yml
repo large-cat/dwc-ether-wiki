@@ -24,12 +24,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Install dependencies
-        run: |
-          npm cache clean --force
-          npm install --no-audit --no-fund
+        run: npm install --maxsockets 1 --no-audit --no-fund
 
       - name: Build
         run: npm run build
