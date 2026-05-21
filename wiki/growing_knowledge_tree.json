@@ -1,0 +1,370 @@
+{
+  "_schema": {
+    "version": "2.0",
+    "description": "Lazy-loading knowledge tree. Content is read from PDF ON-DEMAND only when asked. content_extract starts empty and gets filled after first read.",
+    "principle": "NEVER bulk-extract PDF. Only read specific pages when a question requires it. Persist what was learned."
+  },
+  "metadata": {
+    "document": "DWC_ether_qos_databook.pdf",
+    "document_path": "../raw/DWC_ether_qos_databook.pdf",
+    "version": "5.10a",
+    "date": "December 2017",
+    "company": "Synopsys, Inc.",
+    "total_pages": 1418,
+    "knowledge_tree_version": "2.0",
+    "created_at": "2025-01-15T00:00:00Z",
+    "last_updated": "2026-05-21T11:21:16.456728",
+    "total_reads_from_pdf": 2,
+    "total_knowledge_leaves_created": 7,
+    "total_questions_answered": 0
+  },
+  "chapters": [
+    {
+      "id": "ch1",
+      "number": 1,
+      "title": "Product Overview",
+      "title_cn": "产品概述",
+      "page_start": 23,
+      "page_end": 40,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "DWC_ether_qos产品介绍、主要特性、配置选项和交付物"
+    },
+    {
+      "id": "ch2",
+      "number": 2,
+      "title": "Architecture",
+      "title_cn": "架构",
+      "page_start": 41,
+      "page_end": 150,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "内部架构：CSR从接口、应用主接口、DMA控制器、MAC事务层、MAC层、中断机制"
+    },
+    {
+      "id": "ch3",
+      "number": 3,
+      "title": "VLAN and Double VLAN Processing",
+      "title_cn": "VLAN和双VLAN处理",
+      "page_start": 151,
+      "page_end": 158,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "VLAN标签的插入、删除、替换和路由功能"
+    },
+    {
+      "id": "ch4",
+      "number": 4,
+      "title": "Managing Buffers and Memories",
+      "title_cn": "缓冲区和内存管理",
+      "page_start": 159,
+      "page_end": 166,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "发送和接收FIFO、TCP/IP头部缓冲区、SPRAM、从设备/调试模式内存访问"
+    },
+    {
+      "id": "ch5",
+      "number": 5,
+      "title": "Using PHY Interfaces",
+      "title_cn": "PHY接口使用",
+      "page_start": 167,
+      "page_end": 212,
+      "status": "growing",
+      "reads_count": 1,
+      "description": "各种PHY接口的配置和使用：MII、GMII、RGMII、RMII、SMII、SGMII、RevMII、RTBI",
+      "last_read": "2026-05-21T11:19:43.849103"
+    },
+    {
+      "id": "ch6",
+      "number": 6,
+      "title": "Packet Filtering",
+      "title_cn": "数据包过滤",
+      "page_start": 213,
+      "page_end": 242,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "接收数据包过滤：地址过滤、VLAN过滤、L3/L4过滤、灵活接收解析器"
+    },
+    {
+      "id": "ch7",
+      "number": 7,
+      "title": "IEEE 1588 Timestamp Support",
+      "title_cn": "IEEE 1588时间戳支持",
+      "page_start": 243,
+      "page_end": 280,
+      "status": "explored",
+      "reads_count": 1,
+      "description": "精确时间协议(PTP)：硬件时间戳、一步法/两步法、PPS输出、媒体时钟恢复、PTP卸载",
+      "last_read": "2026-05-21T11:19:57.608528"
+    },
+    {
+      "id": "ch8",
+      "number": 8,
+      "title": "Multiple Channels and Queues",
+      "title_cn": "多通道和队列",
+      "page_start": 281,
+      "page_end": 338,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "多通道DMA和队列管理、TSN特性(EST时间感知调度、帧抢占)、队列优先级"
+    },
+    {
+      "id": "ch9",
+      "number": 9,
+      "title": "TCP/IP Offloading",
+      "title_cn": "TCP/IP卸载",
+      "page_start": 339,
+      "page_end": 372,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "TCP/IP协议卸载：校验和卸载、TSO、UFO、头部-负载分离、ARP卸载"
+    },
+    {
+      "id": "ch10",
+      "number": 10,
+      "title": "Power Management",
+      "title_cn": "电源管理",
+      "page_start": 373,
+      "page_end": 418,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "节能以太网(EEE)、魔法包唤醒、Wake-on-LAN、AXI低功耗接口、时钟门控"
+    },
+    {
+      "id": "ch11",
+      "number": 11,
+      "title": "Descriptors",
+      "title_cn": "描述符",
+      "page_start": 419,
+      "page_end": 478,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "DMA描述符格式：发送普通描述符、发送上下文描述符、接收描述符、描述符处理"
+    },
+    {
+      "id": "ch12",
+      "number": 12,
+      "title": "Registers",
+      "title_cn": "寄存器",
+      "page_start": 479,
+      "page_end": 1018,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "所有寄存器详细说明：MAC寄存器、MTL寄存器、DMA寄存器、CSR寄存器"
+    },
+    {
+      "id": "ch13",
+      "number": 13,
+      "title": "Signal Descriptions",
+      "title_cn": "信号描述",
+      "page_start": 1019,
+      "page_end": 1100,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "所有接口信号的详细描述和时序"
+    },
+    {
+      "id": "ch14",
+      "number": 14,
+      "title": "Clocks and Resets",
+      "title_cn": "时钟和复位",
+      "page_start": 1101,
+      "page_end": 1132,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "时钟域、复位信号、频率要求、时钟门控"
+    },
+    {
+      "id": "ch15",
+      "number": 15,
+      "title": "Parameter Descriptions",
+      "title_cn": "参数描述",
+      "page_start": 1133,
+      "page_end": 1172,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "可配置参数及其功能描述"
+    },
+    {
+      "id": "ch16",
+      "number": 16,
+      "title": "Internal Parameters",
+      "title_cn": "内部参数",
+      "page_start": 1173,
+      "page_end": 1200,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "内部使用的参数和常量"
+    },
+    {
+      "id": "ch17",
+      "number": 17,
+      "title": "SPRAM Interface",
+      "title_cn": "SPRAM接口",
+      "page_start": 1201,
+      "page_end": 1218,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "单端口RAM接口时序和配置"
+    },
+    {
+      "id": "ch18",
+      "number": 18,
+      "title": "Debug and Test",
+      "title_cn": "调试和测试",
+      "page_start": 1219,
+      "page_end": 1248,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "调试接口、测试模式、诊断功能"
+    },
+    {
+      "id": "ch19",
+      "number": 19,
+      "title": "Safety Features",
+      "title_cn": "安全特性",
+      "page_start": 1249,
+      "page_end": 1300,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "ECC保护、奇偶校验、FSM安全、ISO 26262汽车功能安全"
+    },
+    {
+      "id": "ch20",
+      "number": 20,
+      "title": "Programming Guidelines",
+      "title_cn": "编程指南",
+      "page_start": 1301,
+      "page_end": 1386,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "软件编程指南和初始化序列：初始化、发送编程、接收编程、描述符编程"
+    },
+    {
+      "id": "appa",
+      "title": "Area and Power",
+      "title_cn": "面积和功耗",
+      "page_start": 1387,
+      "page_end": 1396,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "不同配置下的面积和功耗数据"
+    },
+    {
+      "id": "appb",
+      "title": "Endian Support",
+      "title_cn": "端序支持",
+      "page_start": 1397,
+      "page_end": 1412,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "大小端模式支持详情"
+    },
+    {
+      "id": "appd",
+      "title": "Automotive Safety",
+      "title_cn": "汽车安全",
+      "page_start": 1415,
+      "page_end": 1418,
+      "status": "seeded",
+      "reads_count": 0,
+      "description": "ISO 26262汽车功能安全支持"
+    }
+  ],
+  "cache": {
+    "_description": "Content read from PDF is stored here. Key format: ch{ID}_p{start}-{end}. Never delete entries - they are the persisted knowledge.",
+    "entries": {
+      "ch5_p167-172": "--- Page 167 ---\n167 Synopsys, Inc. 5\nUsing PHY Interfaces\nThis chapter describes the Station Management modu le and different PHY interfaces. It contains the\nfollowing sections:\n■“Station Management Agent”  on page 168\n■“Physical Coding Sub-Layer (PCS)”  on page 173\n■“Reduced Gigabit Media Independent Interface”  on page 177\n■“Reduced Media Inde pendent Interface”  on page 183\n■“Serial Media Independent Interface”  on page 187\n■“Reverse Media Independent Interface”  on page 192\n■“Serial Gigabit Media Independent Interface”  on page 204\n■“Reduced Ten-Bit Interface”  on page 209\n■“Multiple PHY Interfaces”  on page 211\n\n--- Page 168 ---\n168Synopsys, Inc. 5.1 Station Management Agent\n5.1.1 Introduction to Stat ion Management Agent\nThe application can access the PHY registers through the Station Management Agent (SMA) module. SMA\nis a two-wire Station Management interface (MIM).\n5.1.2 Functional Description of  Station Management Agent\nFor MIM accesses, the maximum operating frequency of the MDC (gmii_mdc_o) is 2. 5 MHz, as specified in\nthe IEEE 802.3. In the DWC_ether_qo s core, the gmii_mdc_o clock is deri ved from the application clock or\nclk_csr_i, using a divider-counter. The divide factor depends on the cl ock range setting (CR field) in the\nMAC_MDIO_Address register\nSelect the clock divide factor as mentioned in the description of CR field of MAC_MDIO_Address register,\nto meet IEEE specifications. However, if your system supports higher clock frequencies on the MIM\ninterface, there is a provision to select a different divider.\nThe MDIO frame struct ure is as follows:\nTable 5-1 MDIO Clause 45 Frame Structure\nField Description\nIDLE The mdio line is in tri-state; there is no clock on gmii_mdc_o signal.PREAMBLE 32 continuous bits of value 1START Start of packet is 2’b00OPCODE\n■2’b00\n■2’b01\n■2’b10\n■2’b11\nPHY ADDR 5-bit address select for one of 32 PHYs\nDEV ADDR 5-bit address select for one of 32 devices\nTA Turnaround\n■2’bZ0: Read and post-read increment address\n■2’b10: Write and address MDIO accesses\nWhere Z is the tri-state level\nDATA/ADDRESS 16-bit value: For an address cycle (OPCOD E = 2'b00), this frame contains the address of the\nregister to be accessed on the next cycle. For the data cycle of a write frame, this field contains the data to be written to the register. For read or post-read increment address frames, this field contains the contents of the register read from the PHY .\n■In address and data write cycles, the DWC_ether_qos drives the MDIO line during the transfer\nof these 16 bits.\n■In read and post-read increment address cycles, the PHY drives the MDIO line during the transfer of these 16 bits.\n\n--- Page 169 ---\n169 Synopsys, Inc. The frame structure for Clause 22  frames is also supported. The C45E bit in the MAC_MDIO_Address\nregister can be programmed to enable Clause 22 or Clause 45 mode of operation. Table 5-2  shows the Clause\n22 frame format.\nTable 5-2 MDIO Clause 22 Frame Structure\nIn addition to normal read and write operations, th e SMA also supports post-rea d increment address while\noperating in Clause 45 mode.\n5.1.2.1 GMII/MII Management Write Operation\nAfter the Station Management Agent receives the PHY address and the write data from the MAC CSR\nmodule, the SMA starts a Write operation to the PHY registers.\nFigure 5-1  illustrates the flow for a write operation from the SMA module to the PHY registers.Field Description\nIDLE The mdio line is in tri-state;  there is no clock on gmii_mdc_o.\nPREAMBLE 32 continuous bits of value 1START Start of packet is 2’b01OPCODE\n■2’b01 for Write\n■2’b10 for Read\nPHY ADDR 5-bit address select for one of 32 PHYsDEV ADDR 5-bit address to select the register within each MMDTA Tur naround\n■2’bZ0: Read and post-read increment address\n■2’b10: Write and address MDIO accesses\nWhere Z is the tri-state level\nDATA/ADDRESS Any 16-bit value:\n■In a write operation, the DWC_ether_qos drives MDIO.\n■In read operation, the PHY drives MDIO.\n\n--- Page 170 ---\n170Synopsys, Inc. Figure 5-1 SMA Write Operation Flow\nWhen you set Bit[3:2] to 2’b01 and Bit 0 in th e MAC_MDIO_Address register, the MAC CSR module\ntransfers the PHY address, the regist er address in PHY, and the write data (MAC_MDIO_Data register) to\nthe SMA to initiate a Write operation into the PHY regi sters. At this point, the SMA module starts a Write\noperation on the GMII Management Interface using the Mana gement Packet Format specified in the GMII\nspecifications (as per IEEE 80 2.3-2002, Section 22.2.4.5).\nWhen the SMA module starts a Write operation, the write data packet is  transmitted on the MDIO line. The\nMAC drives the MDIO line for comple te duration of the packet. The Busy  bit is set high until the write\noperation is complete. The CSR ignores the Writ e operations performed to the MAC_MDIO_Address\nregister or the MAC_MDIO_Data register during this  period (the Busy bit is  high). When the Write\noperation is complete, the SMA module indicates th is to the CSR, and the CSR resets the Busy bit.\nThe packet format for the Write operat ion is shown in the following table:\nIDLE PREAMBLE START OPCODE PHY ADDR REG ADDR TA DATA IDLE\nZ 1111...11 01 01 AAAAA RRRRR 10 DDD....DDD Z\n\n--- Page 171 ---\n171 Synopsys, Inc. Figure 5-2  is a reference for the Write operation.\nFigure 5-2 Management Write Operation\n5.1.2.2 GMII/MII Management Read Operation\nAfter the Station Management Agent receives the PHY a ddress and the register addr ess in the PHY from the\nMAC CSR module, the SMA initiates a Re ad operation to the PHY registers.\nThe flow of a Management read operation is as follows:\n1. Set Bit[3:2] to 2’b11 and Bit 0 in the MAC_MDIO_Address register\n2. The MAC CSR module transfers the PHY address and th e register address in PHY to the SMA to initiate\na Read operation in the PHY registers\n3. The SMA module starts a Read operation on the GMII Management Interface using the Management\nPacket Format specified in the GMII specifications (as per IEEE 802.3-2002, Section 22.2.4.5).\n4. When the SMA module starts a Read operation on the MDIO, the CSR ignores the Write operations to\nthe MAC_MDIO_Address or MAC_MDIO_Data register du ring this period (the Busy bit is high) and\nthe transaction is completed withou t any error on the MCI interface.\n5. When the Read operation is complete , the SMA indicates this to the CSR.\n6. The CSR resets the Busy bit and updates the MAC_MDIO_Data register with the data read from the\nPHY.\nFor more information about the communication from the application to the PHYs, see the Reconciliation\nSublayer and Media Independent Inte rface Specifications sections of the IEEE 802.3z, 1000BASE Ethernet.\nThe packet format for the Read operation is as follows:\nIDLE PREAMBLE START OPCODE PHY ADDR REG ADDR TA DATA IDLE\nZ 1111...11 01 10 AAAAA RRRRR Z0 DDD....DDD Z\nThe MAC drives the MDO on negedge of MDC so that it can be sampled on posedge with sufficient\nsetup or hold time (half cycle of MDC). Similarly, the PHY can drive MDI on negedge so that the MAC samples it on posedge, thus prov iding half cycle setup or hold time.\nNote\n\n--- Page 172 ---\n172Synopsys, Inc. Figure 5-3  is a reference for the read operation.\nFigure 5-3 Management Read Operation\n5.1.2.3 Preamble Suppression\nThe IEEE standard specifies 32-bit preamble (all-on es) for the MDIO frames. The DWC_ether_qos provides\ncontrols to support preamble suppr ession, it will transmit MDIO frames  with only 1 preamble bit. The\npreamble suppression can be enabled by se tting PSE bit of MAC_MDIO_Address register.\n5.1.2.4 Trailing Clocks and Back to Back transactions\nThe DWC_ether_qos drives MDC clock on the gmii_mdc_o port for duration of the MDIO frame. There is\nno clock driven during the idle period. The trailing clocks feature can be used  if the PHY needs the MDC\nclock to be active for some cycles after the MDIO  frame. The NTC field in MAC_MDIO_Address register\nallows programming of trai ling clocks from 0 to 7.\nThe DWC_ether_qos supports Back to Back transactions which allows start of next MDIO frame even before\nthe trailing clocks are completed for previous MDIO fram e. This feature can be enabled by setting BTB bit in\nMAC_MDIO_Address register wh en trailing clocks feature is also enab led. When Back to Back transactions\nis enabled, the GMII Busy will be cleared immediatel y after MDIO frame completion allowing SW to issue\nnext command, which will be executed by DWC_ether_ qos while trailing clocks are still on for previous\nMDIO frame. When Back to Back transactions is not enabled, the GMII Busy will be cleared after the trailing\nclocks are completed for MDIO frame.\n5.1.3 Interrupt for MD IO Transaction Completion\nThis enhancement is to generate an interrupt on comple tion of MDIO read or writ e transactions. As a result\nof this enhancement, the application need not poll the GMII Busy bit of MAC_ MDIO_Address register to\nknow the completion  of MDIO commands.\n5.1.4 Enabling Station Management Agent\nTo enable this feature while configuring the controller in the coreConsultant GUI:\n1. Select the Enable Station Management (MDIO Interface)  option under the PHY Interface section\nduring the Specify Configuration activity in coreConsultant.\nFor details about this option, se e PHY Interface Parameters in “ Parameter Descriptions”  on page 419.\nSee the “Enabled” field of the parameter descriptions to understand the dependencies.\nNote",
+      "ch7_p243-248": "--- Page 243 ---\n243 Synopsys, Inc. 7\nIEEE 1588 Timestamp Support\nThe IEEE 1588 defines a Precision Time Protocol (PTP ) which enables precise synchronization of time in\nmeasurement and control systems. This protocol enab les heterogeneous systems that include clocks of\nvarying inherent precision, resolu tion, and stability to synchronize. The protocol supports system-wide\nsynchronization accuracy in the sub-microsecond ra nge with minimal network and local clock computing\nresources.\nThis chapter contains the following sections:\n■“IEEE 1588 Timestamp Support”  on page 244\n■“IEEE 1588 System Time Source”  on page 257\n■“IEEE 1588 Higher Word Register”  on page 261\n■“IEEE 1588 Auxillary Snapshot”  on page 262\n■“Flexible Pulse-Per-Second Output”  on page 263\n■“Media Clock Generation and Recovery”  on page 265\n■“PTP Timestamp Offload Function”  on page 270\n■“One-Step Timestamp”  on page 275\n■“One-Step Time Stamping for PTP Over UDP”  on page 278\n■“IEEE 1588 Sub Nanoseconds Timestamp”  on page 279\n\n--- Page 244 ---\n244Synopsys, Inc. 7.1 IEEE 1588 Timestamp Support\n7.1.1  Introduction to I EEE 1588 Tim estamp Support\nThe DWC_ether_qos supports the IEEE 1588-2002 (ver sion 1) and IEEE 1588-20 08 (version 2). The\nIEEE 1588-2002 supports PTP transpor ted over UDP/IP and IEEE 1588-2008  supports PTP transported over\nEthernet. The DWC_ether_qos provides pr ogrammable support for both standards.\nThe controller supports the following features:\n■Provides an option to take snapshot of  all packets or only PTP type packets\n■Provides an option to take sn apshot of only event messages\n■Provides an option to take the snapshot based on  the clock type: ordinary, boundary, end-to-end\ntransparent, and peer-to-peer transparent\n■Provides an option to select the node to be a master or slave for ordi nary and boundary clock\n■Identifies the PTP message type, version, and PTP pa yload in packets sent dire ctly over Ethernet and\nsends the status\n■Provides an option to measure sub-seco nd time in digital or binary format\n7.1.2 Description of IEEE 1588 Timestamp Support\n7.1.2.1 Clock Types\nDWC_ether_qos supports different cloc k types defined in IEEE 1588-2008.\nThe DWC_ether_qos supports the following clock types:\n■Ordinary Clock\n■Boundary Clock\n■End-to-End Transparent Clock\n■Peer-to-Peer Transparent Clock\n7.1.2.1.1 Ordinary Clock\nThe ordinary clock has a single PTP state and a single physical port. In a domain, an ordinary clock supports\na single copy of  the protocol.\nThe ordinary clock in a doma in supports a single copy of the protocol. The ordina ry clock has a single PTP\nstate and a single physical port. In typical industrial automation applications, an ordinary clock is\nassociated with an application device such as a sensor  or an actuator. In telecom applications, the ordinary\nclock can be associated with a timing demarcation device.\nThe ordinary clock can be a grandmaster or a sl ave clock. It supports the following features:\n■Sends and receives PTP messages. The timestamp snapshot can be controlled as described in MAC_-\nTimestamp_Control.\n■Maintains the data sets such as timestamp values\n\n--- Page 245 ---\n245 Synopsys, Inc. Table 7-1  shows the messages for which you can take the timestamp snapshot on the receive side for master\nand slave nodes.\nTable 7-1 Ordinary Clock: PTP Messages for Snapshot\nFor an ordinary clock, you can take the snapshot of either of the following PTP message types: version 1 or\nversion 2. You cannot take the snap shots for both PTP message types. You can take the snapshot by setting\nthe TSVER2ENA bit and selecting the snap shot mode in MAC_Timestamp_Control.\n7.1.2.1.2 Boundary Clock\nThe boundary clock typically has several physical ports communicating with the network. The messages\nrelated to synchronization, master-slave hierarchy, an d signaling terminat e in the protocol engine of the\nboundary clock and such messages are not forwarde d. The PTP message type status given by the MAC\nhelps you to identify the type of message and take appropriate action.\nThe boundary clock is similar to the ordinar y clock except for the following features:\n■The clock data sets are common to all ports of the boundary clock.\n■The local clock is common to all ports of the boundary clock.\n7.1.2.1.3 End-to-End Transparent Clock\nThe end-to-end transparent clock supports the end- to-end delay measurement mechanism between the\nslave clocks and the master  clock. The end-to-end transparent clock forwards all messages like normal\nbridge, router, or repeater. The reside nce time of a PTP packet is the time taken by the PTP packet from the\nIngress port to the Egress port.\nThe residence time of a SYNC packet inside the end-to -end transparent clock is updated in the correction\nfield of the associated Follow_Up PTP packet before it  is transmitted. Similarly, the residence time of a\nDelay_Req packet, inside th e end-to-end transparent clock, is up dated in the correc tion field of the\nassociated Delay_Resp PTP packet before it is transmi tted. Therefore, the snapshot must be taken at both\nIngress and Egress ports only for the messages mentioned in Table 7-2 . You can take the snapshot by setting\nthe SNAPTYPSEL bits to 10 in th e MAC_Timestamp_Control register.\nTable 7-2 End to End Transparent Clock: PTP Messages for Snapshot\n7.1.2.1.4 Peer-to-Peer Transparent Clock\nIn the peer-to-peer transparent clock, the computat ion of the link delay is ba sed on an exchange of\nPdelay_Req, Pdelay_Resp, and Pdelay_Resp_ Follow_Up messages with the link peer.\nThe peer-to-peer transparent clock di ffers from the end-to-end transparen t clock in the way it corrects and\nhandles the PTP timing messages. In all other aspects, it is identical to the end-to-end transparent clock.Master Slave\nDelay_Req SYNC\nPTP MessagesSYNCDelay_Req\n\n--- Page 246 ---\n246Synopsys, Inc. In the peer-to-peer transparent clock, the computat ion of the link delay is ba sed on an exchange of\nPdelay_Req, Pdelay_Resp, and Pdelay_Resp_Follow_Up me ssages with the link peer. The residence time of\nthe Pdelay_Req and the associated Pd elay_Resp packets is added and inserted into the correction field of\nthe associated Pdely_Resp_Followup pa cket. Therefore, support for taking  snapshot for the event messages\nrelated to Pdelay is added as shown in Table 7-3 .\nTable 7-3 Peer-to-Peer Transparent Clock: PTP Messages for Snapshot\nYou can take the snapshot by setting the SNAPTYPE SEL bit to 11 in MAC_Ti mestamp_Control register.\n7.1.2.2 Delay Request-Response Mechanism\nThe system or network is classified into the master and slave nodes for distribu ting the timing and clock\ninformation.\nThe system or network is classified into the master and slave nodes for distribu ting the timing and clock\ninformation. Figure 7-1  shows the process that PTP uses for synchronizing a slave node to a master node by\nexchanging PTP messages.\nFigure 7-1 Networked Time SynchronizationPTP Messages\nSYNCPdelay_reqPdelay_Resp\n\n--- Page 247 ---\n247 Synopsys, Inc. As shown in Figure 7-1 , PTP uses the following process:\n1. The master broadcasts the PTP Sync messages to all its nodes. The Sync message contains the reference\ntime information of the master. This message leaves the system of the master at t1. This time must be captured for Ethernet ports at GMII or MII.\n2. The slave receives the Sync message and also captures the exact time, t2, using its timing reference.\n3. The master sends a Follow_up message to the slave, which contains t1 information for later use.\n4. The slave sends a Delay_Req message to the master and notes the exact time, t3, at which this packet\nleaves the GMII or MII interface.\n5. The master receives the message, capturing the exact time t4, at which the message enters its system.\n6. The master sends the t4 information to the slave in the Delay_Resp message.\n7. The slave uses the four values of t1, t2, t3, and t4 to synchronize its local timing reference to the timing\nreference of the master.\nMost of the PTP implementation is done in the so ftware above the Ethernet/UDP layer. However, the\nhardware support is required to capture the exact time when specif ic PTP packets enter or leave the\nEthernet port at the GMII or MII interface. This timi ng information must be capt ured and returned to the\nsoftware for proper implementati on of PTP with high accuracy.\n7.1.2.3 Peer-to-Peer PTP Transparent Clock (P2P TC) Message Support\nThe IEEE 1588-2008 supports peer-to-peer PTP (Pdelay)  message in addition to the SYNC, Delay Request,\nFollow-up, and Delay Response messages.\nThe IEEE 1588-2008 supports peer-to-peer PTP (Pdelay)  message in addition to the SYNC, Delay Request,\nFollow-up, and Delay Response messages. Figure 7-2  shows the method to calculate the propagation delay\nin clocks supporting peer-t o-peer path correction.\nFigure 7-2 Propagation Delay Calculation in Clocks Supporting Peer-to-Peer Path Correction\n\n--- Page 248 ---\n248Synopsys, Inc. As shown in Figure 7-2 , the propagation delay is calculated in the following way:\n1. Port 1 issues a Pdelay_Req message and generates a timestamp (t1) for the Pdelay_Req message.\n2. Port 2 receives the Pdelay_Req message and generates a timestamp (t2) for this message.\n3. Port 2 returns a Pdelay_Resp message and generates a timestamp (t3) for this message.\nTo minimize errors because of any frequency o ffset between the two ports, Port 2 returns the\nPdelay_Resp message as quickly as possible after the receipt of the Pdelay_Req message. Port 2 returns\nany one of the following:\n■Difference between the timestamps t2 and t3 in the Pdelay_Resp message\n■Difference between the timest amps t2 and t3 in the Pdelay_Resp_Follow_Up message\n■Timestamps t2 and t3 in the Pdelay_Resp and Pdelay_Resp_Follow_Up messages, respectively\n4. Port 1 generates a timestamp (t4) on receiving the Pdelay_Resp message.\n5. Port 1 uses all four timestamps to compute the mean link delay.\n7.1.2.4 Timestamp Correction\nAccording to the IEEE 1588 specification, a timestam p must be captured when the PTP message timestamp\npoint (leading edge of the first bit of the octet immedi ately following the Start Fram e Delimiter octet) crosses\nthe boundary between the node and the network. As th e MAC takes the timestamp at an internal point far\nfrom the actual boundary of the node and network, this captured timestamp is  corrected/updated for the\ningress/egress path latency (includi ng the delay in the PHY layers). Further correction is done for the\ninaccuracies/errors introduced due to  the clock (GMII Tx, Rx clock) bein g different at the capture point as\ncompared to the PTP clock (clk_ptp_ref_i) that is us ed to generate the time. The resultant CDC (Clock\nDomain Crossing) circuits add er ror depending on the clock period  of the GMII and PTP clocks.\n7.1.2.4.1 Ingress Correction\nIn the Receive side the timestamp ca ptured at the internal snapshot point is delayed (later in time) as\ncompared to the time at which that packet's SFD bit is received at the port's  boundary. Therefore, the\ncaptured timestamp must be reduced by the ingress latency and the errors in CDC sampling. This correction value must be determined/calculated by  the software and written into the\nMAC_Timestamp_Ingress_Corr_*  registers.\nThe correction value consists of the following 3 components:\n1. External latency in the PHY layer between boundary point and the input of the core.\nIf the PHY is compliant to the IEEE 802.3 Clause 45  MMD registers, it has a register indicating the\nmaximum and minimum ingress latency. The software can read these registers and determine the average ingress latency in the PHY.  Alternatively (if the PHY does not support these registers), the\ningress latency must be determined from its datasheet or timing characteristics.\n2. Internal latency from the input of th e core to the inte rnal capture point\nThe internal ingress latency can be read from the MAC_Ingress_Timestamp_Late ncy register. This is a\nread-only register and gives the latency in scal edNanoseconds format defined in IEEE 1588 Clause\n5.3.2. The latency differs based on the active PHY interface (RGMII, RMII, so on) and the operating speed. Therefore, the software must read this regist er after any speed change in the MAC to determine\nthe current internal latency."
+    },
+    "total_chars_cached": 21619
+  },
+  "leaves": {
+    "_description": "Knowledge leaves extracted from QA sessions. Flat array for simple append-only growth.",
+    "_format": "leaf_{chapter_id}_{sequence_number}",
+    "entries": [
+      {
+        "id": "leaf_ch5_1",
+        "chapter_id": "ch5",
+        "chapter_title": "PHY接口使用",
+        "topic": "RGMII接口特点",
+        "content": "RGMII（Reduced Gigabit Media Independent Interface）将GMII的24个引脚精简到12个引脚。使用4位数据通道（txd[3:0]/rxd[3:0]），在时钟上升沿和下降沿传输数据（DDR）。支持10Mbps、100Mbps、1000Mbps三种速率。支持RGMII-ID变体，在时钟线上添加1.5-2.0ns内部延迟以简化PCB布线。信号包括：txd[3:0]、rxd[3:0]、tx_ctl（tx_en+tx_err复用）、rx_ctl（rx_dv+rx_err复用）、tx_clk、rx_clk。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:20:20.391225",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch5_2",
+        "chapter_id": "ch5",
+        "chapter_title": "PHY接口使用",
+        "topic": "SGMII接口架构",
+        "content": "SGMII（Serial Gigabit Media Independent Interface）使用串行差分信号对传输数据，通过PCS（Physical Coding Sublayer）层与MAC连接。架构为：MAC ←→ PCS ←→ SerDes ←→ External PHY。数据在SerDes中串行化为1.25Gbps差分信号。支持自协商（Auto-negotiation）。相比并行接口，SGMII引脚数更少、信号完整性更好、适合长PCB走线和SFP/SFP+模块应用。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:20:20.393428",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch5_3",
+        "chapter_id": "ch5",
+        "chapter_title": "PHY接口使用",
+        "topic": "MII/GMII基础对比",
+        "content": "MII（Media Independent Interface）：4位数据通道，16个信号，支持10/100Mbps，使用25MHz时钟。GMII（Gigabit MII）：8位数据通道，24个信号，支持10/100/1000Mbps，千兆模式使用125MHz时钟。RGMII是GMII的精简版（12引脚），RMII是MII的精简版（7引脚，50MHz参考时钟）。所有接口都通过Station Management Agent（MDIO接口，支持Clause 22和Clause 45）管理PHY寄存器。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:20:20.395574",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch7_1",
+        "chapter_id": "ch7",
+        "chapter_title": "IEEE 1588时间戳支持",
+        "topic": "PTP一步法vs两步法时间戳",
+        "content": "一步法（One-Step）：在发送PTP报文的同时将时间戳直接嵌入Correction Field中，不需要Follow_Up报文。两步法（Two-Step）：发送Sync报文后，通过独立的Follow_Up报文传递精确时间戳信息。DWC_ether_qos硬件支持两种模式，通过寄存器配置选择。一步法减少报文数量但硬件更复杂；两步法更灵活，适合软件时间戳校正。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:21:16.449691",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch7_2",
+        "chapter_id": "ch7",
+        "chapter_title": "IEEE 1588时间戳支持",
+        "topic": "IEEE 1588系统时间格式",
+        "content": "系统时间以64位值维护：高32位为秒（seconds），低32位为纳秒（nanoseconds，范围0-999,999,999）。时间源可选择：内部（Internal，从应用时钟派生，可编程sub-second增量值）或外部（External，通过外部时间戳接口提供）。支持时间初始化、偏移量更新（加/减用于同步）、以及随时读取。sub-second增量值决定时间戳分辨率。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:21:16.452141",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch8_1",
+        "chapter_id": "ch8",
+        "chapter_title": "多通道和队列",
+        "topic": "EST时间感知调度器",
+        "content": "增强调度流量（EST，IEEE 802.1Qbv）通过时间门控控制队列传输。门控控制列表（GCL）定义每个队列何时可以传输。周期时间可编程（工业应用通常1-10ms）。每个队列有一个时间门，根据GCL在Open（可传输）和Closed（不可传输）之间切换。双缓冲设计：Administrative GCL（软件配置）和Operational GCL（硬件活跃），允许无缝切换。关键操作：Set-Gate-State、Set-And-Hold-MAC、Set-And-Release-MAC。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:21:16.454488",
+        "access_count": 0
+      },
+      {
+        "id": "leaf_ch8_2",
+        "chapter_id": "ch8",
+        "chapter_title": "多通道和队列",
+        "topic": "帧抢占机制",
+        "content": "帧抢占（Frame Preemption，IEEE 802.1Qbu/802.3br）允许Express（快速）流量中断Normal（普通）帧的传输。被抢占的帧在Express帧完成后继续传输（不是重新开始）。最小不可抢占片段大小：64字节。组件包括：eMAC（Express MAC）、pMAC（Preemptible MAC）、mPacket格式（用于分片帧）。优势：降低时间关键流量延迟，与非抢占设备向后兼容。",
+        "source": "QA enrichment",
+        "confidence": "high",
+        "created_at": "2026-05-21T11:21:16.456714",
+        "access_count": 0
+      }
+    ]
+  },
+  "qa_log": {
+    "_description": "Log of all questions asked and answers given. Used to track what has been explored.",
+    "entries": []
+  }
+}

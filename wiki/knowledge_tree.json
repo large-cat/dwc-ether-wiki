@@ -1,0 +1,575 @@
+{
+  "document": "DWC_ether_qos_databook.pdf",
+  "version": "5.10a",
+  "date": "December 2017",
+  "company": "Synopsys, Inc.",
+  "total_pages": 1418,
+  "chapters": [
+    {
+      "id": "revision_history",
+      "number": null,
+      "title": "Revision History",
+      "page_start": 9,
+      "page_end": 14,
+      "description": "文档修订历史记录"
+    },
+    {
+      "id": "preface",
+      "number": null,
+      "title": "Preface",
+      "page_start": 15,
+      "page_end": 22,
+      "description": "前言"
+    },
+    {
+      "id": "ch1",
+      "number": 1,
+      "title": "Product Overview",
+      "page_start": 23,
+      "page_end": 40,
+      "description": "DWC_ether_qos产品概述、特性、配置和交付物",
+      "sections": [
+        {
+          "id": "1.1",
+          "title": "General Product Description",
+          "page": 24,
+          "description": "通用产品描述"
+        },
+        {
+          "id": "1.2",
+          "title": "DWC_ether_qos Features",
+          "page": 26,
+          "description": "DWC_ether_qos特性介绍"
+        },
+        {
+          "id": "1.3",
+          "title": "DWC_ether_qos Configurations",
+          "page": 37,
+          "description": "DWC_ether_qos配置选项"
+        },
+        {
+          "id": "1.4",
+          "title": "DWC_ether_qos Deliverables",
+          "page": 39,
+          "description": "交付物清单"
+        },
+        {
+          "id": "1.5",
+          "title": "Related Synopsys Products",
+          "page": 40,
+          "description": "相关Synopsys产品"
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": 2,
+      "title": "Architecture",
+      "page_start": 41,
+      "page_end": 150,
+      "description": "DWC_ether_qos架构详解，包括接口、DMA、MAC和终端",
+      "sections": [
+        {
+          "id": "2.1",
+          "title": "CSR Slave Interface",
+          "page": 42,
+          "description": "CSR从接口"
+        },
+        {
+          "id": "2.2",
+          "title": "Application Master Interface",
+          "page": 49,
+          "description": "应用主接口"
+        },
+        {
+          "id": "2.3",
+          "title": "DMA Controller",
+          "page": 64,
+          "description": "DMA控制器"
+        },
+        {
+          "id": "2.4",
+          "title": "MAC Transaction Layer",
+          "page": 83,
+          "description": "MAC事务层"
+        },
+        {
+          "id": "2.5",
+          "title": "MAC",
+          "page": 118,
+          "description": "MAC层"
+        },
+        {
+          "id": "2.6",
+          "title": "Interrupts",
+          "page": 145,
+          "description": "中断机制"
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": 3,
+      "title": "VLAN and Double VLAN Insertion, Deletion, Replacement and Tagging",
+      "page_start": 151,
+      "page_end": 158,
+      "description": "VLAN和双VLAN插入、删除、替换和标记处理",
+      "sections": [
+        {
+          "id": "3.1",
+          "title": "Double VLAN Processing",
+          "page": 152,
+          "description": "双VLAN处理"
+        },
+        {
+          "id": "3.2",
+          "title": "Source Address and VLAN Insertion, Replacement, or Deletion",
+          "page": 154,
+          "description": "源地址和VLAN插入、替换或删除"
+        },
+        {
+          "id": "3.3",
+          "title": "Queue/Channel Based VLAN Tag Insertion on Tx",
+          "page": 157,
+          "description": "基于队列/通道的VLAN标签插入"
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "number": 4,
+      "title": "Managing Buffers and Memories",
+      "page_start": 159,
+      "page_end": 166,
+      "description": "缓冲区管理和内存管理",
+      "sections": [
+        {
+          "id": "4.1",
+          "title": "Introduction to Transmit and Receive FIFOs",
+          "page": 160,
+          "description": "收发FIFO介绍"
+        },
+        {
+          "id": "4.2",
+          "title": "Description of Transmit and Receive FIFOs",
+          "page": 160,
+          "description": "收发FIFO描述"
+        },
+        {
+          "id": "4.3",
+          "title": "Transmit and Receive FIFO-Related Registers",
+          "page": 160,
+          "description": "FIFO相关寄存器"
+        },
+        {
+          "id": "4.4",
+          "title": "Configuring Transmit and Receive FIFO Details",
+          "page": 160,
+          "description": "配置收发FIFO"
+        },
+        {
+          "id": "4.5",
+          "title": "TCP/IP Header Buffer",
+          "page": 161,
+          "description": "TCP/IP头部缓冲"
+        },
+        {
+          "id": "4.6",
+          "title": "Accessing Memory In Slave/Debug Mode",
+          "page": 161,
+          "description": "从设备/调试模式访问内存"
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "number": 5,
+      "title": "Using PHY Interfaces",
+      "page_start": 167,
+      "page_end": 212,
+      "description": "PHY接口使用，包括MII、GMII、RGMII等",
+      "sections": [
+        {
+          "id": "5.1",
+          "title": "Station Management Agent",
+          "page": 168,
+          "description": "站点管理代理"
+        },
+        {
+          "id": "5.2",
+          "title": "Physical Coding Sub-Layer (PCS)",
+          "page": 173,
+          "description": "物理编码子层"
+        },
+        {
+          "id": "5.3",
+          "title": "Reduced Gigabit Media Independent Interface",
+          "page": 177,
+          "description": "精简千兆媒体独立接口(RGMII)"
+        },
+        {
+          "id": "5.4",
+          "title": "Reduced Media Independent Interface",
+          "page": 183,
+          "description": "精简媒体独立接口(RMII)"
+        },
+        {
+          "id": "5.5",
+          "title": "Serial Media Independent Interface",
+          "page": 187,
+          "description": "串行媒体独立接口(SMII)"
+        },
+        {
+          "id": "5.6",
+          "title": "Reverse Media Independent Interface",
+          "page": 192,
+          "description": "反向媒体独立接口(REV-MII)"
+        },
+        {
+          "id": "5.7",
+          "title": "Serial Gigabit Media Independent Interface",
+          "page": 204,
+          "description": "串行千兆媒体独立接口(SGMII)"
+        },
+        {
+          "id": "5.8",
+          "title": "Reduced Ten-Bit Interface",
+          "page": 209,
+          "description": "精简十位接口(RTBI)"
+        },
+        {
+          "id": "5.9",
+          "title": "Multiple PHY Interfaces",
+          "page": 211,
+          "description": "多PHY接口支持"
+        }
+      ]
+    },
+    {
+      "id": "ch6",
+      "number": 6,
+      "title": "Packet Filtering",
+      "page_start": 213,
+      "page_end": 242,
+      "description": "数据包过滤功能",
+      "sections": [
+        {
+          "id": "6.1",
+          "title": "Packet Filtering Sequence",
+          "page": 214,
+          "description": "包过滤序列"
+        },
+        {
+          "id": "6.2",
+          "title": "Source Address or Destination Address Filtering",
+          "page": 216,
+          "description": "源/目的地址过滤"
+        },
+        {
+          "id": "6.3",
+          "title": "VLAN Filtering",
+          "page": 220,
+          "description": "VLAN过滤"
+        },
+        {
+          "id": "6.4",
+          "title": "VLAN Filter Fail Packets Queue",
+          "page": 222,
+          "description": "VLAN过滤失败包队列"
+        },
+        {
+          "id": "6.5",
+          "title": "Extended Receive VLAN Filtering and Routing",
+          "page": 223,
+          "description": "扩展接收VLAN过滤和路由"
+        },
+        {
+          "id": "6.6",
+          "title": "Layer 3 and Layer 4 Filtering",
+          "page": 228,
+          "description": "三层和四层过滤"
+        },
+        {
+          "id": "6.7",
+          "title": "Flexible Receive Parser",
+          "page": 231,
+          "description": "灵活接收解析器"
+        }
+      ]
+    },
+    {
+      "id": "ch7",
+      "number": 7,
+      "title": "IEEE 1588 Timestamp Support",
+      "page_start": 243,
+      "page_end": 280,
+      "description": "IEEE 1588时间戳支持",
+      "sections": [
+        {
+          "id": "7.1",
+          "title": "IEEE 1588 Timestamp Support",
+          "page": 244,
+          "description": "IEEE 1588时间戳支持"
+        },
+        {
+          "id": "7.2",
+          "title": "IEEE 1588 System Time Source",
+          "page": 257,
+          "description": "系统时间源"
+        },
+        {
+          "id": "7.3",
+          "title": "Programming Guidelines for IEEE 1588 Timestamping",
+          "page": 261,
+          "description": "1588时间戳编程指南"
+        },
+        {
+          "id": "7.4",
+          "title": "IEEE 1588 Higher Word Register",
+          "page": 261,
+          "description": "高字寄存器"
+        },
+        {
+          "id": "7.5",
+          "title": "IEEE 1588 Auxillary Snapshot",
+          "page": 262,
+          "description": "辅助快照"
+        },
+        {
+          "id": "7.6",
+          "title": "Flexible Pulse-Per-Second Output",
+          "page": 263,
+          "description": "灵活PPS输出"
+        },
+        {
+          "id": "7.7",
+          "title": "Media Clock Generation and Recovery",
+          "page": 265,
+          "description": "媒体时钟生成和恢复"
+        },
+        {
+          "id": "7.8",
+          "title": "PTP Timestamp Offload Function",
+          "page": 270,
+          "description": "PTP时间戳卸载功能"
+        },
+        {
+          "id": "7.9",
+          "title": "One-Step Timestamp",
+          "page": 275,
+          "description": "单步时间戳"
+        },
+        {
+          "id": "7.10",
+          "title": "One-Step Time Stamping for PTP Over UDP",
+          "page": 278,
+          "description": "UDP上PTP单步时间戳"
+        },
+        {
+          "id": "7.11",
+          "title": "IEEE 1588 Sub Nanoseconds Timestamp",
+          "page": 279,
+          "description": "亚纳秒时间戳"
+        }
+      ]
+    },
+    {
+      "id": "ch8",
+      "number": 8,
+      "title": "Multiple Channels and Queues Support",
+      "page_start": 281,
+      "page_end": 338,
+      "description": "多通道和队列支持",
+      "sections": [
+        {
+          "id": "8.1",
+          "title": "Block Diagram",
+          "page": 282,
+          "description": "模块框图"
+        },
+        {
+          "id": "8.2",
+          "title": "Multiple Queues and Channels Support in the Transmit Path",
+          "page": 283,
+          "description": "发送路径多队列支持"
+        },
+        {
+          "id": "8.3",
+          "title": "Multiple Queues and Channels Support in the Receive Path",
+          "page": 283,
+          "description": "接收路径多队列支持"
+        }
+      ]
+    },
+    {
+      "id": "ch9",
+      "number": 9,
+      "title": "TCP/IP Offloading Features",
+      "page_start": 339,
+      "page_end": 372,
+      "description": "TCP/IP卸载功能",
+      "sections": [
+        {
+          "id": "9.1",
+          "title": "Transmit Checksum Offload Engine",
+          "page": 340,
+          "description": "发送校验和卸载引擎"
+        },
+        {
+          "id": "9.2",
+          "title": "Receive Checksum Offload Engine",
+          "page": 344,
+          "description": "接收校验和卸载引擎"
+        },
+        {
+          "id": "9.3",
+          "title": "Header-Payload Split",
+          "page": 347,
+          "description": "头部-负载分离"
+        },
+        {
+          "id": "9.4",
+          "title": "TCP/IP Segmentation Offload (TSO) Engine",
+          "page": 350,
+          "description": "TCP/IP分段卸载引擎"
+        },
+        {
+          "id": "9.5",
+          "title": "UDP/IPv4 Fragment Offload (UFO) Engine",
+          "page": 358,
+          "description": "UDP/IPv4分片卸载引擎"
+        },
+        {
+          "id": "9.6",
+          "title": "Using the IPv4 ARP Offload Engine",
+          "page": 363,
+          "description": "IPv4 ARP卸载引擎"
+        }
+      ]
+    },
+    {
+      "id": "ch10",
+      "number": 10,
+      "title": "Power Management and Energy Efficient Ethernet",
+      "page_start": 373,
+      "page_end": 418,
+      "description": "电源管理和节能以太网"
+    },
+    {
+      "id": "ch11",
+      "number": 11,
+      "title": "Descriptors",
+      "page_start": 419,
+      "page_end": 478,
+      "description": "描述符详解"
+    },
+    {
+      "id": "ch12",
+      "number": 12,
+      "title": "Registers",
+      "page_start": 479,
+      "page_end": 1018,
+      "description": "寄存器详细说明"
+    },
+    {
+      "id": "ch13",
+      "number": 13,
+      "title": "Signal Descriptions",
+      "page_start": 1019,
+      "page_end": 1100,
+      "description": "信号描述"
+    },
+    {
+      "id": "ch14",
+      "number": 14,
+      "title": "Clocks and Resets",
+      "page_start": 1101,
+      "page_end": 1132,
+      "description": "时钟和复位"
+    },
+    {
+      "id": "ch15",
+      "number": 15,
+      "title": "Parameter Descriptions",
+      "page_start": 1133,
+      "page_end": 1172,
+      "description": "参数描述"
+    },
+    {
+      "id": "ch16",
+      "number": 16,
+      "title": "Internal Parameter Descriptions",
+      "page_start": 1173,
+      "page_end": 1200,
+      "description": "内部参数描述"
+    },
+    {
+      "id": "ch17",
+      "number": 17,
+      "title": "SPR AM Interface",
+      "page_start": 1201,
+      "page_end": 1218,
+      "description": "SPRAM接口"
+    },
+    {
+      "id": "ch18",
+      "number": 18,
+      "title": "Debug and Test",
+      "page_start": 1219,
+      "page_end": 1248,
+      "description": "调试和测试"
+    },
+    {
+      "id": "ch19",
+      "number": 19,
+      "title": "Safety Features",
+      "page_start": 1249,
+      "page_end": 1300,
+      "description": "安全特性"
+    },
+    {
+      "id": "ch20",
+      "number": 20,
+      "title": "Programming Guidelines",
+      "page_start": 1301,
+      "page_end": 1386,
+      "description": "编程指南"
+    },
+    {
+      "id": "appa",
+      "number": null,
+      "title_appendix": "A",
+      "title": "Area and Power",
+      "page_start": 1387,
+      "page_end": 1396,
+      "description": "面积和功耗数据"
+    },
+    {
+      "id": "appb",
+      "number": null,
+      "title_appendix": "B",
+      "title": "Endian Support",
+      "page_start": 1397,
+      "page_end": 1412,
+      "description": "端序支持"
+    },
+    {
+      "id": "appc",
+      "number": null,
+      "title_appendix": "C",
+      "title": "Back-to-Back Register Support",
+      "page_start": 1413,
+      "page_end": 1414,
+      "description": "背靠背寄存器支持"
+    },
+    {
+      "id": "appd",
+      "number": null,
+      "title_appendix": "D",
+      "title": "DWC_ether_qos Automotive Safety",
+      "page_start": 1415,
+      "page_end": 1418,
+      "description": "汽车安全特性"
+    }
+  ]
+}

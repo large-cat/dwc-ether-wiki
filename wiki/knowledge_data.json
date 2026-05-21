@@ -1,0 +1,912 @@
+{
+  "document": {
+    "title": "DWC_ether_qos_databook.pdf",
+    "title_cn": "DWC以太网QoS数据手册",
+    "version": "5.10a",
+    "date": "December 2017",
+    "company": "Synopsys, Inc.",
+    "total_pages": 1418,
+    "description": "DesignWare Cores Ethernet Quality-of-Service Databook"
+  },
+  "chapters": [
+    {
+      "id": "ch1",
+      "number": 1,
+      "title": "Product Overview",
+      "title_cn": "产品概述",
+      "page_start": 23,
+      "page_end": 40,
+      "description": "DWC_ether_qos产品介绍、主要特性、配置选项和交付物",
+      "sections": [
+        {
+          "id": "1.1",
+          "title": "General Product Description",
+          "title_cn": "通用产品描述",
+          "page": 24,
+          "description": "DWC_ether_qos是一款高性能以太网QoS控制器，支持10/100/1000Mbps速率，提供DMA控制器、MAC层、多队列和TSN支持。"
+        },
+        {
+          "id": "1.2",
+          "title": "DWC_ether_qos Features",
+          "title_cn": "DWC_ether_qos特性",
+          "page": 26,
+          "description": "支持多种PHY接口（MII/GMII/RGMII/SGMII等）、IEEE 1588精确时间协议、TCP/IP卸载、VLAN处理、数据包过滤、节能以太网等。"
+        },
+        {
+          "id": "1.3",
+          "title": "DWC_ether_qos Configurations",
+          "title_cn": "DWC_ether_qos配置",
+          "page": 37,
+          "description": "提供EQOS-AHB、EQOS-AXI、EQOS-AXI4、EQOS-DMA等多种配置选项，支持不同的总线接口。"
+        },
+        {
+          "id": "1.4",
+          "title": "DWC_ether_qos Deliverables",
+          "title_cn": "交付物",
+          "page": 39,
+          "description": "包括RTL源码、测试平台、约束文件、综合脚本、文档等完整交付物。"
+        },
+        {
+          "id": "1.5",
+          "title": "Related Synopsys Products",
+          "title_cn": "相关产品",
+          "page": 40,
+          "description": "与DesignWare Ethernet QoS相关的其他Synopsys产品。"
+        }
+      ]
+    },
+    {
+      "id": "ch2",
+      "number": 2,
+      "title": "Architecture",
+      "title_cn": "架构",
+      "page_start": 41,
+      "page_end": 150,
+      "description": "DWC_ether_qos内部架构详解，包括各个功能模块及其接口",
+      "sections": [
+        {
+          "id": "2.1",
+          "title": "CSR Slave Interface",
+          "title_cn": "CSR从接口",
+          "page": 42,
+          "description": "控制和状态寄存器(CSR)从接口，支持APB、AXI4-Lite等总线协议，用于软件访问寄存器。"
+        },
+        {
+          "id": "2.2",
+          "title": "Application Master Interface",
+          "title_cn": "应用主接口",
+          "page": 49,
+          "description": "应用主接口(AHB/AXI/AXI4)，用于DMA访问系统内存进行数据传输。"
+        },
+        {
+          "id": "2.3",
+          "title": "DMA Controller",
+          "title_cn": "DMA控制器",
+          "page": 64,
+          "description": "DMA控制器负责管理发送和接收数据包在内存和MAC之间的传输，支持多通道和描述符链。"
+        },
+        {
+          "id": "2.4",
+          "title": "MAC Transaction Layer",
+          "title_cn": "MAC事务层",
+          "page": 83,
+          "description": "MAC事务层处理数据包的调度、缓冲和流量控制。"
+        },
+        {
+          "id": "2.5",
+          "title": "MAC",
+          "title_cn": "MAC层",
+          "page": 118,
+          "description": "媒体访问控制层，处理帧的发送和接收、CRC校验、前导码添加/移除等。"
+        },
+        {
+          "id": "2.6",
+          "title": "Interrupts",
+          "title_cn": "中断",
+          "page": 145,
+          "description": "中断处理机制，包括MMC中断、PMT中断、DMA中断等多种中断源。"
+        }
+      ]
+    },
+    {
+      "id": "ch3",
+      "number": 3,
+      "title": "VLAN and Double VLAN Processing",
+      "title_cn": "VLAN和双VLAN处理",
+      "page_start": 151,
+      "page_end": 158,
+      "description": "VLAN标签的插入、删除、替换和路由功能",
+      "sections": [
+        {
+          "id": "3.1",
+          "title": "Double VLAN Processing",
+          "title_cn": "双VLAN处理",
+          "page": 152,
+          "description": "支持双VLAN标签(STagged)处理，符合IEEE 802.1ad标准。"
+        },
+        {
+          "id": "3.2",
+          "title": "Source Address and VLAN Insertion/Replacement",
+          "title_cn": "源地址和VLAN插入/替换",
+          "page": 154,
+          "description": "支持基于源地址的VLAN插入、替换和删除操作。"
+        },
+        {
+          "id": "3.3",
+          "title": "Queue/Channel Based VLAN Tag Insertion",
+          "title_cn": "基于队列的VLAN标签插入",
+          "page": 157,
+          "description": "支持基于发送队列或通道的VLAN标签插入。"
+        }
+      ]
+    },
+    {
+      "id": "ch4",
+      "number": 4,
+      "title": "Managing Buffers and Memories",
+      "title_cn": "缓冲区和内存管理",
+      "page_start": 159,
+      "page_end": 166,
+      "description": "发送和接收FIFO、SPRAM、TCP/IP头部缓冲区的管理",
+      "sections": [
+        {
+          "id": "4.1",
+          "title": "Transmit and Receive FIFOs",
+          "title_cn": "收发FIFO",
+          "page": 160,
+          "description": "发送和接收FIFO用于数据包缓冲，可配置大小和阈值。"
+        },
+        {
+          "id": "4.2",
+          "title": "TCP/IP Header Buffer",
+          "title_cn": "TCP/IP头部缓冲",
+          "page": 161,
+          "description": "专用TCP/IP头部缓冲区用于卸载操作。"
+        },
+        {
+          "id": "4.3",
+          "title": "Slave/Debug Mode Memory Access",
+          "title_cn": "从设备/调试模式内存访问",
+          "page": 161,
+          "description": "支持在从设备模式和调试模式下访问内部内存。"
+        }
+      ]
+    },
+    {
+      "id": "ch5",
+      "number": 5,
+      "title": "Using PHY Interfaces",
+      "title_cn": "PHY接口使用",
+      "page_start": 167,
+      "page_end": 212,
+      "description": "各种PHY接口的配置和使用方法",
+      "sections": [
+        {
+          "id": "5.1",
+          "title": "Station Management Agent",
+          "title_cn": "站点管理代理",
+          "page": 168,
+          "description": "MDIO接口用于PHY寄存器管理，支持Clause 22和Clause 45。"
+        },
+        {
+          "id": "5.2",
+          "title": "Physical Coding Sub-Layer (PCS)",
+          "title_cn": "物理编码子层",
+          "page": 173,
+          "description": "PCS层处理8B/10B编码、自协商等功能。"
+        },
+        {
+          "id": "5.3",
+          "title": "RGMII",
+          "title_cn": "精简千兆MII",
+          "page": 177,
+          "description": "精简千兆媒体独立接口，支持10/100/1000Mbps。"
+        },
+        {
+          "id": "5.4",
+          "title": "RMII",
+          "title_cn": "精简MII",
+          "page": 183,
+          "description": "精简媒体独立接口，引脚数更少。"
+        },
+        {
+          "id": "5.5",
+          "title": "SMII",
+          "title_cn": "串行MII",
+          "page": 187,
+          "description": "串行媒体独立接口，使用单根数据线。"
+        },
+        {
+          "id": "5.6",
+          "title": "Reverse MII",
+          "title_cn": "反向MII",
+          "page": 192,
+          "description": "反向媒体独立接口。"
+        },
+        {
+          "id": "5.7",
+          "title": "SGMII",
+          "title_cn": "串行千兆MII",
+          "page": 204,
+          "description": "串行千兆媒体独立接口，使用差分信号对。"
+        },
+        {
+          "id": "5.8",
+          "title": "RTBI",
+          "title_cn": "精简十位接口",
+          "page": 209,
+          "description": "精简十位接口。"
+        },
+        {
+          "id": "5.9",
+          "title": "Multiple PHY Interfaces",
+          "title_cn": "多PHY接口",
+          "page": 211,
+          "description": "同时支持多个PHY接口的配置。"
+        }
+      ]
+    },
+    {
+      "id": "ch6",
+      "number": 6,
+      "title": "Packet Filtering",
+      "title_cn": "数据包过滤",
+      "page_start": 213,
+      "page_end": 242,
+      "description": "接收数据包过滤功能，包括地址过滤、VLAN过滤、L3/L4过滤等",
+      "sections": [
+        {
+          "id": "6.1",
+          "title": "Packet Filtering Sequence",
+          "title_cn": "包过滤序列",
+          "page": 214,
+          "description": "数据包过滤的处理流程和优先级顺序。"
+        },
+        {
+          "id": "6.2",
+          "title": "Address Filtering",
+          "title_cn": "地址过滤",
+          "page": 216,
+          "description": "基于源MAC地址或目的MAC地址的过滤，支持完美匹配和哈希过滤。"
+        },
+        {
+          "id": "6.3",
+          "title": "VLAN Filtering",
+          "title_cn": "VLAN过滤",
+          "page": 220,
+          "description": "基于VLAN标签的过滤，支持12位VLAN ID匹配。"
+        },
+        {
+          "id": "6.4",
+          "title": "L3 and L4 Filtering",
+          "title_cn": "三层和四层过滤",
+          "page": 228,
+          "description": "基于IP地址和TCP/UDP端口号的过滤。"
+        },
+        {
+          "id": "6.5",
+          "title": "Flexible Receive Parser",
+          "title_cn": "灵活接收解析器",
+          "page": 231,
+          "description": "可编程的数据包解析引擎，支持自定义过滤规则。"
+        }
+      ]
+    },
+    {
+      "id": "ch7",
+      "number": 7,
+      "title": "IEEE 1588 Timestamp Support",
+      "title_cn": "IEEE 1588时间戳支持",
+      "page_start": 243,
+      "page_end": 280,
+      "description": "精确时间协议(PTP)支持，用于时间同步",
+      "sections": [
+        {
+          "id": "7.1",
+          "title": "IEEE 1588 Timestamp Support",
+          "title_cn": "1588时间戳支持",
+          "page": 244,
+          "description": "支持IEEE 1588-2008标准，提供硬件时间戳功能。"
+        },
+        {
+          "id": "7.2",
+          "title": "System Time Source",
+          "title_cn": "系统时间源",
+          "page": 257,
+          "description": "内部或外部时间源配置，支持纳秒级精度。"
+        },
+        {
+          "id": "7.3",
+          "title": "PTP Timestamp Offload",
+          "title_cn": "PTP时间戳卸载",
+          "page": 270,
+          "description": "硬件自动处理PTP报文时间戳。"
+        },
+        {
+          "id": "7.4",
+          "title": "One-Step Timestamp",
+          "title_cn": "单步时间戳",
+          "page": 275,
+          "description": "一步法时间戳模式，在发送时直接插入时间戳。"
+        },
+        {
+          "id": "7.5",
+          "title": "Media Clock Recovery",
+          "title_cn": "媒体时钟恢复",
+          "page": 265,
+          "description": "从PTP恢复媒体时钟用于音视频应用。"
+        }
+      ]
+    },
+    {
+      "id": "ch8",
+      "number": 8,
+      "title": "Multiple Channels and Queues",
+      "title_cn": "多通道和队列",
+      "page_start": 281,
+      "page_end": 338,
+      "description": "多通道DMA和队列管理，支持QoS",
+      "sections": [
+        {
+          "id": "8.1",
+          "title": "Block Diagram",
+          "title_cn": "模块框图",
+          "page": 282,
+          "description": "多通道队列架构框图。"
+        },
+        {
+          "id": "8.2",
+          "title": "Transmit Path Queues",
+          "title_cn": "发送路径队列",
+          "page": 283,
+          "description": "发送方向的多队列支持和调度算法（SP/WFQ/ CBS等）。"
+        },
+        {
+          "id": "8.3",
+          "title": "Receive Path Queues",
+          "title_cn": "接收路径队列",
+          "page": 283,
+          "description": "接收方向的多队列支持和路由机制。"
+        },
+        {
+          "id": "8.4",
+          "title": "Enhancements to Scheduled Traffic (EST)",
+          "title_cn": "增强调度流量",
+          "page": 307,
+          "description": "IEEE 802.1Qbv时间感知调度器。"
+        },
+        {
+          "id": "8.5",
+          "title": "Frame Preemption",
+          "title_cn": "帧抢占",
+          "page": 319,
+          "description": "IEEE 802.1Qbu帧抢占机制，允许Express帧中断Normal帧传输。"
+        }
+      ]
+    },
+    {
+      "id": "ch9",
+      "number": 9,
+      "title": "TCP/IP Offloading",
+      "title_cn": "TCP/IP卸载",
+      "page_start": 339,
+      "page_end": 372,
+      "description": "TCP/IP协议卸载功能，减轻CPU负担",
+      "sections": [
+        {
+          "id": "9.1",
+          "title": "Transmit Checksum Offload",
+          "title_cn": "发送校验和卸载",
+          "page": 340,
+          "description": "硬件自动计算IP/TCP/UDP校验和。"
+        },
+        {
+          "id": "9.2",
+          "title": "Receive Checksum Offload",
+          "title_cn": "接收校验和卸载",
+          "page": 344,
+          "description": "硬件验证接收包的IP/TCP/UDP校验和。"
+        },
+        {
+          "id": "9.3",
+          "title": "Header-Payload Split",
+          "title_cn": "头部负载分离",
+          "page": 347,
+          "description": "将数据包头部和负载分离到不同缓冲区。"
+        },
+        {
+          "id": "9.4",
+          "title": "TCP Segmentation Offload (TSO)",
+          "title_cn": "TCP分段卸载",
+          "page": 350,
+          "description": "硬件自动将大数据包分段为MTU大小的帧。"
+        },
+        {
+          "id": "9.5",
+          "title": "UDP Fragment Offload (UFO)",
+          "title_cn": "UDP分片卸载",
+          "page": 358,
+          "description": "硬件自动处理UDP大数据包IP分片。"
+        },
+        {
+          "id": "9.6",
+          "title": "ARP Offload",
+          "title_cn": "ARP卸载",
+          "page": 363,
+          "description": "硬件自动响应ARP请求。"
+        }
+      ]
+    },
+    {
+      "id": "ch10",
+      "number": 10,
+      "title": "Power Management",
+      "title_cn": "电源管理",
+      "page_start": 373,
+      "page_end": 418,
+      "description": "电源管理和节能以太网(EEE)功能",
+      "sections": [
+        {
+          "id": "10.1",
+          "title": "Energy Efficient Ethernet",
+          "title_cn": "节能以太网",
+          "page": 374,
+          "description": "IEEE 802.3az节能以太网，在低流量时降低功耗。"
+        },
+        {
+          "id": "10.2",
+          "title": "Power Management via Magic Packet",
+          "title_cn": "魔法包唤醒",
+          "page": 380,
+          "description": "通过魔法包实现远程唤醒。"
+        },
+        {
+          "id": "10.3",
+          "title": "Power Management via Wake-on-LAN",
+          "title_cn": "Wake-on-LAN",
+          "page": 384,
+          "description": "通过网络唤醒功能。"
+        },
+        {
+          "id": "10.4",
+          "title": "AXI Low Power Interface",
+          "title_cn": "AXI低功耗接口",
+          "page": 388,
+          "description": "AXI低功耗接口信号和时序。"
+        },
+        {
+          "id": "10.5",
+          "title": "Application Clock Gating",
+          "title_cn": "应用时钟门控",
+          "page": 392,
+          "description": "应用接口时钟门控控制。"
+        }
+      ]
+    },
+    {
+      "id": "ch11",
+      "number": 11,
+      "title": "Descriptors",
+      "title_cn": "描述符",
+      "page_start": 419,
+      "page_end": 478,
+      "description": "DMA描述符格式和用法",
+      "sections": [
+        {
+          "id": "11.1",
+          "title": "Transmit Normal Descriptor",
+          "title_cn": "发送普通描述符",
+          "page": 420,
+          "description": "发送描述符的读取和回写格式。"
+        },
+        {
+          "id": "11.2",
+          "title": "Transmit Context Descriptor",
+          "title_cn": "发送上下文描述符",
+          "page": 430,
+          "description": "发送上下文描述符用于传递额外控制信息。"
+        },
+        {
+          "id": "11.3",
+          "title": "Receive Descriptor",
+          "title_cn": "接收描述符",
+          "page": 440,
+          "description": "接收描述符格式和状态位。"
+        },
+        {
+          "id": "11.4",
+          "title": "Descriptor Handling",
+          "title_cn": "描述符处理",
+          "page": 450,
+          "description": "描述符链管理和处理流程。"
+        }
+      ]
+    },
+    {
+      "id": "ch12",
+      "number": 12,
+      "title": "Registers",
+      "title_cn": "寄存器",
+      "page_start": 479,
+      "page_end": 1018,
+      "description": "所有寄存器的详细说明",
+      "sections": [
+        {
+          "id": "12.1",
+          "title": "MAC Registers",
+          "title_cn": "MAC寄存器",
+          "page": 480,
+          "description": "MAC配置、控制、状态寄存器。"
+        },
+        {
+          "id": "12.2",
+          "title": "MTL Registers",
+          "title_cn": "MTL寄存器",
+          "page": 600,
+          "description": "MAC事务层寄存器。"
+        },
+        {
+          "id": "12.3",
+          "title": "DMA Registers",
+          "title_cn": "DMA寄存器",
+          "page": 700,
+          "description": "DMA控制和状态寄存器。"
+        },
+        {
+          "id": "12.4",
+          "title": "CSR Registers",
+          "title_cn": "CSR寄存器",
+          "page": 900,
+          "description": "控制和状态寄存器空间。"
+        }
+      ]
+    },
+    {
+      "id": "ch13",
+      "number": 13,
+      "title": "Signal Descriptions",
+      "title_cn": "信号描述",
+      "page_start": 1019,
+      "page_end": 1100,
+      "description": "所有接口信号的详细描述"
+    },
+    {
+      "id": "ch14",
+      "number": 14,
+      "title": "Clocks and Resets",
+      "title_cn": "时钟和复位",
+      "page_start": 1101,
+      "page_end": 1132,
+      "description": "时钟域、复位信号和频率要求"
+    },
+    {
+      "id": "ch15",
+      "number": 15,
+      "title": "Parameter Descriptions",
+      "title_cn": "参数描述",
+      "page_start": 1133,
+      "page_end": 1172,
+      "description": "可配置参数及其功能描述"
+    },
+    {
+      "id": "ch16",
+      "number": 16,
+      "title": "Internal Parameters",
+      "title_cn": "内部参数",
+      "page_start": 1173,
+      "page_end": 1200,
+      "description": "内部使用的参数和常量"
+    },
+    {
+      "id": "ch17",
+      "number": 17,
+      "title": "SPRAM Interface",
+      "title_cn": "SPRAM接口",
+      "page_start": 1201,
+      "page_end": 1218,
+      "description": "单端口RAM接口时序和配置"
+    },
+    {
+      "id": "ch18",
+      "number": 18,
+      "title": "Debug and Test",
+      "title_cn": "调试和测试",
+      "page_start": 1219,
+      "page_end": 1248,
+      "description": "调试接口、测试模式和诊断功能"
+    },
+    {
+      "id": "ch19",
+      "number": 19,
+      "title": "Safety Features",
+      "title_cn": "安全特性",
+      "page_start": 1249,
+      "page_end": 1300,
+      "description": "ECC保护、奇偶校验、FSM安全等汽车级安全功能"
+    },
+    {
+      "id": "ch20",
+      "number": 20,
+      "title": "Programming Guidelines",
+      "title_cn": "编程指南",
+      "page_start": 1301,
+      "page_end": 1386,
+      "description": "软件编程指南和初始化序列",
+      "sections": [
+        {
+          "id": "20.1",
+          "title": "Initialization Sequence",
+          "title_cn": "初始化序列",
+          "page": 1302,
+          "description": "控制器初始化步骤和顺序。"
+        },
+        {
+          "id": "20.2",
+          "title": "Transmit Programming",
+          "title_cn": "发送编程",
+          "page": 1310,
+          "description": "发送路径配置和描述符设置。"
+        },
+        {
+          "id": "20.3",
+          "title": "Receive Programming",
+          "title_cn": "接收编程",
+          "page": 1320,
+          "description": "接收路径配置和描述符设置。"
+        },
+        {
+          "id": "20.4",
+          "title": "Descriptor Programming",
+          "title_cn": "描述符编程",
+          "page": 1330,
+          "description": "描述符链设置和管理。"
+        },
+        {
+          "id": "20.5",
+          "title": "TSO Programming",
+          "title_cn": "TSO编程",
+          "page": 1340,
+          "description": "TCP分段卸载编程指南。"
+        },
+        {
+          "id": "20.6",
+          "title": "1588 Timestamp Programming",
+          "title_cn": "1588时间戳编程",
+          "page": 1350,
+          "description": "IEEE 1588时间戳配置步骤。"
+        },
+        {
+          "id": "20.7",
+          "title": "EST Programming",
+          "title_cn": "EST编程",
+          "page": 1380,
+          "description": "增强调度流量编程指南。"
+        }
+      ]
+    },
+    {
+      "id": "appa",
+      "title": "Area and Power",
+      "title_cn": "面积和功耗",
+      "page_start": 1387,
+      "page_end": 1396,
+      "description": "不同配置下的面积和功耗数据"
+    },
+    {
+      "id": "appb",
+      "title": "Endian Support",
+      "title_cn": "端序支持",
+      "page_start": 1397,
+      "page_end": 1412,
+      "description": "大小端模式支持详情"
+    },
+    {
+      "id": "appd",
+      "title": "Automotive Safety",
+      "title_cn": "汽车安全",
+      "page_start": 1415,
+      "page_end": 1418,
+      "description": "ISO 26262汽车功能安全支持"
+    }
+  ],
+  "qa_pairs": [
+    {
+      "question": "DWC_ether_qos支持哪些PHY接口？",
+      "answer": "DWC_ether_qos支持多种PHY接口：MII（媒体独立接口）、GMII（千兆MII）、RGMII（精简千兆MII）、RMII（精简MII）、SMII（串行MII）、SGMII（串行千兆MII）、REV-MII（反向MII）、RTBI（精简十位接口）。详见第5章。",
+      "related_chapters": [
+        "ch5"
+      ],
+      "keywords": [
+        "PHY",
+        "接口",
+        "MII",
+        "GMII",
+        "RGMII"
+      ]
+    },
+    {
+      "question": "DWC_ether_qos支持哪些以太网速率？",
+      "answer": "DWC_ether_qos支持10Mbps、100Mbps和1000Mbps（千兆）以太网速率，部分配置还支持2.5Gbps。",
+      "related_chapters": [
+        "ch1",
+        "ch5"
+      ],
+      "keywords": [
+        "速率",
+        "10M",
+        "100M",
+        "1000M",
+        "千兆"
+      ]
+    },
+    {
+      "question": "什么是TSO（TCP Segmentation Offload）？",
+      "answer": "TCP分段卸载(TSO)是一种硬件加速功能，允许网络控制器将大的TCP数据包（如64KB）自动分段为适合MTU（通常1500字节）的小帧，从而减轻CPU负担。详见第9.4节。",
+      "related_chapters": [
+        "ch9"
+      ],
+      "keywords": [
+        "TSO",
+        "TCP",
+        "分段",
+        "卸载"
+      ]
+    },
+    {
+      "question": "DWC_ether_qos如何支持IEEE 1588精确时间协议？",
+      "answer": "DWC_ether_qos提供完整的IEEE 1588-2008支持：1) 硬件时间戳（64位纳秒级）；2) 支持一步法和两步法时间戳；3) PTP报文卸载；4) 灵活PPS输出；5) 媒体时钟恢复；6) 辅助快照功能。详见第7章。",
+      "related_chapters": [
+        "ch7"
+      ],
+      "keywords": [
+        "1588",
+        "PTP",
+        "时间戳",
+        "精确时间"
+      ]
+    },
+    {
+      "question": "描述符（Descriptor）有哪些类型？",
+      "answer": "DWC_ether_qos有三种主要描述符类型：1) 发送普通描述符(Transmit Normal Descriptor) - 用于常规数据包发送；2) 发送上下文描述符(Transmit Context Descriptor) - 提供额外控制信息如VLAN、时间戳等；3) 接收描述符(Receive Descriptor) - 用于接收数据包和回写状态。详见第11章。",
+      "related_chapters": [
+        "ch11"
+      ],
+      "keywords": [
+        "描述符",
+        "Descriptor",
+        "发送",
+        "接收"
+      ]
+    },
+    {
+      "question": "什么是增强调度流量(EST)？",
+      "answer": "增强调度流量(EST)是IEEE 802.1Qbv标准的功能，允许基于时间门控的传输调度。它创建周期性的时间槽，在每个槽中决定哪些队列可以传输，从而保证时间敏感流量的确定性延迟。详见第8.14节。",
+      "related_chapters": [
+        "ch8"
+      ],
+      "keywords": [
+        "EST",
+        "时间感知调度",
+        "TSN",
+        "Qbv"
+      ]
+    },
+    {
+      "question": "帧抢占(Frame Preemption)是什么？",
+      "answer": "帧抢占是IEEE 802.1Qbu/802.3br标准的功能，允许Express（快速）帧中断Normal（普通）帧的传输。被抢占的帧会在后续继续传输，从而降低时间敏感流量的延迟。详见第8.15节。",
+      "related_chapters": [
+        "ch8"
+      ],
+      "keywords": [
+        "帧抢占",
+        "Preemption",
+        "Express",
+        "Qbu"
+      ]
+    },
+    {
+      "question": "DWC_ether_qos有哪些节能功能？",
+      "answer": "DWC_ether_qos提供多种节能功能：1) IEEE 802.3az节能以太网(EEE)；2) 魔法包远程唤醒；3) Wake-on-LAN；4) AXI低功耗接口；5) 时钟门控。详见第10章。",
+      "related_chapters": [
+        "ch10"
+      ],
+      "keywords": [
+        "节能",
+        "EEE",
+        "唤醒",
+        "低功耗"
+      ]
+    },
+    {
+      "question": "如何配置数据包过滤？",
+      "answer": "DWC_ether_qos支持多层数据包过滤：1) 地址过滤（完美匹配和哈希）；2) VLAN过滤；3) 三层/四层过滤（IP地址和端口）；4) 灵活接收解析器。过滤配置通过MAC_Packet_Filter等寄存器完成。详见第6章。",
+      "related_chapters": [
+        "ch6"
+      ],
+      "keywords": [
+        "过滤",
+        "Filter",
+        "地址过滤",
+        "VLAN过滤"
+      ]
+    },
+    {
+      "question": "DMA控制器支持多少个通道？",
+      "answer": "DWC_ether_qos的DMA控制器支持最多8个发送通道和8个接收通道，每个通道有独立的描述符队列。具体数量可通过配置参数设置。详见第2.3节和第8章。",
+      "related_chapters": [
+        "ch2",
+        "ch8"
+      ],
+      "keywords": [
+        "DMA",
+        "通道",
+        "队列"
+      ]
+    },
+    {
+      "question": "什么是Flexible Receive Parser？",
+      "answer": "灵活接收解析器(Flexible Receive Parser)是可编程的数据包解析引擎，允许用户定义自定义的匹配规则来过滤和路由数据包到不同的接收队列。详见第6.7节。",
+      "related_chapters": [
+        "ch6"
+      ],
+      "keywords": [
+        "解析器",
+        "Parser",
+        "灵活",
+        "自定义"
+      ]
+    },
+    {
+      "question": "DWC_ether_qos的安全特性有哪些？",
+      "answer": "DWC_ether_qos提供汽车级安全特性：1) ECC保护内部存储器；2) 数据路径奇偶校验；3) FSM状态和超时监控；4) 符合ISO 26262标准。详见第19章和附录D。",
+      "related_chapters": [
+        "ch19"
+      ],
+      "keywords": [
+        "安全",
+        "ECC",
+        "奇偶校验",
+        "汽车安全"
+      ]
+    },
+    {
+      "question": "如何初始化DWC_ether_qos控制器？",
+      "answer": "初始化序列：1) 配置时钟和复位；2) 初始化DMA（描述符列表地址）；3) 配置MAC（速率、双工、模式）；4) 配置MTL（队列模式）；5) 启动DMA收发；6) 配置中断。详见第20.1节。",
+      "related_chapters": [
+        "ch20"
+      ],
+      "keywords": [
+        "初始化",
+        "编程",
+        "配置序列"
+      ]
+    },
+    {
+      "question": "DWC_ether_qos的总线接口有哪些类型？",
+      "answer": "DWC_ether_qos支持多种总线接口：应用主接口支持AHB、AXI3、AXI4；CSR从接口支持APB、AXI4-Lite。详见第2.1节和第2.2节。",
+      "related_chapters": [
+        "ch2"
+      ],
+      "keywords": [
+        "总线",
+        "AHB",
+        "AXI",
+        "APB",
+        "接口"
+      ]
+    },
+    {
+      "question": "VLAN处理支持哪些功能？",
+      "answer": "DWC_ether_qos的VLAN处理支持：1) 单/双VLAN标签处理；2) VLAN插入、替换、删除；3) 基于队列的VLAN标记；4) 扩展VLAN过滤和路由。详见第3章和第6.3节。",
+      "related_chapters": [
+        "ch3",
+        "ch6"
+      ],
+      "keywords": [
+        "VLAN",
+        "标签",
+        "双VLAN"
+      ]
+    }
+  ]
+}
