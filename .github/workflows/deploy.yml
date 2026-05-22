@@ -26,11 +26,10 @@ jobs:
         with:
           node-version: 22
 
-      - name: Downgrade npm
-        run: npm install -g npm@10.5.0
-
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm config set registry https://registry.npmjs.org
+          npm ci
 
       - name: Build
         run: npm run build
