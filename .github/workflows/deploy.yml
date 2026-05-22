@@ -28,6 +28,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          npm install -g npm@10.5.0
+          sed -i 's|http://mirrors.tencentyun.com/npm/|https://registry.npmjs.org/|g' package-lock.json
           npm config set registry https://registry.npmjs.org
           npm ci
 
