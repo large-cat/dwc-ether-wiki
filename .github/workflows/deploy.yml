@@ -26,12 +26,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Downgrade npm
+        run: npm install -g npm@10.5.0
+
       - name: Install dependencies
-        run: |
-          npm config set fetch-retries 5
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
-          npm ci --maxsockets 1
+        run: npm ci
 
       - name: Build
         run: npm run build
