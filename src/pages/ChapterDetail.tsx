@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router'
-import { ArrowLeft, BookOpen, FileText, Clock, FileSearch, AlertTriangle, ChevronRight } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, FileText, Clock, ChevronRight } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import growingTree from '@wiki/growing_knowledge_tree.json'
@@ -88,88 +88,99 @@ export default function ChapterDetail() {
   const chLeaves = leaves.filter((l: any) => l.chapter_id === chapter.id)
   const qaLog = ((growingTree as any).qa_log?.entries || []).filter((q: any) => q.chapter_ids?.includes(chapter.id))
 
+  const idx = growingTree.chapters.findIndex((c: any) => c.id === chapter.id)
+  const prev = idx > 0 ? growingTree.chapters[idx - 1] : null
+  const next = idx < growingTree.chapters.length - 1 ? growingTree.chapters[idx + 1] : null
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-slate-500" />
             </Link>
-            <div className="p-2 bg-blue-600 rounded-lg"><BookOpen className="w-5 h-5 text-white" /></div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white">{chapter.title_cn}</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{chapter.title}</p>
+              <h1 className="text-base font-semibold text-slate-900 dark:text-white">{chapter.title_cn}</h1>
+              <p className="text-xs text-slate-400">{chapter.title}</p>
             </div>
           </div>
-          <Link to="/qa" className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">去提问</Link>
+          <Link to="/qa" className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">提问</Link>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Chapter Info */}
-        <div className="mb-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            {chapter.number && <Badge className="bg-blue-600 text-white">第{chapter.number}章</Badge>}
-            <Badge variant="outline">p.{chapter.page_start}–{chapter.page_end}</Badge>
-            <span className="text-xs text-slate-400">{statusLabel[chapter.status as keyof typeof statusLabel] || chapter.status}</span>
-          </div>
-          <p className="text-slate-700 dark:text-slate-300">{chapter.description}</p>
-
-          {chapter.status !== 'seeded' && (
-            <p className="text-xs text-slate-400 mt-2">
-              已读取 {chapter.reads_count || 0} 次
-              {chapter.last_read && ` · 上次更新 ${new Date(chapter.last_read).toLocaleDateString('zh-CN')}`}
-            </p>
-          )}
+      {/* Top Chapter Nav */}
+      <div className="border-b border-slate-100 dark:border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between text-sm">
+          {prev ? (
+            <Link to={`/chapter/${prev.id}`} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 transition-colors">
+              <ChevronRight className="w-3.5 h-3.5 rotate-180" />
+              <span className="hidden sm:inline">第{prev.number}章 · {prev.title_cn}</span>
+              <span className="sm:hidden">上一章</span>
+            </Link>
+          ) : <span />}
+          <Link to="/" className="text-slate-400 hover:text-slate-600 transition-colors">目录</Link>
+          {next ? (
+            <Link to={`/chapter/${next.id}`} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 transition-colors">
+              <span className="hidden sm:inline">{next.title_cn} · 第{next.number}章</span>
+              <span className="sm:hidden">下一章</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          ) : <span />}
         </div>
+      </div>
 
-        {/* Flowchart */}
-        {(chapter.id === 'ch1' || chapter.status === 'mature') && (
-          <div className="mb-8">
-            <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileSearch className="w-4 h-4 text-purple-600" />
-                  系统架构
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-12 gap-8 py-8">
+          {/* Main Content — takes 9 of 12 columns (~75%) */}
+          <main className="lg:col-span-9">
+            {/* Chapter Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3 text-sm">
+                {chapter.number && <Badge className="bg-blue-600 text-white text-xs">第{chapter.number}章</Badge>}
+                <span className="text-slate-400 text-xs">p.{chapter.page_start}–{chapter.page_end}</span>
+                <span className="text-slate-300">·</span>
+                <span className="text-slate-400 text-xs">{statusLabel[chapter.status as keyof typeof statusLabel] || chapter.status}</span>
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{chapter.title_cn}</h1>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{chapter.description}</p>
+            </div>
+
+            {/* Flowchart */}
+            {(chapter.id === 'ch1' || chapter.status === 'mature') && (
+              <div className="mb-10">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">系统架构</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                   DWC_ether_qos 在 SoC 中的位置和数据流向。数据通过 AXI/AHB 总线在 Host Memory 和 MAC 之间传输，
                   中间经过 DMA、MTL 队列层和 MAC 核心处理，最终通过 PHY 接口发送到外部网络。
                 </p>
                 <FlowChart chart={ARCH_FLOWCHART} />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        <div className="grid lg:grid-cols-5 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* ── Chapter Content (leaves as document) ── */}
-            {chLeaves.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
-                  章节内容
-                </h2>
-                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4">
-                  {chLeaves.map((leaf: any) => (
-                    <LeafContent key={leaf.id} leaf={leaf} />
-                  ))}
-                </div>
-              </section>
+              </div>
             )}
 
-            {/* ── PDF Source Content ── */}
+            {/* Chapter Content — leaves rendered as document sections */}
+            {chLeaves.length > 0 && (
+              <div className="mb-10">
+                {chLeaves.map((leaf: any, idx: number) => (
+                  <section key={leaf.id} id={leaf.id} className="mb-8">
+                    {idx === 0 && (
+                      <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
+                        章节内容
+                      </h2>
+                    )}
+                    <LeafContent leaf={leaf} />
+                  </section>
+                ))}
+              </div>
+            )}
+
+            {/* PDF Source */}
             {chCacheKeys.length > 0 ? (
-              <section className="mb-8">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-slate-400" />
+              <div className="mb-10">
+                <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wide">
+                  <Clock className="w-4 h-4" />
                   原文参考
-                  <span className="text-xs font-normal text-slate-400">({chCacheKeys.length} 个缓存段)</span>
                 </h2>
                 <div className="space-y-3">
                   {chCacheKeys.map((key) => (
@@ -178,115 +189,105 @@ export default function ChapterDetail() {
                       cacheKey={key}
                       content={cache[key]}
                       chapterPageStart={chapter.page_start}
-                      defaultOpen={chCacheKeys.length === 1}
+                      defaultOpen={false}
                     />
                   ))}
                 </div>
-              </section>
-            ) : (
-              <div className="mb-8 p-6 bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center">
-                <AlertTriangle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">此章节尚未提取内容</p>
-                <p className="text-xs text-slate-400 mt-1">在 Claude Code 中提问此章节相关话题，将自动读取并整理</p>
+              </div>
+            ) : chapter.status !== 'seeded' && (
+              <div className="mb-10 p-4 bg-slate-50 dark:bg-slate-800/50 rounded border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                <p className="text-sm text-slate-500">此章节已有 PDF 缓存，但尚未整理成知识点。</p>
               </div>
             )}
-          </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quick Summary */}
-            {chapter.id === 'ch1' && (
-              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">速查</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">数据速率</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">10 / 100 / 1000 Mbps</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">PHY 接口</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">GMII, RGMII, SGMII, RMII, SMII, TBI, RTBI, RevMII</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">队列数量</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">最多 8 个 Tx 队列 + 8 个 Rx 队列</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">总线接口</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">AHB Master/Slave, AXI3/AXI4 Master, AXI4-Lite/AXI3 Slave, APB Slave</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">关键特性</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">TSO/UFO, 1588 PTP, TSN (EST/Frame Preemption), DCB (PFC/ETS), AVB (CBS)</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Related Q&A */}
-            {qaLog.length > 0 && (
-              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">相关问答</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {qaLog.map((q: any, i: number) => (
-                    <div key={i} className="p-2 bg-slate-50 dark:bg-slate-800 rounded text-sm">
-                      <p className="text-slate-700 dark:text-slate-300">{q.question}</p>
-                      <p className="text-xs text-slate-400 mt-1">{new Date(q.timestamp).toLocaleDateString('zh-CN')}</p>
+            {/* Bottom Chapter Nav */}
+            <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                {prev ? (
+                  <Link to={`/chapter/${prev.id}`} className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition-colors">
+                    <ChevronRight className="w-4 h-4 rotate-180" />
+                    <div>
+                      <div className="text-xs text-slate-400">上一章</div>
+                      <div>第{prev.number}章 · {prev.title_cn}</div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                  </Link>
+                ) : <div />}
+                {next ? (
+                  <Link to={`/chapter/${next.id}`} className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition-colors text-right">
+                    <div>
+                      <div className="text-xs text-slate-400">下一章</div>
+                      <div>第{next.number}章 · {next.title_cn}</div>
+                    </div>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                ) : <div />}
+              </div>
+            </div>
+          </main>
 
-            {/* Navigation */}
-            <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">导航</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                <Link to="/" className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-sm text-slate-700 dark:text-slate-300">
-                  <ArrowLeft className="w-4 h-4" /> 返回知识库
-                </Link>
-                <Link to="/qa" className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-sm text-slate-700 dark:text-slate-300">
-                  <BookOpen className="w-4 h-4" /> 智能问答
-                </Link>
-              </CardContent>
-            </Card>
+          {/* Sidebar — takes 3 of 12 columns (~25%), sticky */}
+          <aside className="lg:col-span-3 hidden lg:block">
+            <div className="sticky top-24 space-y-6">
+              {/* TOC from leaf topics */}
+              {chLeaves.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">本章内容</p>
+                  <nav className="space-y-1 border-l border-slate-200 dark:border-slate-700">
+                    {chLeaves.map((leaf: any) => (
+                      <a
+                        key={leaf.id}
+                        href={`#${leaf.id}`}
+                        className="block pl-3 py-1 text-sm text-slate-500 hover:text-blue-600 hover:border-l-2 hover:border-blue-600 -ml-px transition-colors"
+                      >
+                        {leaf.topic}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+              )}
 
-            {/* Adjacent chapters */}
-            {(() => {
-              const idx = growingTree.chapters.findIndex((c: any) => c.id === chapter.id)
-              const prev = idx > 0 ? growingTree.chapters[idx - 1] : null
-              const next = idx < growingTree.chapters.length - 1 ? growingTree.chapters[idx + 1] : null
-              return (prev || next) ? (
-                <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">相邻章节</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-1">
-                    {prev && (
-                      <Link to={`/chapter/${prev.id}`} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-sm text-slate-600 dark:text-slate-400">
-                        <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                        <span>第{prev.number}章 · {prev.title_cn}</span>
-                      </Link>
+              {/* Quick Summary — compact, no Card */}
+              {chapter.id === 'ch1' && (
+                <div className="text-sm">
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">速查</p>
+                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
+                    <div><span className="text-slate-500">速率:</span> 10/100/1000 Mbps</div>
+                    <div><span className="text-slate-500">PHY:</span> GMII, RGMII, SGMII, RMII...</div>
+                    <div><span className="text-slate-500">队列:</span> 8 Tx + 8 Rx</div>
+                    <div><span className="text-slate-500">总线:</span> AHB, AXI, APB</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Related Q&A — compact */}
+              {qaLog.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">相关问答</p>
+                  <div className="space-y-1.5">
+                    {qaLog.slice(0, 3).map((q: any, i: number) => (
+                      <div key={i} className="text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                        {q.question}
+                      </div>
+                    ))}
+                    {qaLog.length > 3 && (
+                      <p className="text-xs text-slate-400">+{qaLog.length - 3} 更多</p>
                     )}
-                    {next && (
-                      <Link to={`/chapter/${next.id}`} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-sm text-slate-600 dark:text-slate-400">
-                        <ChevronRight className="w-3.5 h-3.5" />
-                        <span>第{next.number}章 · {next.title_cn}</span>
-                      </Link>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : null
-            })()}
-          </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Chapter jump — compact nav */}
+              <div>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">跳转</p>
+                <div className="space-y-1 text-sm">
+                  <Link to="/" className="block text-slate-500 hover:text-blue-600 transition-colors">← 返回目录</Link>
+                  <Link to="/qa" className="block text-slate-500 hover:text-blue-600 transition-colors">智能问答</Link>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
