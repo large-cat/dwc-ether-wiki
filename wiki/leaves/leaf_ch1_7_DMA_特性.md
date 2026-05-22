@@ -9,14 +9,18 @@ created_at: 2026-05-21T10:49:34.398566
 access_count: 0
 ---
 
-# DMA 特性
+<h level="2">DMA 特性</h>
 
-> Chapter: [[产品概述]]  
-> Source: `QA enrichment`  
-> Confidence: `high`
+<info>
+  <p>Chapter: [[产品概述]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
 
-DMA 支持 32/64/128-bit 数据传输，最多8个 Tx channel 和8个 Rx channel。每个 MTL Tx queue 对应独立的 DMA Tx channel；Rx 可单/多 channel 对应任意数量的 MTL Rx queue。Dual-buffer (ring) descriptor 架构，每个 descriptor 最多传输 32KB。支持字节对齐寻址，支持 TSO (TCP Segmentation Offload) 和 UFO (UDP Fragmentation Offload)。支持 header (L3/L4) 和 payload 分存到不同 buffer。支持时间敏感的条件包获取（基于 Slot Time 或 IEEE 1588 time）。Tx/Rx engine 仲裁：Round-robin 或 Fixed-priority。
+<p>DMA 支持 32/64/128-bit 数据传输，最多8个 Tx channel 和8个 Rx channel。每个 MTL Tx queue 对应独立的 DMA Tx channel；Rx 可单/多 channel 对应任意数量的 MTL Rx queue。Dual-buffer (ring) descriptor 架构，每个 descriptor 最多传输 32KB。支持字节对齐寻址，支持 TSO (TCP Segmentation Offload) 和 UFO (UDP Fragmentation Offload)。支持 header (L3/L4) 和 payload 分存到不同 buffer。支持时间敏感的条件包获取（基于 Slot Time 或 IEEE 1588 time）。Tx/Rx engine 仲裁：Round-robin 或 Fixed-priority。</p>
 
-## Connections
+<h level="3">Connections</h>
 
-- [[ch1]] — Parent chapter
+<ul>
+  <li>[[ch1]] — Parent chapter</li>
+</ul>

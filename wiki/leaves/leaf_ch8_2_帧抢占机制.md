@@ -9,14 +9,18 @@ created_at: 2026-05-21T11:21:16.456714
 access_count: 0
 ---
 
-# 帧抢占机制
+<h level="2">帧抢占机制</h>
 
-> Chapter: [[多通道和队列]]  
-> Source: `QA enrichment`  
-> Confidence: `high`
+<info>
+  <p>Chapter: [[多通道和队列]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
 
-帧抢占（Frame Preemption，IEEE 802.1Qbu/802.3br）允许Express（快速）流量中断Normal（普通）帧的传输。被抢占的帧在Express帧完成后继续传输（不是重新开始）。最小不可抢占片段大小：64字节。组件包括：eMAC（Express MAC）、pMAC（Preemptible MAC）、mPacket格式（用于分片帧）。优势：降低时间关键流量延迟，与非抢占设备向后兼容。
+<p>帧抢占（Frame Preemption，IEEE 802.1Qbu/802.3br）允许Express（快速）流量中断Normal（普通）帧的传输。被抢占的帧在Express帧完成后继续传输（不是重新开始）。最小不可抢占片段大小：64字节。组件包括：eMAC（Express MAC）、pMAC（Preemptible MAC）、mPacket格式（用于分片帧）。优势：降低时间关键流量延迟，与非抢占设备向后兼容。</p>
 
-## Connections
+<h level="3">Connections</h>
 
-- [[ch8]] — Parent chapter
+<ul>
+  <li>[[ch8]] — Parent chapter</li>
+</ul>

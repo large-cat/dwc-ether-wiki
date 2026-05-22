@@ -651,7 +651,7 @@ def sync_leaves_to_markdown() -> int:
         filename = f"{leaf['id']}_{safe_topic}.md"
         filepath = leaves_dir / filename
         
-        # Build Markdown with YAML frontmatter
+        # Content is already XML-formatted; just wrap with frontmatter
         md_content = f"""---
 id: {leaf["id"]}
 chapter_id: {leaf["chapter_id"]}
@@ -663,17 +663,7 @@ created_at: {leaf.get("created_at", "")}
 access_count: {leaf.get("access_count", 0)}
 ---
 
-# {leaf["topic"]}
-
-> Chapter: [[{leaf.get("chapter_title", leaf["chapter_id"])}]]  
-> Source: `{leaf.get("source", "")}`  
-> Confidence: `{leaf.get("confidence", "")}`
-
 {leaf["content"]}
-
-## Connections
-
-- [[{leaf["chapter_id"]}]] — Parent chapter
 """
         
         filepath.write_text(md_content, encoding="utf-8")
