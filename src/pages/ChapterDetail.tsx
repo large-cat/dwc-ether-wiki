@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router'
-import { ArrowLeft, FileText, Clock, ChevronRight } from 'lucide-react'
+import { ArrowLeft, FileText, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -66,6 +67,7 @@ const ARCH_FLOWCHART = `flowchart LR
 
 export default function ChapterDetail() {
   const { chapterId } = useParams<{ chapterId: string }>()
+  const [sourceOpen, setSourceOpen] = useState(false)
   const chapter = (growingTree.chapters as any[]).find((ch: any) => ch.id === (chapterId || ''))
 
   if (!chapter) {
@@ -163,7 +165,7 @@ export default function ChapterDetail() {
             {chLeaves.length > 0 && (
               <div className="mb-10">
                 {chLeaves.map((leaf: any, idx: number) => (
-                  <section key={leaf.id} id={leaf.id} className="mb-8">
+                  <section key={leaf.id} id={leaf.id} className="mb-8 scroll-mt-24">
                     {idx === 0 && (
                       <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                         章节内容
@@ -175,24 +177,31 @@ export default function ChapterDetail() {
               </div>
             )}
 
-            {/* PDF Source */}
+            {/* PDF Source — collapsible as a whole section */}
             {chCacheKeys.length > 0 ? (
               <div className="mb-10">
-                <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wide">
+                <button
+                  onClick={() => setSourceOpen(!sourceOpen)}
+                  className="w-full flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hover:text-slate-700 transition-colors mb-3"
+                >
                   <Clock className="w-4 h-4" />
                   原文参考
-                </h2>
-                <div className="space-y-3">
-                  {chCacheKeys.map((key) => (
-                    <CachedContent
-                      key={key}
-                      cacheKey={key}
-                      content={cache[key]}
-                      chapterPageStart={chapter.page_start}
-                      defaultOpen={false}
-                    />
-                  ))}
-                </div>
+                  <span className="text-xs font-normal normal-case text-slate-400">({chCacheKeys.length} 个缓存段)</span>
+                  <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${sourceOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {sourceOpen && (
+                  <div className="space-y-3">
+                    {chCacheKeys.map((key) => (
+                      <CachedContent
+                        key={key}
+                        cacheKey={key}
+                        content={cache[key]}
+                        chapterPageStart={chapter.page_start}
+                        defaultOpen={false}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ) : chapter.status !== 'seeded' && (
               <div className="mb-10 p-4 bg-slate-50 dark:bg-slate-800/50 rounded border border-dashed border-slate-200 dark:border-slate-700 text-center">
