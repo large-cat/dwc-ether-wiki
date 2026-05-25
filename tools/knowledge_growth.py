@@ -15,11 +15,13 @@ question requires knowledge not already in the tree. Cache everything.
 Usage:
     # CLI
     python tools/knowledge_growth.py stats
-    python tools/knowledge_growth.py ask "RGMII有什么特点？"
+    python tools/knowledge_growth.py search "RGMII"
+    python tools/knowledge_growth.py read ch5
 
     # In Python / Claude Code
-    from tools.knowledge_growth import answer_question, add_knowledge_leaf
-    result = answer_question("RGMII有什么特点？")
+    from tools.knowledge_growth import search_knowledge, get_or_load_content
+    results = search_knowledge("RGMII")
+    content = get_or_load_content("ch5")
 """
 
 import json
@@ -474,144 +476,6 @@ def find_leaves(query: str = None, chapter_id: str = None, max_results: int = 10
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# HIGH-LEVEL: Answer a Question
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def answer_question(question: str, read_depth: int = 5) -> dict:
-    """
-    Main entry point. Complete QA workflow:
-    1. Scan raw/ for new docs
-    2. Search knowledge tree
-    3. Check cache / read raw/ on miss
-    4. Find leaves
-    5. Return context for synthesis
-    """
-    print(f"\n{'='*60}")
-    print(f"QUESTION: {question}")
-    print(f"{'='*60}")
-    
-    # Step 0: Check for new documents
-    new_docs = scan_raw_for_new_docs()
-    if new_docs:
-        print(f"\n[SCAN] {len(new_docs)} new document(s) in raw/:")
-        for doc in new_docs:
-            print(f"  → {doc['filename']} ({doc['size_human']})")
-        print(f"  Use add_document() to index them.\n")
-    
-    tree = _load_tree()
-    cache_hits = 0
-    cache_misses = 0
-    
-    # Step 1: Search
-    search_results = search_knowledge(question)
-    if not search_results:
-        return {
-            "context": "未找到相关知识。请尝试其他关键词。",
-            "sources": [], "leaves_found": [],
-            "cache_hits": 0, "cache_misses": 0, "pdf_was_read": False,
-            "relevant_chapters": [], "new_docs": new_docs
-        }
-    
-    print(f"\n[Search] Found {len(search_results)} chapters:")
-    for r in search_results:
-        status = "CACHED" if r["has_cached_content"] else "NOT CACHED"
-        print(f"  - {r['chapter']['id']}: {r['chapter']['title_cn']} ({status})")
-    
-    # Step 2: Get content (lazy load)
-    contents = []
-    pdf_was_read = False
-    
-    for result in search_results[:2]:
-        ch = result["chapter"]
-        if result["has_cached_content"]:
-            cache_hits += 1
-            for cache_key in result["cache_keys"]:
-                cached = tree["cache"]["entries"].get(cache_key, "")
-                if cached:
-                    contents.append({
-                        "chapter_id": ch["id"],
-                        "chapter_title": ch.get("title_cn", ch["title"]),
-                        "source": f"cache:{cache_key}",
-                        "content": cached[:3000]
-                    })
-        else:
-            cache_misses += 1
-            start_page = ch["page_start"]
-            end_page = min(start_page + read_depth - 1, ch["page_end"])
-            
-            content = get_or_load_content(ch["id"], start_page, end_page)
-            pdf_was_read = True
-            
-            if not content.startswith("[ERROR]"):
-                contents.append({
-                    "chapter_id": ch["id"],
-                    "chapter_title": ch.get("title_cn", ch["title"]),
-                    "source": f"raw/pdf:p{start_page}-{end_page}",
-                    "content": content[:3000]
-                })
-    
-    # Step 3: Find leaves
-    leaves = find_leaves(query=question)
-    
-    # Step 4: Build context
-    context_parts = []
-    for leaf in leaves[:3]:
-        context_parts.append(
-            f"【知识叶子: {leaf['topic']}】({leaf['chapter_title']})\n{leaf['content'][:500]}"
-        )
-        leaf["access_count"] = leaf.get("access_count", 0) + 1
-    
-    for c in contents:
-        context_parts.append(
-            f"\n【{c['chapter_title']}】(来源: {c['source']})\n{c['content'][:1500]}"
-        )
-    
-    context = "\n\n---\n\n".join(context_parts)
-    
-    # Step 5: Record
-    record_qa(question, context, [r["chapter"]["id"] for r in search_results[:2]])
-    
-    sources = [f"第{c['chapter_id']}章 {c['chapter_title']} ({c['source']})" for c in contents]
-    
-    return {
-        "context": context,
-        "sources": sources,
-        "leaves_found": leaves[:3],
-        "cache_hits": cache_hits,
-        "cache_misses": cache_misses,
-        "pdf_was_read": pdf_was_read,
-        "relevant_chapters": [r["chapter"] for r in search_results[:3]],
-        "new_docs": new_docs
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# QA LOG
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def record_qa(question: str, answer_context: str, chapter_ids: list) -> None:
-    """Record a Q&A interaction to wiki log."""
-    tree = _load_tree()
-    
-    entry = {
-        "timestamp": datetime.now().isoformat(),
-        "question": question,
-        "chapter_ids": chapter_ids,
-        "context_preview": answer_context[:200] if answer_context else ""
-    }
-    
-    if "qa_log" not in tree:
-        tree["qa_log"] = {"entries": []}
-    if "entries" not in tree["qa_log"]:
-        tree["qa_log"]["entries"] = []
-    
-    tree["qa_log"]["entries"].append(entry)
-    tree["metadata"]["total_questions_answered"] = len(tree["qa_log"]["entries"])
-    
-    _save_tree(tree)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # WIKI SYNC — Export leaves to Markdown (llm-wiki standard)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -786,7 +650,7 @@ DWC_ether_qos is Synopsys's DesignWare Cores Ethernet Quality-of-Service control
 | PDF Reads | {m.get('total_reads_from_pdf', 0)} |
 | Knowledge Leaves | {leaves_count} |
 | Cache Entries | {cache_count} |
-| Questions Answered | {m.get('total_questions_answered', 0)} |
+| Cache Entries | {cache_count} |
 
 ### Explored Chapters
 | Chapter | Title | Status | Reads | Leaves |
@@ -795,9 +659,10 @@ DWC_ether_qos is Synopsys's DesignWare Cores Ethernet Quality-of-Service control
 
 ## How to Grow This Wiki
 
-1. Ask questions in Claude Code: `result = answer_question("...")`
-2. The engine reads from `raw/` PDF on-demand, caches to `wiki/`
-3. New insights are saved as knowledge leaves via `add_knowledge_leaf()`
+1. Search knowledge tree: `results = search_knowledge("RGMII")`
+2. Read PDF on demand: `content = get_or_load_content("ch5", 167, 171)`
+3. Agent synthesizes answer from context
+4. New insights are saved as knowledge leaves via `add_knowledge_leaf()`
 4. Run `python tools/knowledge_growth.py sync` to export to Markdown
 5. Run `python tools/knowledge_growth.py stats` to check growth
 
@@ -897,7 +762,6 @@ def get_stats() -> dict:
         "total_chapters": len(tree["chapters"]),
         "chapters_status": status_counts,
         "total_pdf_reads": m.get("total_reads_from_pdf", 0),
-        "total_questions": m.get("total_questions_answered", 0),
         "total_leaves": len(leaves),
         "cache_entries": cache_entries,
         "cache_chars": cache_chars,
@@ -921,7 +785,6 @@ def print_stats():
     print(f"  Growing:      {s['growing']}")
     print(f"  Mature:       {s['mature']}")
     print(f"PDF Reads:      {stats['total_pdf_reads']}")
-    print(f"Questions:      {stats['total_questions']}")
     print(f"Leaves:         {stats['total_leaves']}")
     print(f"Cache Entries:  {stats['cache_entries']}")
     print(f"Cache Size:     {stats['cache_chars']:,} chars")
@@ -948,7 +811,6 @@ if __name__ == "__main__":
         print("  scan                           Scan raw/ for new documents")
         print("  search <query>                 Search knowledge tree")
         print("  read <chapter_id> [pages]      Read PDF for chapter (lazy)")
-        print("  ask <question>                 Ask a question (full workflow)")
         print("  leaves [chapter_id]            List knowledge leaves")
         print("  add-leaf <ch_id> <topic> <content>  Add a knowledge leaf")
         print("  add-doc <filename> <title>     Add document from raw/")
@@ -957,7 +819,6 @@ if __name__ == "__main__":
         print('  python tools/knowledge_growth.py scan')
         print('  python tools/knowledge_growth.py search "RGMII"')
         print('  python tools/knowledge_growth.py read ch5')
-        print('  python tools/knowledge_growth.py ask "RGMII有什么特点"')
         sys.exit(0)
     
     cmd = sys.argv[1]
@@ -999,15 +860,6 @@ if __name__ == "__main__":
         content = get_or_load_content(ch_id, ch["page_start"], 
                                        min(ch["page_start"] + pages - 1, ch["page_end"]))
         print(content[:2000])
-    
-    elif cmd == "ask":
-        question = sys.argv[2] if len(sys.argv) > 2 else "RGMII有什么特点"
-        result = answer_question(question)
-        print("\n--- CONTEXT ---")
-        print(result["context"][:2000])
-        print("\n--- SOURCES ---")
-        for s in result["sources"]:
-            print(f"  - {s}")
     
     elif cmd == "leaves":
         ch_id = sys.argv[2] if len(sys.argv) > 2 else None

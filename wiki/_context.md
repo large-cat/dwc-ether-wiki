@@ -22,7 +22,7 @@ tools/   → Knowledge growth engine (Python)
 | `overview.md` | Living synthesis of all explored knowledge |
 | `log.md` | Append-only log of all ingest/query operations |
 | `growing_knowledge_tree.json` | Core knowledge tree (JSON, machine-managed) |
-| `knowledge_data.json` | Static QA pairs for quick lookups |
+| `leaves/` | Markdown exports of knowledge leaves |
 | `leaves/` | Markdown exports of knowledge leaves |
 
 ## When to Walk This Wiki

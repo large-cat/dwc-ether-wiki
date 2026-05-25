@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import growingTree from '@wiki/growing_knowledge_tree.json'
-import knowledgeData from '@wiki/knowledge_data.json'
 
 interface Message {
   id: string
@@ -83,18 +82,7 @@ function findBestAnswer(question: string): {
     }
   }
 
-  // 3. Search static qa_pairs
-  for (const qa of knowledgeData.qa_pairs) {
-    const matchScore = qa.keywords.reduce((score, keyword) => {
-      if (q.includes(keyword.toLowerCase())) return score + 1
-      return score
-    }, 0)
-    if (matchScore > 0 || q.includes(qa.question.toLowerCase())) {
-      return { answer: qa.answer, chapters: qa.related_chapters, leaves: [], pdfWasRead: false }
-    }
-  }
-
-  // 4. Search chapter titles
+  // 3. Search chapter titles
   for (const ch of growingTree.chapters) {
     if (q.includes(ch.title_cn?.toLowerCase()) || q.includes(ch.title?.toLowerCase())) {
       return {

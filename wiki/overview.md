@@ -33,11 +33,12 @@ DWC_ether_qos is Synopsys's DesignWare Cores Ethernet Quality-of-Service control
 
 ## How to Grow This Wiki
 
-1. Ask questions in Claude Code: `result = answer_question("...")`
-2. The engine reads from `raw/` PDF on-demand, caches to `wiki/`
-3. New insights are saved as knowledge leaves via `add_knowledge_leaf()`
-4. Run `python tools/knowledge_growth.py sync` to export to Markdown
-5. Run `python tools/knowledge_growth.py stats` to check growth
+1. Search knowledge tree: `results = search_knowledge("RGMII")`
+2. Read PDF on demand: `content = get_or_load_content("ch5", 167, 171)`
+3. Agent synthesizes answer from context
+4. New insights saved as knowledge leaves via `add_knowledge_leaf()`
+5. Run `python tools/knowledge_growth.py sync` to export to Markdown
+6. Run `python tools/knowledge_growth.py stats` to check growth
 
 ## Quick Reference
 

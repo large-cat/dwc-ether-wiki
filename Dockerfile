@@ -6,9 +6,9 @@ WORKDIR /app
 RUN apk add --no-cache python3 py3-pip && \
     pip3 install --break-system-packages PyPDF2
 
-# 先复制依赖文件，利用 Docker 缓存层
-COPY package.json package-lock.json ./
-RUN npm ci
+# 先复制 site/ 依赖文件，利用 Docker 缓存层
+COPY site/package.json site/package-lock.json ./site/
+RUN cd site && npm ci
 
 # 复制项目代码
 COPY . .
@@ -17,4 +17,5 @@ COPY . .
 EXPOSE 3000
 
 # 允许外部访问（Vite 默认只绑定 localhost）
+WORKDIR /app/site
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

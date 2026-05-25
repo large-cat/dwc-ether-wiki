@@ -13,9 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@wiki": path.resolve(__dirname, "./wiki"),
-      "@tools": path.resolve(__dirname, "./tools"),
-      "@raw": path.resolve(__dirname, "./raw"),
+      "@wiki": path.resolve(__dirname, "../wiki"),
+      "@tools": path.resolve(__dirname, "../tools"),
+      "@raw": path.resolve(__dirname, "../raw"),
     },
   },
 });

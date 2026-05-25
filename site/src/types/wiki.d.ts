@@ -74,39 +74,3 @@ declare module '@wiki/growing_knowledge_tree.json' {
   export default value;
 }
 
-declare module '@wiki/knowledge_data.json' {
-  const value: {
-    document: {
-      title: string;
-      title_cn: string;
-      version: string;
-      date: string;
-      company: string;
-      total_pages: number;
-      description: string;
-    };
-    chapters: Array<{
-      id: string;
-      number?: number;
-      title: string;
-      title_cn: string;
-      page_start: number;
-      page_end: number;
-      description: string;
-      sections?: Array<{
-        id: string;
-        title: string;
-        title_cn: string;
-        page: number;
-        description: string;
-      }>;
-    }>;
-    qa_pairs: Array<{
-      question: string;
-      answer: string;
-      related_chapters: string[];
-      keywords: string[];
-    }>;
-  };
-  export default value;
-}

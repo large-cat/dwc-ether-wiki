@@ -12,9 +12,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@wiki/*": ["./wiki/*"],
-      "@tools/*": ["./tools/*"],
-      "@raw/*": ["./raw/*"]
+      "@wiki/*": ["../wiki/*"],
+      "@tools/*": ["../tools/*"],
+      "@raw/*": ["../raw/*"]
     }
   }
 }
