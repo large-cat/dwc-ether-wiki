@@ -17,6 +17,7 @@
 - [汽车安全特性](leaf_ch1_10_汽车安全特性.md) — high
 - [DWC_ether_qos 架构配置](leaf_ch1_11_DWC_ether_qos_架构配置.md) — high
 - [DWC_ether_qos 交付物](leaf_ch1_12_DWC_ether_qos_交付物.md) — high
+- [DWC_ether_qos 产品概述](leaf_ch1_13_DWC_ether_qos_产品概述.md) — high
 
 ## PHY接口使用 (ch5)
 

@@ -423,7 +423,8 @@ def add_knowledge_leaf(chapter_id: str, topic: str, content: str,
         "source": source,
         "confidence": confidence,
         "created_at": datetime.now().isoformat(),
-        "access_count": 0
+        "access_count": 0,
+        "status": "active",
     }
     
     if "leaves" not in tree:
@@ -448,14 +449,18 @@ def add_knowledge_leaf(chapter_id: str, topic: str, content: str,
     return leaf_id
 
 
-def find_leaves(query: str = None, chapter_id: str = None, max_results: int = 10) -> list:
+def find_leaves(query: str = None, chapter_id: str = None,
+                max_results: int = 10, include_archived: bool = False) -> list:
     """Find knowledge leaves by query or chapter."""
     tree = _load_tree()
     leaves = tree.get("leaves", {}).get("entries", [])
-    
+
     if chapter_id:
         leaves = [l for l in leaves if l["chapter_id"] == chapter_id]
-    
+
+    if not include_archived:
+        leaves = [l for l in leaves if l.get("status") != "archived"]
+
     if query:
         query_lower = query.lower()
         scored = []
@@ -471,8 +476,115 @@ def find_leaves(query: str = None, chapter_id: str = None, max_results: int = 10
                 scored.append((score, leaf))
         scored.sort(key=lambda x: x[0], reverse=True)
         leaves = [l for _, l in scored]
-    
+
     return leaves[:max_results]
+
+
+def merge_leaves(source_ids: List[str], new_topic: str,
+                 new_content: str, source: str = "compilation") -> str:
+    """Merge multiple leaves into one new leaf, archive sources.
+
+    Args:
+        source_ids: List of leaf IDs to merge
+        new_topic: Topic for the merged leaf
+        new_content: Content for the merged leaf
+        source: Source attribution
+
+    Returns:
+        ID of the newly created merged leaf
+    """
+    tree = _load_tree()
+    leaves = tree.get("leaves", {}).get("entries", [])
+
+    sources = [l for l in leaves if l["id"] in source_ids]
+    if len(sources) < 2:
+        raise ValueError("Need at least 2 leaves to merge")
+
+    chapter_id = sources[0]["chapter_id"]
+    chapter = next((c for c in tree["chapters"] if c["id"] == chapter_id), None)
+
+    seq = sum(1 for l in leaves if l["chapter_id"] == chapter_id) + 1
+    new_id = f"leaf_{chapter_id}_{seq}"
+
+    now = datetime.now().isoformat()
+    new_leaf = {
+        "id": new_id,
+        "chapter_id": chapter_id,
+        "chapter_title": chapter.get("title_cn", "") if chapter else "",
+        "topic": new_topic,
+        "content": new_content,
+        "source": source,
+        "confidence": "high",
+        "created_at": now,
+        "access_count": 0,
+        "status": "active",
+    }
+    leaves.append(new_leaf)
+
+    for leaf in sources:
+        leaf["status"] = "archived"
+        leaf["archived_at"] = now
+        leaf["archived_reason"] = "merged"
+        leaf["replaced_by"] = new_id
+
+    _save_tree(tree)
+    print(f"  [MERGE] {new_id}: {new_topic} (from {len(sources)} leaves)")
+    return new_id
+
+
+def split_leaf(source_id: str, parts: List[Dict[str, str]],
+               source: str = "compilation") -> List[str]:
+    """Split one leaf into multiple new leaves, archive source.
+
+    Args:
+        source_id: Leaf ID to split
+        parts: List of {topic, content} dicts for new leaves
+        source: Source attribution
+
+    Returns:
+        List of new leaf IDs
+    """
+    tree = _load_tree()
+    leaves = tree.get("leaves", {}).get("entries", [])
+
+    src = next((l for l in leaves if l["id"] == source_id), None)
+    if not src:
+        raise ValueError(f"Leaf {source_id} not found")
+    if len(parts) < 2:
+        raise ValueError("Need at least 2 parts to split into")
+
+    chapter_id = src["chapter_id"]
+    chapter = next((c for c in tree["chapters"] if c["id"] == chapter_id), None)
+
+    now = datetime.now().isoformat()
+    new_ids = []
+
+    for part in parts:
+        seq = sum(1 for l in leaves if l["chapter_id"] == chapter_id) + 1
+        new_id = f"leaf_{chapter_id}_{seq}"
+        new_leaf = {
+            "id": new_id,
+            "chapter_id": chapter_id,
+            "chapter_title": chapter.get("title_cn", "") if chapter else "",
+            "topic": part["topic"],
+            "content": part["content"],
+            "source": source,
+            "confidence": src.get("confidence", "high"),
+            "created_at": now,
+            "access_count": 0,
+            "status": "active",
+        }
+        leaves.append(new_leaf)
+        new_ids.append(new_id)
+
+    src["status"] = "archived"
+    src["archived_at"] = now
+    src["archived_reason"] = "split"
+    src["replaced_by"] = new_ids[0] if len(new_ids) == 1 else None
+
+    _save_tree(tree)
+    print(f"  [SPLIT] {source_id} → {len(new_ids)} leaves: {', '.join(new_ids)}")
+    return new_ids
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -508,8 +620,10 @@ def sync_leaves_to_markdown() -> int:
     
     leaves = tree.get("leaves", {}).get("entries", [])
     exported = 0
-    
+
     for leaf in leaves:
+        if leaf.get("status") == "archived":
+            continue
         # Generate filename
         safe_topic = re.sub(r'[^\w\u4e00-\u9fff-]', '_', leaf["topic"])[:40]
         filename = f"{leaf['id']}_{safe_topic}.md"
@@ -607,7 +721,8 @@ def _update_overview_md(tree: dict) -> None:
     for ch in tree["chapters"]:
         s[ch.get("status", "seeded")] += 1
     
-    leaves_count = len(tree.get("leaves", {}).get("entries", []))
+    all_leaves = tree.get("leaves", {}).get("entries", [])
+    leaves_count = len([l for l in all_leaves if l.get("status") != "archived"])
     cache_count = len(tree.get("cache", {}).get("entries", {}))
     
     overview_path = WIKI_DIR / "overview.md"
@@ -616,8 +731,8 @@ def _update_overview_md(tree: dict) -> None:
     explored_table = []
     for ch in tree["chapters"]:
         if ch["status"] != "seeded":
-            ch_leaves = sum(1 for l in tree.get("leaves", {}).get("entries", []) 
-                          if l["chapter_id"] == ch["id"])
+            ch_leaves = sum(1 for l in all_leaves
+                          if l["chapter_id"] == ch["id"] and l.get("status") != "archived")
             explored_table.append(
                 f"| {ch['id']} | {ch.get('title_cn', ch['title'])} | "
                 f"{ch['status']} | {ch.get('reads_count', 0)} | {ch_leaves} |"
@@ -690,9 +805,10 @@ def _update_index_md(tree: dict) -> None:
     
     # Build chapter table
     chapter_rows = []
+    all_leaves = tree.get("leaves", {}).get("entries", [])
     for ch in tree["chapters"]:
-        ch_leaves = sum(1 for l in tree.get("leaves", {}).get("entries", [])
-                       if l["chapter_id"] == ch["id"])
+        ch_leaves = sum(1 for l in all_leaves
+                       if l["chapter_id"] == ch["id"] and l.get("status") != "archived")
         ch_cache = sum(1 for k in tree.get("cache", {}).get("entries", {}).keys()
                       if k.startswith(ch["id"] + "_"))
         
