@@ -1,0 +1,156 @@
+--- Page 96 ---
+96Synopsys, Inc. Figure 2-39 Transmit Queue Read Interface Timing
+2.4.1.6.4 Transmit Packet Retransmission
+The MAC transmitter may abort the transmission of a pack et because of collision, Tx Queue underflow, loss
+of carrier, jabber timeout, no carr ier, excessive deferral, and late co llision. When packet transmission is
+aborted because of collision, the MA C requests retransmission of the packet. The sequence of events shown
+in Figure 2-40  is as follows:
+1. The MTL starts the transfer of a packet to the MAC by asserting mti_val_i and mti_sop_i.
+The subsequent data is sent when the MAC asserts the mti_rdy_o signal.
+2. When the MAC experiences a collision on the Ethernet  bus (not shown in diagram), packet transmission
+is suspended first by keep ing mti_rdy_o de-asserted.
+3. The MAC transfers the transmission status on mti_txstatus, and requests retransmission by asserting
+Bit 31 of mti_txstatus.
+4. The MTL retransmits the packet. The Tx Queue read address (trc_rd_addr) rewind s back to the start of
+packet address 0x000 for retransmission.
+Figure 2-40 Transmit Packet Retransmission Timing
+2.4.1.6.5 Transmit Queue Flush Operation
+The MTL allows a Tx Queue to be flushed at any moment through Bit 0 of MTL_TxQ[n]_Operation_Mode
+register.
+1. The application pushes two packets into the Tx queue on the ATI interface.
+2. The application performs a write to the Transmit Op eration mode register of corresponding MTL queue
+and sets the Flush Transmit Queue bit.
+3. The application reads back the same register to check the status of the Flush operation. The bit[0] is
+asserted high during CSR read access, indi cating the progress of the Flush operation.
+
+--- Page 97 ---
+97 Synopsys, Inc. 4. If the MTL has already transferred a (partial) packet  to the MAC, then it terminates that immediately
+and clears the Tx Queue. The MTL waits for the status  of the partial/full pack et transfers to the MAC.
+5. The MTL indicates the completion of the Flush operation by assertin g ati_txfifoflush_clr (internal),
+which clears Bit 0 in Transmit Operation Mode register of corresponding MTL queue.
+Figure 2-41 Transmit Queue Flush Operation
+2.4.2 Receive Path
+The MTL Rx module receives the packets from the MAC an d pushes them into the Rx  Queue. The status (fill
+level) of the queue is indicated to the application or DMA when it cros ses the configured Receive threshold
+(RTC bits[1:0] of MTL_RxQ0_Opera tion_Mode register of corresponding MTL queue), or the complete
+packet is received. The MTL also indicates the fill level of the queue so that the DMA can initiate
+preconfigured burst transfers to wards the AHB or AXI interface.
+Sections Receive Operation  through Receive Status Word Format   describe receive operations for the MTL
+Layer. Timing diagrams are provided in “ Receive Path Timing Diagrams”  on page 108.
+2.4.2.1 Receive Operation
+During a Receive operation, the MTL is a slave for th e MAC. The general sequence of events is as follows:
+1. When the MAC receives a packet, it indi cates the availability of receive data.
+2. The MAC indicates the SOP and EOP delimiters.3. The MTL accepts the data and pushes  it into corresponding Rx queue.
+4. After the EOP is transferred, the MAC drives the st atus word which is also pushed into the corre-
+sponding Rx queue by the MTL.
+In Threshold (cut-through) mode, the status words are stored after the packet EOP . In
+store-and-forward mode, the location for the maximum status words are reserved before writing the SOP and the status is written to reserved locations after writing the EOP .
+Note
+
+--- Page 98 ---
+98Synopsys, Inc. 5. If IEEE 1588 timestamp feature is enabled and the 64-bit timestamp is  available along with the packet
+status, it is pushed into the Rx qu eue as a part of the status word. Th erefore, in 32-bit data bus mode,
+two additional locations are taken per packet to store the timestamp in the Rx queue. In 64-bit, 128-bit,
+or 256-bit mode, one additional location is taken.
+6. The MTL takes the data out of the queue and sends it to the DMA depending on the mode:
+2.4.2.2 Threshold Mode
+In the (default) Threshold mode, the MTL reads the data and indicates its availability to the application or
+DMA when one of the following occurs:
+■data bytes equal to the threshold amount are writte n to the Rx queue (RTC bits[1:0] of MTL_RxQ0_Op-
+eration_Mode register of  corresponding MTL queue)
+■a full packet of data is received into the queue
+Single Queue Configuration :
+1. (Optional) The application asserts ari_ q#_pbl_i and waits for ari_rxwatermark_o.
+2. The MTL indicates data availability  by asserting ari_val_o along with the data on ari_data_o, and byte
+enables on ari_be_o. During first tr ansfer MTL also asserts ari_sop_o to indicate the start of the packet.
+3. In turn, the application or DMA can accept the data by asserting ari_ack_i. Steps step b and step c are
+repeated till the end of the packet delimite r is received (as indi cated by ari_eop_o).
+4. After the entire packet data is re ceived the MTL asserts ari_rxstatus_val_o and the first status word on
+ari_data_o. The first status word also indicates the number of status words that follow.
+5. The application accepts the status by asserting ari_ac k_i. Steps step d and step e are repeated till all the
+status words are sent out.
+Multiple Queue Configuration
+1. (Optional) The application can assert ari_q#_pbl_i signal and wait for ari_rx watermark_o on the corre-
+sponding queue. The assertion of ari_rxwaterm ark_o assures the application that the MTL has
+ari_q#_pbl_i amount of data ready in the corresponding Queue.
+2. The application asserts the ari_ready_i (per Queue) signal, which indicates that the application is ready
+to accept the ari_q#_pbl_i amount of data from the MTL on the co rresponding Rx Queue.
+3. The MTL then internally arbitrates  among Queues on which ari_ready_i is asserted and selects one of
+the Queues and indicates the Queue number on ari_qnum_o.When the split header feature is enabled or when multiple Rx DMA is present in a configuration, the
+MTL operates in dynamic threshold mode even though it is programmed for threshold mode. In dynamic threshold mode, MTL starts forwarding to the application only after it receives threshold
+number of bytes, split-header length, and DMA number from MAC.
+When Rx timestamp status is available then the transfer takes place as described in steps 4 and 5
+where the MTL indicates the timestamp ava ilability by asserting ari_timestamp_val_o.
+Note
+Note
+
+--- Page 99 ---
+99 Synopsys, Inc. 4. The MTLindicates the data availab ility on the selected Queue by asse rting ari_val_o alon g with the data
+on ari_data_o, and byte enables on ari_be_o. During  the first transfer, MTL also asserts ari_sop_o to
+indicate the start of the packet.
+2.4.2.3 Store-and-Forward Mode
+In the store-and-forward mode (when Bit 5 of MTL_RxQ0_Operation_Mode re gister of a queue is set to 1),
+the initial Rx queue locations are rese rved for the status words before writ ing the SOP. A packet is read out
+only after it is completely written into the Rx qu eue. In this mode, all error packets are dropped (if
+configured through Bit 4 of MTL_RxQ0_Operation_Mode re gister of a queue) such that only valid packets
+are read and forwarded to the application.
+Single Queue Configuration
+1. (Optional) The application asserts ari_ q#_pbl_i and waits for ari_rxwatermark_o.
+2. The MTL indicates the status availability by asserting ari_rxstatus_val_o along with the status on ari_-
+data_o. The first status word also indicate  the number of status words that follow.
+3. The application accepts the status word by asserting ari_ack_i.4. Steps step b and step c are repeated till the end of  the packet delimiter is received (as indicated by
+ari_eop_o).
+5. After transferring all the status words, the MTL in dicates the data availabilit y by asserting ari_val_o
+along with the data on ari_data_o, and byte enable s on ari_be_o. During the first transfer, MTL also
+asserts ari_sop_o to indicate the start of the packet.
+6. The application or DMA accepts the data by asserting ari_ack_i.7. step e and step f are repeated till all the status words are sent out.
+Multiple Queue Configuration
+1. (Optional) The application asserts ari_q#_pbl_i and waits for ari_rxwatermark_o on the corresponding
+queue. The assertion of ari_rxwatermark_o assures the application that the MTL has ari_q#_pbl_i amount of data ready in  the corresponding Queue.
+2. The application asserts the ari_ready_i (per Queue) signal, which indicates that the application is ready
+to accept ari_q#_pbl_i amount of data fr om the MTL on the co rresponding Rx Queue.
+3. The MTL then internally arbitrates  among Queues on which ari_ready_i is asserted and selects one of
+the Queues and indicates the Queue number on ari_qnum_o.When Rx timestamp status is available the transfer happens as described in steps 2 and 3 where the
+MTL indicates the timestam p availability by assert ing ari_timestamp_val_o.
+step d and step e are applicable only when the currently selected queue has a new packet to transfer.
+The status word transfer in step d and step e are not a part of the current PBL (as indicated by ari_q#_pbl_i of the currently selected Queue) requests. Instead it is additional information provided before the PBL amount of data transfer that begins in step f.
+Note
+Note
+
+--- Page 100 ---
+100Synopsys, Inc. 4. The MTL indicates the status availability by asserting ari_rxstatus_val_o, along with the status on ari_-
+data_o for the selected queue as indicated by ari_ qnum_o. The first status word also indicates the
+number of status words that follow.
+5. The application accepts the status word by asserting ari_ack_i.
+6. The MTL indicates the data availa bility on the selected Queue by asserting ari_val_o along with the
+data on ari_data_o, and byte enables on ari_be_o. Du ring first transfer, MTL also asserts ari_sop_o to
+indicate the start of the packet.
+7. The application or DMA accepts the data by asserting ari_ack_i.
+8. step f and step g are repeated till the requested PB L amount of the data is tr ansferred (as indicated by
+ari_q#_pbl_i for the currently select ed Queue) or end of the packet delimiter is accepted (as indicated
+by ari_eop_o).
+All steps are repeated till all the status words are sent out.
+2.4.2.4 Multi-Packet Receive Operation
+In Threshold mode, the packet status is available i mmediately after the packet data. In store-and-forward
+mode, the packet data is available after the packet status. The MTL is capable of storing any number of
+packets into the queue as long as it is not full.
+If the MAC receives a packet when the corresponding Rx queue is full, the MTL ignores that packet and the
+ari_fifo_ovf_o[] output pulse is generated on the corr esponding Rx queue. In ad dition, the MTL increments
+the overflow counter in the MTL_RxQ0_Missed_ Packet_Overflow_Cnt of corresponding queue.
+2.4.2.5 Error Handling in Receive Operation
+If the MTL Rx queue is full before it receives the EOP data from the MAC, the following happens:
+1. An overflow is declared
+2. The whole packet (including the status word) is dropped
+3. The overflow counter in the DMA (Overflow Counte r register of corresponding MTL queue) is incre-
+mented.
+This is true even if Bit 4 (FEP) of MTL_RxQ0_Operation_Mod e register of corresponding MTL queue is set.
+If the start address of such a packet has already been transferred to the Read Controller, the rest of the
+packet is dropped and a dummy EOP is written to th e queue along with the stat us word with overflow
+status. The status indicates a partial packet because of overflow. In such packets, the Packet Length field is
+invalid. If the MTL Receive Queue is configured to oper ate in the store-and-forward mode and the length of
+the received packet is more than the queue size, overflow occurs and all such packets are dropped.
+The MTL Rx Control logic can filter error and undersized  packets, if enabled by using the FEP and FUP bits
+of MTL_RxQ0_Operation_Mode register of corresponding MTL queue. If th e start address of such a packet
+has already been transferred to the Rx Queue Read Cont roller, that packet is not filtered. The start address When Rx timestamp status is available then the transfer happens as described in step d and step e
+where the MTL indicates the timestamp ava ilability by asserting ari_timestamp_val_o.
+Note

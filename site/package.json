@@ -5,8 +5,9 @@
   "description": "DWC Ethernet QoS Growing Knowledge Tree with CLAUDE.md integration",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "copy-assets": "node scripts/copy-wiki-assets.mjs",
+    "dev": "npm run copy-assets && vite",
+    "build": "npm run copy-assets && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

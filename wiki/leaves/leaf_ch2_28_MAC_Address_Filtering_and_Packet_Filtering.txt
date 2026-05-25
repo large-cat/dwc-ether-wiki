@@ -1,0 +1,19 @@
+<h level="2">MAC Address Filtering and Packet Filtering</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p131-140</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>AFM支持多种地址过滤：</p>
+<p>- 单播地址：多达32个MAC地址匹配</p>
+<p>- 组播地址：哈希表或精确匹配</p>
+<p>- 广播地址过滤</p>
+<p>- VLAN标签过滤</p>
+<p>RPC根据AFM结果决定接受或丢弃，Store-and-Forward模式可丢弃错误包。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

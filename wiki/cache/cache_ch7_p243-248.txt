@@ -1,0 +1,168 @@
+--- Page 243 ---
+243 Synopsys, Inc. 7
+IEEE 1588 Timestamp Support
+The IEEE 1588 defines a Precision Time Protocol (PTP ) which enables precise synchronization of time in
+measurement and control systems. This protocol enab les heterogeneous systems that include clocks of
+varying inherent precision, resolu tion, and stability to synchronize. The protocol supports system-wide
+synchronization accuracy in the sub-microsecond ra nge with minimal network and local clock computing
+resources.
+This chapter contains the following sections:
+■“IEEE 1588 Timestamp Support”  on page 244
+■“IEEE 1588 System Time Source”  on page 257
+■“IEEE 1588 Higher Word Register”  on page 261
+■“IEEE 1588 Auxillary Snapshot”  on page 262
+■“Flexible Pulse-Per-Second Output”  on page 263
+■“Media Clock Generation and Recovery”  on page 265
+■“PTP Timestamp Offload Function”  on page 270
+■“One-Step Timestamp”  on page 275
+■“One-Step Time Stamping for PTP Over UDP”  on page 278
+■“IEEE 1588 Sub Nanoseconds Timestamp”  on page 279
+
+--- Page 244 ---
+244Synopsys, Inc. 7.1 IEEE 1588 Timestamp Support
+7.1.1  Introduction to I EEE 1588 Tim estamp Support
+The DWC_ether_qos supports the IEEE 1588-2002 (ver sion 1) and IEEE 1588-20 08 (version 2). The
+IEEE 1588-2002 supports PTP transpor ted over UDP/IP and IEEE 1588-2008  supports PTP transported over
+Ethernet. The DWC_ether_qos provides pr ogrammable support for both standards.
+The controller supports the following features:
+■Provides an option to take snapshot of  all packets or only PTP type packets
+■Provides an option to take sn apshot of only event messages
+■Provides an option to take the snapshot based on  the clock type: ordinary, boundary, end-to-end
+transparent, and peer-to-peer transparent
+■Provides an option to select the node to be a master or slave for ordi nary and boundary clock
+■Identifies the PTP message type, version, and PTP pa yload in packets sent dire ctly over Ethernet and
+sends the status
+■Provides an option to measure sub-seco nd time in digital or binary format
+7.1.2 Description of IEEE 1588 Timestamp Support
+7.1.2.1 Clock Types
+DWC_ether_qos supports different cloc k types defined in IEEE 1588-2008.
+The DWC_ether_qos supports the following clock types:
+■Ordinary Clock
+■Boundary Clock
+■End-to-End Transparent Clock
+■Peer-to-Peer Transparent Clock
+7.1.2.1.1 Ordinary Clock
+The ordinary clock has a single PTP state and a single physical port. In a domain, an ordinary clock supports
+a single copy of  the protocol.
+The ordinary clock in a doma in supports a single copy of the protocol. The ordina ry clock has a single PTP
+state and a single physical port. In typical industrial automation applications, an ordinary clock is
+associated with an application device such as a sensor  or an actuator. In telecom applications, the ordinary
+clock can be associated with a timing demarcation device.
+The ordinary clock can be a grandmaster or a sl ave clock. It supports the following features:
+■Sends and receives PTP messages. The timestamp snapshot can be controlled as described in MAC_-
+Timestamp_Control.
+■Maintains the data sets such as timestamp values
+
+--- Page 245 ---
+245 Synopsys, Inc. Table 7-1  shows the messages for which you can take the timestamp snapshot on the receive side for master
+and slave nodes.
+Table 7-1 Ordinary Clock: PTP Messages for Snapshot
+For an ordinary clock, you can take the snapshot of either of the following PTP message types: version 1 or
+version 2. You cannot take the snap shots for both PTP message types. You can take the snapshot by setting
+the TSVER2ENA bit and selecting the snap shot mode in MAC_Timestamp_Control.
+7.1.2.1.2 Boundary Clock
+The boundary clock typically has several physical ports communicating with the network. The messages
+related to synchronization, master-slave hierarchy, an d signaling terminat e in the protocol engine of the
+boundary clock and such messages are not forwarde d. The PTP message type status given by the MAC
+helps you to identify the type of message and take appropriate action.
+The boundary clock is similar to the ordinar y clock except for the following features:
+■The clock data sets are common to all ports of the boundary clock.
+■The local clock is common to all ports of the boundary clock.
+7.1.2.1.3 End-to-End Transparent Clock
+The end-to-end transparent clock supports the end- to-end delay measurement mechanism between the
+slave clocks and the master  clock. The end-to-end transparent clock forwards all messages like normal
+bridge, router, or repeater. The reside nce time of a PTP packet is the time taken by the PTP packet from the
+Ingress port to the Egress port.
+The residence time of a SYNC packet inside the end-to -end transparent clock is updated in the correction
+field of the associated Follow_Up PTP packet before it  is transmitted. Similarly, the residence time of a
+Delay_Req packet, inside th e end-to-end transparent clock, is up dated in the correc tion field of the
+associated Delay_Resp PTP packet before it is transmi tted. Therefore, the snapshot must be taken at both
+Ingress and Egress ports only for the messages mentioned in Table 7-2 . You can take the snapshot by setting
+the SNAPTYPSEL bits to 10 in th e MAC_Timestamp_Control register.
+Table 7-2 End to End Transparent Clock: PTP Messages for Snapshot
+7.1.2.1.4 Peer-to-Peer Transparent Clock
+In the peer-to-peer transparent clock, the computat ion of the link delay is ba sed on an exchange of
+Pdelay_Req, Pdelay_Resp, and Pdelay_Resp_ Follow_Up messages with the link peer.
+The peer-to-peer transparent clock di ffers from the end-to-end transparen t clock in the way it corrects and
+handles the PTP timing messages. In all other aspects, it is identical to the end-to-end transparent clock.Master Slave
+Delay_Req SYNC
+PTP MessagesSYNCDelay_Req
+
+--- Page 246 ---
+246Synopsys, Inc. In the peer-to-peer transparent clock, the computat ion of the link delay is ba sed on an exchange of
+Pdelay_Req, Pdelay_Resp, and Pdelay_Resp_Follow_Up me ssages with the link peer. The residence time of
+the Pdelay_Req and the associated Pd elay_Resp packets is added and inserted into the correction field of
+the associated Pdely_Resp_Followup pa cket. Therefore, support for taking  snapshot for the event messages
+related to Pdelay is added as shown in Table 7-3 .
+Table 7-3 Peer-to-Peer Transparent Clock: PTP Messages for Snapshot
+You can take the snapshot by setting the SNAPTYPE SEL bit to 11 in MAC_Ti mestamp_Control register.
+7.1.2.2 Delay Request-Response Mechanism
+The system or network is classified into the master and slave nodes for distribu ting the timing and clock
+information.
+The system or network is classified into the master and slave nodes for distribu ting the timing and clock
+information. Figure 7-1  shows the process that PTP uses for synchronizing a slave node to a master node by
+exchanging PTP messages.
+Figure 7-1 Networked Time SynchronizationPTP Messages
+SYNCPdelay_reqPdelay_Resp
+
+--- Page 247 ---
+247 Synopsys, Inc. As shown in Figure 7-1 , PTP uses the following process:
+1. The master broadcasts the PTP Sync messages to all its nodes. The Sync message contains the reference
+time information of the master. This message leaves the system of the master at t1. This time must be captured for Ethernet ports at GMII or MII.
+2. The slave receives the Sync message and also captures the exact time, t2, using its timing reference.
+3. The master sends a Follow_up message to the slave, which contains t1 information for later use.
+4. The slave sends a Delay_Req message to the master and notes the exact time, t3, at which this packet
+leaves the GMII or MII interface.
+5. The master receives the message, capturing the exact time t4, at which the message enters its system.
+6. The master sends the t4 information to the slave in the Delay_Resp message.
+7. The slave uses the four values of t1, t2, t3, and t4 to synchronize its local timing reference to the timing
+reference of the master.
+Most of the PTP implementation is done in the so ftware above the Ethernet/UDP layer. However, the
+hardware support is required to capture the exact time when specif ic PTP packets enter or leave the
+Ethernet port at the GMII or MII interface. This timi ng information must be capt ured and returned to the
+software for proper implementati on of PTP with high accuracy.
+7.1.2.3 Peer-to-Peer PTP Transparent Clock (P2P TC) Message Support
+The IEEE 1588-2008 supports peer-to-peer PTP (Pdelay)  message in addition to the SYNC, Delay Request,
+Follow-up, and Delay Response messages.
+The IEEE 1588-2008 supports peer-to-peer PTP (Pdelay)  message in addition to the SYNC, Delay Request,
+Follow-up, and Delay Response messages. Figure 7-2  shows the method to calculate the propagation delay
+in clocks supporting peer-t o-peer path correction.
+Figure 7-2 Propagation Delay Calculation in Clocks Supporting Peer-to-Peer Path Correction
+
+--- Page 248 ---
+248Synopsys, Inc. As shown in Figure 7-2 , the propagation delay is calculated in the following way:
+1. Port 1 issues a Pdelay_Req message and generates a timestamp (t1) for the Pdelay_Req message.
+2. Port 2 receives the Pdelay_Req message and generates a timestamp (t2) for this message.
+3. Port 2 returns a Pdelay_Resp message and generates a timestamp (t3) for this message.
+To minimize errors because of any frequency o ffset between the two ports, Port 2 returns the
+Pdelay_Resp message as quickly as possible after the receipt of the Pdelay_Req message. Port 2 returns
+any one of the following:
+■Difference between the timestamps t2 and t3 in the Pdelay_Resp message
+■Difference between the timest amps t2 and t3 in the Pdelay_Resp_Follow_Up message
+■Timestamps t2 and t3 in the Pdelay_Resp and Pdelay_Resp_Follow_Up messages, respectively
+4. Port 1 generates a timestamp (t4) on receiving the Pdelay_Resp message.
+5. Port 1 uses all four timestamps to compute the mean link delay.
+7.1.2.4 Timestamp Correction
+According to the IEEE 1588 specification, a timestam p must be captured when the PTP message timestamp
+point (leading edge of the first bit of the octet immedi ately following the Start Fram e Delimiter octet) crosses
+the boundary between the node and the network. As th e MAC takes the timestamp at an internal point far
+from the actual boundary of the node and network, this captured timestamp is  corrected/updated for the
+ingress/egress path latency (includi ng the delay in the PHY layers). Further correction is done for the
+inaccuracies/errors introduced due to  the clock (GMII Tx, Rx clock) bein g different at the capture point as
+compared to the PTP clock (clk_ptp_ref_i) that is us ed to generate the time. The resultant CDC (Clock
+Domain Crossing) circuits add er ror depending on the clock period  of the GMII and PTP clocks.
+7.1.2.4.1 Ingress Correction
+In the Receive side the timestamp ca ptured at the internal snapshot point is delayed (later in time) as
+compared to the time at which that packet's SFD bit is received at the port's  boundary. Therefore, the
+captured timestamp must be reduced by the ingress latency and the errors in CDC sampling. This correction value must be determined/calculated by  the software and written into the
+MAC_Timestamp_Ingress_Corr_*  registers.
+The correction value consists of the following 3 components:
+1. External latency in the PHY layer between boundary point and the input of the core.
+If the PHY is compliant to the IEEE 802.3 Clause 45  MMD registers, it has a register indicating the
+maximum and minimum ingress latency. The software can read these registers and determine the average ingress latency in the PHY.  Alternatively (if the PHY does not support these registers), the
+ingress latency must be determined from its datasheet or timing characteristics.
+2. Internal latency from the input of th e core to the inte rnal capture point
+The internal ingress latency can be read from the MAC_Ingress_Timestamp_Late ncy register. This is a
+read-only register and gives the latency in scal edNanoseconds format defined in IEEE 1588 Clause
+5.3.2. The latency differs based on the active PHY interface (RGMII, RMII, so on) and the operating speed. Therefore, the software must read this regist er after any speed change in the MAC to determine
+the current internal latency.

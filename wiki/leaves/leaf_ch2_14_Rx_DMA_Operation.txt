@@ -1,0 +1,14 @@
+<h level="2">Rx DMA Operation</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>In the Receive path, the DMA reads a packet from the MTL receive queue and writes it to packet data buffers of the corresponding DMA channel. ARI data at frame start indicates the channel number. Sequence: (1) Application sets up Rx descriptors (RDES0-RDES3) and sets Own bit (RDES3[31]), sets Tail Pointer; (2) When Bit 0 of Receive Control register is set, DMA enters Run state and looks for free descriptors; if none, enters Suspend; (3) DMA fetches next descriptor and decodes buffer address; (4) If IEEE 1588 timestamping enabled and timestamp available for previous packet, writes to RDES0/RDES1 and sets CTXT (RDES3[30]); (5) DMA processes incoming packets into data buffers; (6) If packet transfer not complete, closes current descriptor as intermediate; (7) DMA takes status from MTL, writes status word with Own bit cleared and Last Descriptor bit set; (8) Writes Frame Length to RDES3 and VLAN Tag to RDES0; (9) If timestamp enabled, stores timestamp and writes context descriptor; (10) If more descriptors available, repeats; otherwise Suspend.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

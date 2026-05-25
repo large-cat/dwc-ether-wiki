@@ -1,0 +1,15 @@
+<h level="2">MTL Transmit Status Word and Timing</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p95-96</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>发送状态字包含发送完成状态、错误标志、时间戳信息。</p>
+<p>ATI时序通过ati_pkt_start_i/ati_pkt_end_i控制包边界。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

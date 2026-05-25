@@ -1,0 +1,15 @@
+<h level="2">MTL External Memory Interface</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p111-120</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>MTL外部存储器接口使用同步双端口SRAM（SPRAM）进行数据缓冲。</p>
+<p>支持低功耗模式和高速模式，桥接应用时钟与MAC时钟域。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

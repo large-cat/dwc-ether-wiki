@@ -1,0 +1,324 @@
+--- Page 131 ---
+131 Synopsys, Inc. Figure 2-63 Underflow During Transmission Timing
+2.5.4 MAC Reception
+A receive operation is initiated when the MAC detects an SFD on GMII or MII. Th e MAC strips the preamble
+and SFD before proceeding to process the packet. The he ader fields are checked for filtering and the FCS field
+used to verify the CRC for the packet. The received pa cket is stored in a shallow buffer until the address
+filtering is performed. The packet is droppe d in the MAC if it fails the address filter.
+The following are the functional bloc ks in the Receive path of the MAC.
+■“Receive Protocol Engine Module”  on page 131
+■“Receive CRC Module”  on page 133
+■“Receive Packet Controller Module”  on page 134
+■“Receive Flow Control Module”  on page 135
+■“Receive Bus Interface Unit Module”  on page 135
+■“Address Filtering Module”  on page 135
+2.5.4.1 Receive Protocol Engine Module
+The Receive Protocol Engine (RPE) co nsists of the Receive State Machin e which strips th e preamble, SFD,
+and carrier extension of the received Ethernet packet (i n half-duplex 1000-Mbps mode).
+Figure 2-64  illustrates the Receive tran smission flow in the RPE.
+
+--- Page 132 ---
+132Synopsys, Inc. Figure 2-64 MAC Receive Flow Transmission
+The sequence is as follows:
+1. When the phy_rxdv_i sign al of GMII or MII becomes active, th e Receive State Mach ine of RPE starts
+looking for the SFD field (byte 0x5D in GMII mode; 0xD nibble in MII mode).
+The state machine drops received packets until it detects SFD.
+2. When SFD is detected, the state machine begins send ing the data of Ethernet packet to the RPC module,
+beginning with the first byte follow ing the SFD (desti nation address).
+
+--- Page 133 ---
+133 Synopsys, Inc. 3. If IEEE 1588 Timestamp feature is enabled, the RPE takes a snapshot of the system time at which SFD
+of any packet is detected on GMII or MII. If this packet is not dropped during MAC filtering, the time-stamp is passed to the application.  In MII mode, the RPE converts the received nibble data into bytes
+and forwards the valid packet data to the RFC module.
+4. The Receive State Machine of the RPE module decodes the Length/Type field of the rece iving Ethernet
+packet.
+If the Length/Type field is less than 1,536 and if the MAC is programmed for the Auto CRC/Pad Strip-
+ping (Bit 20 of the MAC_Configuration register), th e state machine sends the da ta of the packet up to
+the count specified in the Length/Type field and star ts dropping bytes (including the FCS field). The
+state machine of the RPE module de codes the Length/Type field and ch ecks for the Length interpreta-
+tion.
+If the Length/Type field is greater than or equal to  1,536, the RPE module se nds all received Ethernet
+packet data to the RFC module if you have not enab led the CRC stripping for Ty pe packet in Bit 21 of
+the MAC_Configuration register. However, if you have enabled the CRC stri pping for Type packets
+and not enabled the Receive Checksum  Offload Engine, the MAC strips an d drops the last 4 bytes of all
+packets of Ether type before forwar ding the packets to the application.
+5. By default, the MAC is programme d for watchdog timer to be enabled, that is, packets above 2,048
+(10,240 if Jumbo Packet is enabled) bytes (DA + SA  + LT + DATA + PAD + FCS) are cut off at the RPE
+module. In addition, you can use a programmable watchdog timer (Bit 16 of MAC_Watchdog_Timeout
+register) to override the fixed timeout of 2,048 or 10,240 bytes. You can disable the watchdog timer by
+programming Bit 19 of MAC_Configur ation register. However, even if the watchdog timer is disabled,
+a packet greater than 32 KB size is cut off and a watchdog timeout status is given.
+At the end of every received packet, the RPE module ge nerates received packet status and sends it to the
+RPC module. Control, missed packet , and filter fail status  are added to the receive status in the RPC
+module.
+2.5.4.2 Receive CRC Module
+The MAC Receive CRC (CRX) interfaces with the RPE mo dule to check any CRC er ror in the packet being
+received.In Audio Video (AV) or Data Center Bridging (DCB ) mode, when you select additional Rx queues, the
+packets that are less than or equal to 16 bytes in length after pad stripping, always get dropped inside the MAC receiver. This happens even  if the packets have passed th e address filter and have no CRC
+error.
+■In half-duplex mode, the first packet in a burst should be at least slot time in length. If the first packet
+is smaller than the slot time, the MAC considers the by tes received up to the sl ot time as first packet,
+which results in CRC error for the packet.
+■Packet bursting is applicable only for the GMII ha lf-duplex mode. It is not applicable in the MII and
+GMII full-duplex modes. In the GMII half-duplex mode, the size of the first packet in a packet burst
+should at least be equal to the slot time. If the fi rst packet (including carrier extension) is less than
+the slot time, the MAC considers all data bytes, received for the first packet and subsequent
+packets, which end immediately after the slot time is reached as first packet in the burst. This may
+result in CRC error. However, if  the packet burst ends (both RXDV and RXER go low) before the
+slot time, the subsequent packet is considered as  a new packet. This behavior is according the
+IEEE 802.3.
+Note
+Note
+
+--- Page 134 ---
+134Synopsys, Inc. The Receive CRC (CRX) interfaces with the RPE module to check an y CRC error in the packet being
+received. This module calculates th e 32-bit CRC for received packet th at includes the Destination address
+field through the FCS field.
+The encoding is defined by the following generating polynomial:
+G (x) = x32 + x26 + x23 + x22 + x16 + x12 + x11 + x10 + x8 + x7 + x5 + x4 + x2 + x + 1The module gets the data from the RPE module (DA+SA+LT+DATA+P AD+FCS). The RPE module also
+sends a control signal that indicates the validity of th e data. Irrespective of the Auto Pad or CRC strip, the
+CRX module receives the entire packet to compute the CRC check for received packet.
+2.5.4.3 Receive Packet Controller Module
+The MAC Receive Packet Controller (RPC) receives th e Ethernet packet data and status from the RPE
+module.
+The Receive Packet Controller (RPC) receives the Ethe rnet packet data and stat us from the RPE module.
+The RPC module consists of a FIFO of parameterized de pth (default set to 4 deep and 33-bits wide) and two
+state machines for writing and readin g the FIFO. The FIFO holds the receiv ed Ethernet packet data and byte
+enables, along with a control bit to indicate the last data. The state machines manage the FIFO and provide a packet buffering for the Ethernet packet being rece ived from the RPE module. The following are main
+functions of the RPC module:
+■Converting Data path — converts 8-bit data to 32-bit data to the RBU module
+■Packet filtering
+■Attaching the calculated IP  Checksum input from IPC
+■Updating the Receive Status and forwarding it to RBU
+If RA bit of the MAC_Packet_Filter re gister is set, the RPC module initiates the data transfer to the RBU
+module when 4 bytes of Ethernet data are received from  the RPE module. At the end of the data transfer, the
+RPC module sends out the received packet status that in cludes the packet filter bi ts (SA Filterfail and DA
+Filterfail) and status from the RPC mo dule. These bits are generated based on the filter-fail signals from the
+AFM module. This status bit indicate s to the application whether the received packet has passed the filter
+controls (both address filter and Packet Filter cont rols from CSR). The RPC module does not drop any
+packet on its own in this mode.
+If the RA bit is reset, the RPC module performs packet filtering based on the destin ation or source address.
+If the application does not want to receive any bad pa ckets such as runt, CRC error packets, the application
+still needs to perform another level of filtering. Th e RPC module waits to receive the first 14 bytes of
+received data (type field) from the RPE module. Until th en, the module does not init iate any transfers to the
+RBU module. After receiving the destination or source address bytes, the RPC chec ks the filter-fail signal
+from the AFM module for an address match. On detecting filter-fail from AFB, the packet is dropped at the
+RPC module and not transferred to the application.
+On a delayed filter respon se from the AFM (this can only occur if you change the AFM logic), the RPC
+module waits until th e FIFO is full, and then proceeds with the packet transfer to the RBU module.
+However, the RPC module still takes the delayed response from the AFM mo dule and if it is a (DA or SA)
+filter failure, it drops the rest of the packet and se nds the Rx Status Word (with zero packet-length, CRC
+Error and Runt Error bits set) immedi ately indicating the filter fail. If there is no response from the AFM
+until EOP is transmitted, the filter fail status  in the Rx Status Word is updated accordingly.
+
+--- Page 135 ---
+135 Synopsys, Inc. When the optional PMT module is present and configured for power- down mode, this block drops all
+received packets and does not forward the packets to the application.
+2.5.4.4 Receive Flow Control Module
+The Receive Flow Controller (FRX) detects the Paus e packet being received and pauses the packet
+transmission for the delay specified within the receiv ed Pause packet. The FRX mo dule is enabled only in
+the full-duplex mode.
+2.5.4.5 Receive Bus Interface Unit Module
+The Receive Bus Interface Unit (RBU) converts the 32-bit data received from the RPC module into a 32-bit,
+64-bit, or 128-bit FIFO protocol on the Application side. The RBU module interf aces with the application
+through the MAC receive interface (MRI). This block al so performs the endian conversion if the EQOSCORE
+is configured for big-endian mode.
+If IEEE 1588 Timestamp feature is en abled, the RBU module also output s the timestamp captured from the
+received packet, along with the status on the mr i_timestamp_o bus in EQOS -CORE configuration. The
+value on this bus is valid when the mri_eop_o signal is asserted.
+2.5.4.6 Address Filtering Module
+The Address Filtering (AFM) module pe rforms the destination and source address checking function on all
+received packets and reports the addres s filtering status to the RPC module.
+The address checking is done base d on different parameters (Packet Filter register) chosen by the
+application. These paramete rs are inputs to the AFM module as control signals, and the AFM module
+reports the status of the address filtering based on the combination of these inputs. The AFM module does
+not filter the receive packets but reports the status of the address filtering (whether  to drop the packet or
+not) to the RFC module. The AFM module also reports a ddress filter status and whether the received packet
+is a multicast packet or a broadcast packet.
+The AFM module probes the 8-bit receive data path  between the RPE module and the RFC module and
+checks the destination and source a ddress field of each incoming pack et. In GMII mode, the module takes
+8/14 clocks (from the start of packet) to compare the destination/source addr ess of the packet being
+received. Similarly, in MII mode, th e module takes 14/26 clocks (from th e start of packet) to compare the
+destination or source address of th e receiving packet. The AFM module ge ts the physical (MAC) address of
+the station and the Multicast Hash table from CSR mo dule for address checking. The CSR module provides
+the Packet Filter register parameters to AFM.
+2.5.5 MAC Receive Interface Protocol
+The MRI interface connects the applic ation to the receive data path of the MAC with a simple FIFO-protocol
+interface. The RBU initiates an Ethernet packet tran sfer by asserting the mri_sop_o along with the data
+(mri_data_o). All valid data transfer s are indicated by an active high on the mri_val_o signal. The RBU
+module transfers the last data of the packet by dr iving the signal mri_eop_o along with the data. The
+number of byte lanes having valid data in the last tr ansfer (EOP) is indicated by  the mri_be_o[3:0] signal.
+The encoded values of mri_be_o is the same as for mti_be_i as given in Table 2-16 . The 112-bit Receive status
+(mri_rxstatus_o, described in Table 2-16 ) is also valid along wi th the EOP data transfer.
+
+--- Page 136 ---
+136Synopsys, Inc. The MAC always assumes that the application accepts the da ta output by it in one cl ock cycle. Therefore, it
+does not have any acknowledgment from the application before perf orming the next data transfer.
+Table 2-16 Receive Status at the MAC Interface
+Bit Description
+127:112 Inner VLAN Tag
+These bits contain the Inner VLAN Tag stripped from the received packet and validated by Bit 26. This field is not available when the Enable Double VLAN Processing option is not selected.
+111:96 Outer VLAN Tag
+These bits contain the Outer VLAN Tag stripped from the received packet and validated by Bit 25.
+95:80 OAM Sub-Type Code, or MAC Control Packet opcode
+■OAM Sub-Type Code: If Bits[18:16] are set to 3'b111, this field contains the OAM sub-type and code
+fields.
+■MAC Control Packet opcode: If Bits[18:16] are set to 3'b110, this field contains the MAC Control packet opcode field.
+79 Reserved78 Timestamp Available
+If timestamp is present, when set, this bit indicates that the timestamp comes after the Rx status. The timestamp on Rx status is capture and provided in Rx status only for the valid Ethernet packets, that do not have any of the following errors:
+■Gaint packet error
+■Length error
+■CRC error
+■Invalid code error
+■watchdog timeout error
+77 PTP Version
+When set, this bit indicates that the received PTP message has the IEEE 1588 version 2 format in the version field. When reset, it indicates the version 1 form at in the version field. This  bit is valid only if the
+Message Type is non-zero.
+76 PTP Packet Type
+When set, this bit indicates that the PTP message is sent directly over Ethernet.
+
+--- Page 137 ---
+137 Synopsys, Inc. 75:72 PTP Message Type
+These bits are encoded to give the type of the message received:
+■0000: No PTP message received
+■0001: SYNC (all clock types)
+■0010: Follow_Up (all clock types)
+■0011: Delay_Req (all clock types)
+■0100: Delay_Resp (all clock types)
+■0101: Pdelay_Req (in peer-to-peer transparent clock)
+■0110: Pdelay_Resp (in peer-to-peer transparent clock)
+■0111: Pdelay_Resp_Follow_Up (in peer-to-peer transparent clock)
+■1000: Announce
+■1001: Management
+■1010: Signaling
+■1011-1110: Reserved
+■1111: PTP packet with Reserved message type
+71 IP Payload Error
+When this bit is set, it indicates either of the following:
+■The 16-bit IP payload checksum (that is, the TCP , UDP , or ICMP checksum) calculated by the MAC
+does not match the corresponding checksum field in the received segment.
+■The TCP , UDP , or ICMP segment length does not match the payload length value in the IP Header field.
+■The TCP , UDP , or ICMP segment length is less than minimum allowed segment length for TCP , UDP ,
+or ICMP .
+Bit 15 (ES) of RDES3 is not set when this bit is set.
+70 IP Checksum Bypassed
+When set, this bit indicates that the checksum offload engine is bypassed.
+69 IPv6 Packet Received
+When set, this bit indicates that the received packet is an IPv6 packet.
+68 IPv4 Packet Received
+When set, this bit indicates that the received packet is an IPv4 packet.
+67 IP Header Error
+When this bit is set, it indicates either of the following:
+■The 16-bit IPv4 header checksum calculated by the MAC does not match the received checksum
+bytes.
+■The IP datagram version is not consistent with the Ethernet Type value.
+■Ethernet packet does not have the expected number of IP header bytes.
+This bit is valid when either Bit 5 or Bit 4 is set. Th is bit is available when y ou select the Enable Receive
+TCP/IP Checksum Check feature.Bit Description
+
+--- Page 138 ---
+138Synopsys, Inc. 66:64 Payload Type
+These bits indicate the type of payload, encapsul ated in the IP datagram, processed by the Receive
+Checksum Offload Engine (COE). These bits also indicate received AV frame type.
+■3'b000: Unknown Type or COE did not process the IP or AV payload
+■3'b001: UDP
+■3'b010: TCP
+■3'b011: ICMP
+■3'b110: AV Tagged data packet
+■3'b111: AV Tagged control packet
+■3'b101: AV Untagged control packet
+■3'b100: IGMP if IPv4 Packet Received status  bit is set else, DCB (LLDP) Control Packet
+If the COE does not process the payload of IP datagram because of an IP header error or fragmented IP ,
+it sets these bits to 3?fb000.
+63:61 Layer 3 and Layer 4 Filter Number Matched
+These bits indicate the number of the Layer 3 and Layer 4 Filters that matched the received packet:
+■000: Filter 0
+■000: Filter 1
+■010: Filter 2
+■011: Filter 3
+■100: Filter 4
+■101: Filter 5
+■110: Filter 6
+■111: Filter 7
+This field is valid only when Bit 60 or Bit 59 is se t high. When more than one filter matches, these bits
+give only the lowest filter number.
+60 Layer 4 Filter Match
+When set, this bit indicates that the received packet matches one of the enabled Layer 4 Port Number fields.This status is given only when on e of the following conditions is true:
+■Layer 3 fields are not enabled and all enabled Layer 4 fields match
+■All enabled Layer 3 and Layer 4 filter fields match
+When more than one filter matches, this bit gives the layer 4 filter status of filter indicated by Bits[63:61].
+59 Layer 3 Filter Match
+When set, this bit indicates that the received packet matches one of the enabled Layer 3 IP Address fields.This status is given only when on e of the following conditions is true:
+■All enabled Layer 3 fields match and all enabled Layer 4 fields are bypassed
+■All enabled filter fields match
+When more than one filter matches, this bit gives the layer 3 filter status of filter indicated by Bits[63:61].
+58:51 MAC Address Match or Hash Value
+When Bit 50 is reset, this field contains the numb er of the MAC address register that matched the
+Destination address of the received packet.
+When Bit 50 is set, this field contains the hash valu e computed by the MAC. The bit corresponding to the
+hash value is set in the hash filter register indicating that the frame passed the hash filter.Bit Description
+
+--- Page 139 ---
+139 Synopsys, Inc. 50 Hash Filter Status
+When set, this bit indicates that the packet passed the MAC address hash filter. Bits[58:51] indicate the hash value.
+49 DA Filter Fail
+When set, this bit indicates that the Destination Address filter failed, that is, the packet did not pass the DA filter.
+48 SA Filter Fail
+When set, this bit indicates that the Source Address filter failed, that is, the packet did not pass the SA filter.
+47 VLAN Filter Status
+When set, this bit indicates that the VLAN Tag has matched one of the VLAN Tag Filters.
+If this bit is reset, it indicates that the VLAN Tag of the received packet passed the filter.
+This bit is valid only when DWC_EQOS_ERVFE is not enabled.
+If DWC_EQOS_ERVFE is enabled, the bit is redefined as Outer VLAN Tag Filter Status (OTS).
+For more details about OTS bit, see bit[15] “ RDES2 Normal Descriptor (Write-Back Format)”  on page
+1343
+46 Inner VLAN Tag Filter Status
+This bit is valid only when  DWC_EQOS_ERVFE is enabled.
+For more details about ITIS bit, see bit[14] “ RDES2 Normal Descriptor (Write-Back Format)”  on page
+1343
+45:35 Reserved34 ARP Reply Not Generated
+When set, it indicates that the MAC did not generate the ARP reply for received ARP request packet. This bit is set when the MAC is busy transmitting ARP reply to earlier ARP request (only one ARP request processed at a time).
+This bit is reserved when the Enable IPv4 ARP Offload option is not selected.
+33 Inner VLAN Tag Type
+When set, it indicates that the Inner VLAN type is S-VLAN in the received packet. When reset, it indicates that the Inner VLAN type is C-VLAN in the received packet.
+This field is reserved when the Enable Double VLAN Processing option is not selected.
+32 Outer VLAN Tag Type
+When set, it indicates that the Outer VLAN type is S-VLAN in the received packet. When reset, it indicates that the Outer VLAN type is C-VLAN in the received packet.
+31:27 Reserved26 Inner VLAN Tag Available
+When set, this bit indicates that the Inner VLAN Tag stripped from the received packet is available in Bits[127:112].
+This field is reserved when the Enable Double VLAN Processing option is not selected.
+25 Outer VLAN Tag Available
+When set, this bit indicates that Outer VLAN Tag stripped from the received packet is available in Bits[111:96].Bit Description
+
+--- Page 140 ---
+140Synopsys, Inc. 24 CRC Error
+When set, this bit indicates that a cyclic redundancy check (CRC) error occurred on the received packet.
+23 Giant Packet
+When set, this bit indicates that the packet length exceeds the maximum Ethernet specified size of 1,518, 1,522, or 2,000 bytes (9,018 or 9,022 bytes if jumbo packet enable is set).
+Giant packet indicates the length of a packet, and it does not cause any packet truncation.
+22 Watchdog Timeout
+When set, this bit indicates that the RPE module received a packet with byte count greater than 2,048(10,240 if Jumbo packet is enabled) bytes (DA + SA + LT + DATA + PAD + FCS).
+This bit is not set if the watchdog timer is disabled in MAC_Configuration register. However, even if the watchdog timer is disabled, this bit is set wh en the packet is greater than 16 KB in size.
+21 Runt Packet
+When this bit is set, it indicates that the MAC rece ived packets of less than 64 bytes or a collision was
+observed before receiving the 64th byte.
+20 GMII Error
+When set, this bit indicates that gmii_rxer_i was assert ed during the reception of this packet. This error
+also includes carrier extension error in the GMII a nd half-duplex mode. Error can be less/no extension
+error (rxd = 1f) during extension
+19 Dribbling Bit
+When set, this bit indicates that the packet contained a n on-integer multiple of eight bits (valid only in MII
+mode). This bit is not valid if a collision is seen or  runt packet bits are set. If this bit is set and the CRC
+error is reset, the packet is valid.
+18:16 Length/Type Field
+This field indicates the type of the received packet: Length packet or Type packet. The encoding is as follows:
+■3'b000: The packet is a length packet
+■3'b001: The packet is a type packet
+■3'b100: The packet is a type packet with VLAN Tag
+■3'b101: The packet is a type packet with Double VLAN Tag
+■3'b110: The packet is a MAC Control packet type
+■3'b111: The packet is a OAM packet type
+■3'b010 - 3'b011: Reserved
+The packet type indication in this field is based on  the LT field of received packet. For example, VLAN
+Tag or Double VLAN Tag indication does not ensure that corresponding VID matched or VLAN filter passed.
+15 ReservedBit Description

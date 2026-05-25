@@ -1,0 +1,14 @@
+<h level="2">DMA Native Interface (EQOS-DMA)</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The subsystem can be configured (EQOS-DMA) to have DMA with a native FIFO-like interface on the application side and an MCI (Optionally APB) interface for CSR port. All DMA functions and features remain the same. On the native interface, the DMA uses a simple hardware protocol to initiate data or descriptor transfers. DMA starts transaction with proper values on address bus, transfer size, burst length, and transfer type. For read transfers, application provides valid data by asserting mdc_rdata_val_i. For write transfers, DMA provides valid data by asserting mdc_wdata_val_i. Application can pause transfers by de-asserting mdc_rdata_val_i or mdc_wdata_rdy_i. After transferring all requested data, application must terminate with mdc_xfer_done_i signal. Application can indicate error by activating mdc_error_i. The DMA can prematurely end burst transfer if EOP is being transferred, marking EOP data on mdc_wdata_o with mdc_eop_o assertion.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

@@ -27,8 +27,8 @@ python tools/knowledge_growth.py read ch5
 # List knowledge leaves
 python tools/knowledge_growth.py leaves
 
-# Add a knowledge leaf manually
-python tools/knowledge_growth.py add-leaf ch5 "RGMII时钟频率" "125MHz for Gigabit..."
+# Add a knowledge leaf manually (content uses XML/HTML semantic tags)
+python tools/knowledge_growth.py add-leaf ch5 "RGMII时钟频率" "<h level=\"2\">RGMII时钟频率</h><p>RGMII在千兆模式下使用<kbd>125MHz</kbd>参考时钟。</p>"
 ```
 
 ## Importing in Python

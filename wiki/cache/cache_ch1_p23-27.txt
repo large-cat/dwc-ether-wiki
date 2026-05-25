@@ -1,0 +1,140 @@
+--- Page 23 ---
+23 Synopsys, Inc. 1
+Product Overview
+This chapter provides an overview of the DesignWare Cores Ethernet Quality-of-Service (DWC_ether_qos).
+The following components and featur es are discussed in this chapter:
+■“General Product Description”  on page 24
+■“DWC_ether_qos Features”  on page 26
+■“DWC_ether_qos Configurations”  on page 37
+■“DWC_ether_qos Deliverables”  on page 39
+■“Related Synopsys Products”  on page 40
+
+--- Page 24 ---
+24Synopsys, Inc. 1.1 General Product Description
+The DWC_ether_qos is compliant with the IEEE 802.3-2015 specification and can be used in applications such
+as AV bridges, AV nodes, switches, network inte rface cards, and data center bridges and nodes.
+The DWC_ether_qos enables a host to transmit and receive data over Ethernet in compliance with the
+IEEE 802.3-2015. The DWC_ether_qos is  a configurable product that can be optimized for gate count and
+latency to meet the a pplication requirements.
+1.1.1 System-Level Block Diagram
+Figure 1-1  shows the system-level block diagram of DWC_ether_qos. A AH B or AXI Master interface is
+connected to all DMA channels. The DMA arbiter help s in arbitration of all the paths (Transmit and
+Receive) in all channels. Each channel has a separate set of Control and Status registers (CSR) for managing
+the Transmit and Receive functions, descriptor handling, and interrupt handling.
+Figure 1-1 System-Level Block Diagram
+When you configure the MAC for a single PHY interface, the MUX logic is removed and the
+corresponding PHY interface is di rectly connected to the ports.
+Note
+
+--- Page 25 ---
+25 Synopsys, Inc. 1.1.2 Interfaces
+The DWC_ether_qos controller suppo rts the following interfaces:
+■Native Interface
+The DWC_ether_qos subsystem can have one of the following interfaces:
+❑Direct FIFO-type interface to the MAC through nat ive CORE interface, which uses Ethernet PHY
+rate clocks at the interface
+❑Direct FIFO-type interface to the MAC with MTL FIFO layer through native MTL interface, which
+uses an application-specific clock at the interface
+❑Direct native DMA interface to the MAC, which uses  an application-specific clock at the interface
+The native 32-bit Read or Write bus is provided fo r CSR access. You can select an APB, APB3, or APB4
+port for CSR access instead of the default nati ve 32-bit Read or Writ e MAC Control Interface.
+■AHB Interface
+The AHB interface is designed to  integrate with AMBA High-Perfo rmance Bus (AHB) on the applica-
+tion side. The AHB interface transf ers the data to and from system  memory through the AHB master
+interface. When the AHB interface is selected, the host CPU uses the default 32-bit AHB slave interface to access the Control and Status registers (CSRs) of the DWC_ether_qos subsystem. You can also select an APB, APB3, or APB43 port for CSR access instead of the AHB slave port.
+■AXI Interface
+The AXI interface is designed to integrate with AM BA Advanced Extensible In terface Bus (AXI) on the
+application side. The AXI interface transfers the da ta to and from the system memory through AXI
+master interface. When the AXI interface is selected, the host CPU uses the AXI slave interface to access
+the Control and Status registers (CSRs) of th e DWC_ether_qos subsystem. DWC_ether_qos can
+support either AXI3 or AXI4 compliant interface prot ocol on the master interf ace. Similarly, it can
+support AXI3 compliant or AXI4-Lite interface on the slave port. You ca n also select an APB, APB3, or
+APB4 port or AHB as slave port for CS R access instead of the AXI slave port.
+■PHY Interfaces
+The DWC_ether_qos supports any one or a combination of the following PHY interfaces:
+❑Gigabit Media Independent Interface (GMII)/M edia Independent Interface (MII) [Default]
+❑Reduced GMII (RGMII)
+❑Serial GMII (SGMII)
+❑Ten Bit Interface (TBI)
+❑Reduced MII (RMII)
+❑Serial MII (SMII)
+❑Reduced TBI (RTBI)
+❑Reverse MII (RevMII)
+
+--- Page 26 ---
+26Synopsys, Inc. 1.2 DWC_ether_qos Features
+The DWC_ether_qos features are divided into the following categories:
+■“Standard Compliance”  on page 26
+■“MAC Features”  on page 27
+■“Transaction Layer (MTL) Features”  on page 29
+■“DMA Block Features”  on page 31
+■“AHB Interface”  on page 32
+■“AXI Interface”  on page 32
+■“AMBA APB Slave Interface Features”  on page 34
+■“Audio and Video Features”  on page 34
+■“Data Center Bridging Features”  on page 34
+■“Time Sensitive Networking Features”  on page 34
+■“Generic Queuing Features”  on page 35
+■“Automotive Safety Features”  on page 35
+■“Monitoring, Testing, and Debugging Features”  on page 35
+1.2.1 Standard Compliance
+In addition to the default interfac es defined in the IEEE 802.3 specifications, the DWC_ether_qos supports
+several industry standard interfaces to the PHY. The DWC_ether_qos is compliant with the following
+standards:
+■IEEE 802.3-2015 for Ethernet MAC, Gigabit Media Independent Interface (GMII), Media Independent
+Interface (MII), Ten Bit Interface (TBI)
+■IEEE 1588-2008 for precision networked clock synchronization
+■IEEE 802.1AS-2011 and 802.1-Qav-2009 for Audio Video (AV) traffic
+■IEEE 802.1AS-Rev/D4.0, Timing and Synchronizatio n for Time-Sensitive Applications in Bridged
+Local Area Networks
+■IEEE 802.3az-2010 for Energy  Efficient Ethernet (EEE)
+■IEEE 802.1Qbv-2015, 802.1Qbu-2016, and 802.1AS-Re v D5.0 for Time-Sensitive Networking (TSN)
+traffic
+■IEEE 802.1Qaz-2011 and 802.1Qbb-2011 for Data Center Bridging (DCB) traffic
+■AMBA 2.0 for AHB master, AHB slave, and APB slave ports
+■AMBA 3.0 for AXI master and slave and APB3 slave ports
+■AMBA4 AXI and ACE protocol specification, Februa ry 2013, ARM Ltd for AXI4 and APB4 interface
+■RGMII/RTBI specification version 2.6 from HP/Marvell
+■RMII specification version 1.2 from RMII consortium
+■SGMII specification versio n 1.8 from Cisco/Marvell
+■SMII specification version 2.1 from Cisco for SMII
+■Reverse Media Independent Interface (RevMII) by Dmitriy Gusev
+
+--- Page 27 ---
+27 Synopsys, Inc. 1.2.2 MAC Features
+The DWC_ether_qos controller supports a number of Tx and Rx MAC features.
+The MAC includes the following feature groups:
+■“MAC Tx and Rx Features”  on page 27
+■“MAC Tx Features”  on page 28
+■“MAC Rx Features”  on page 28
+1.2.2.1 MAC Tx and Rx Features
+■Separate transmission, reception, and control interfaces to the application
+■Configurable big-endian and little-endi an mode for Transmit and Receive paths
+■10, 100, and 1000 Mbps data transfer ra tes with the following PHY interfaces:
+❑IEEE 802.3-compliant GMII/MII (default) interface to communicate with an external Gigabit or
+Fast Ethernet PHY
+❑IEEE 802.3z-compliant TBI interface (optional), wi th auto-negotiation to  communicate with an
+external PHY
+❑RTBI interface (optional) to commun icate with an external gigabit PHY
+❑RGMII interface (optional) to commun icate with an external gigabit PHY
+❑SGMII interface (optional) with auto-negotiation  to communicate with an  external Gigabit PHY
+❑SMII interface (optional) to communicate with an external Fast Ethernet PHY
+❑RMII interface (optional) to communicate with an external Fast Ethernet PHY
+❑RevMII interface (optional) to dire ctly communicate with a remote MAC
+■Half-duplex operation:
+❑CSMA/CD Protocol support
+❑Flow control using backpressure support (based  on implementation-spe cific white papers and
+UNH Ethernet Clause 4 MAC Test Suite - Annex D)
+❑Packet bursting and packet extension in 1000 Mbps half-duplex operation
+■Standard IEEE 802.3az-2010 for Ener gy Efficient Ethernet in (G)MII and Reduced Gigabit Media Inde-
+pendent Interface (RGMII) PHYs.
+■32-bit, 64-bit, or 128-bit data transfer interface on the application side
+■Full-duplex flow control operations (IEEE 802. 3x Pause packets and Priority flow control)
+■Optional network statistics with RMON  or MIB Counters (RFC2819/RFC2665)
+■Optional module to support Ethernet packet ti mestamping as describe d in IEEE 1588-2002 and
+IEEE 1588-2008 (64-bit timestamps given in the Tx or  Rx status of PTP packet). Both one-step and
+two-step timestamping is supported in TX direction.
+■Flexibility to control the Pulse-Per-Se cond (PPS) output signal (ptp_pps_o)
+■Media clock generation and recovery
+■Optional MDIO (Clause 22 and Clause 45) master interface for PHY device configuration and manage-
+ment

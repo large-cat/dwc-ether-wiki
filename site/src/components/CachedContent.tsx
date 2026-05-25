@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, FileText, BookOpen } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import FlowChart from './FlowChart'
@@ -336,13 +336,30 @@ function formatStructuredText(text: string): React.ReactNode {
  * ──────────────────────────────────────────────────────────────── */
 interface CachedContentProps {
   cacheKey: string
-  content: string
+  contentPath: string
   chapterPageStart: number
   defaultOpen?: boolean
 }
 
-export default function CachedContent({ cacheKey, content, chapterPageStart, defaultOpen = false }: CachedContentProps) {
+export default function CachedContent({ cacheKey, contentPath, chapterPageStart, defaultOpen = false }: CachedContentProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [content, setContent] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`${import.meta.env.BASE_URL}${contentPath}`)
+      .then(r => r.text())
+      .then(text => {
+        setContent(text)
+        setLoading(false)
+      })
+      .catch(() => {
+        setContent('')
+        setLoading(false)
+      })
+  }, [contentPath])
+
   const blocks = parseCacheContent(content)
 
   // Parse cache key to get page range info
@@ -378,53 +395,59 @@ export default function CachedContent({ cacheKey, content, chapterPageStart, def
 
       {isOpen && (
         <CardContent className="px-4 pb-4 pt-0">
-          {/* Flowchart (if detected) */}
-          {flowchart && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5" />
-                自动解析：逻辑流程图
-              </p>
-              <FlowChart chart={flowchart} />
-              <p className="text-[10px] text-slate-400 mt-1.5 italic">
-                ↑ 根据缓存内容自动生成的流程图，帮助理解原文中的系统结构和数据流向。
-              </p>
-            </div>
-          )}
-
-          {/* Page blocks */}
-          <div className="space-y-3">
-            {blocks.map((block, idx) => (
-              <div
-                key={idx}
-                className="border-l-2 border-blue-300 dark:border-blue-700 pl-3"
-              >
-                {block.page > 0 && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
-                      PDF p.{block.page}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      原文引用
-                    </span>
-                  </div>
-                )}
-                <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {formatStructuredText(block.content)}
+          {loading ? (
+            <div className="text-sm text-slate-400 py-4">Loading cache content...</div>
+          ) : (
+            <>
+              {/* Flowchart (if detected) */}
+              {flowchart && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    自动解析：逻辑流程图
+                  </p>
+                  <FlowChart chart={flowchart} />
+                  <p className="text-[10px] text-slate-400 mt-1.5 italic">
+                    ↑ 根据缓存内容自动生成的流程图，帮助理解原文中的系统结构和数据流向。
+                  </p>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
 
-          {/* Raw view toggle */}
-          <details className="mt-4">
-            <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-500 select-none">
-              查看原始文本
-            </summary>
-            <pre className="mt-2 text-xs text-slate-500 dark:text-slate-500 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/50 p-3 rounded border border-slate-200 dark:border-slate-700 leading-relaxed">
-              {content}
-            </pre>
-          </details>
+              {/* Page blocks */}
+              <div className="space-y-3">
+                {blocks.map((block, idx) => (
+                  <div
+                    key={idx}
+                    className="border-l-2 border-blue-300 dark:border-blue-700 pl-3"
+                  >
+                    {block.page > 0 && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-mono bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
+                          PDF p.{block.page}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          原文引用
+                        </span>
+                      </div>
+                    )}
+                    <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {formatStructuredText(block.content)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Raw view toggle */}
+              <details className="mt-4">
+                <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-500 select-none">
+                  查看原始文本
+                </summary>
+                <pre className="mt-2 text-xs text-slate-500 dark:text-slate-500 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto bg-slate-50 dark:bg-slate-800/50 p-3 rounded border border-slate-200 dark:border-slate-700 leading-relaxed">
+                  {content}
+                </pre>
+              </details>
+            </>
+          )}
         </CardContent>
       )}
     </Card>

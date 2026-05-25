@@ -1,0 +1,14 @@
+<h level="2">Tx DMA Operation - Default Mode</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The Tx DMA engine in default mode proceeds as follows: (1) Application sets up Transmit descriptor (TDES0-TDES3) and sets Own bit (TDES3[31]); (2) Application advances Descriptor Tail pointer; (3) DMA runs Arbitration cycle to select next Tx DMA channel; (4) DMA fetches descriptor from application memory; (5) If descriptor owned by application, Tail pointer equals Current pointer, or error occurs, transmission is suspended; (6) If DMA owns descriptor, it decodes buffer address; (7) DMA fetches data from system memory and transfers to MTL; (8) For multi-descriptor packets, intermediate descriptors are closed and process repeats; (9) When complete, timestamp (if enabled) is written to TDES0/TDES1 and status to TDES3, Own bit is cleared; (10) Interrupt is set if IOC (TDES2[31]) is set in Last Descriptor. In Suspend state, DMA retries descriptor acquisition.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

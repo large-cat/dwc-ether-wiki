@@ -11,7 +11,7 @@
 | ID | Chapter | Pages | Status | Leaves | Cache |
 |----|---------|-------|--------|--------|-------|
 | ch1 | 产品概述 | p.23-40 | ● mature | 1 | 6 |
-| ch2 | 架构 | p.41-150 | ○ seeded | 0 | 0 |
+| ch2 | 架构 | p.41-150 | ● mature | 18 | 7 |
 | ch3 | VLAN和双VLAN处理 | p.151-158 | ○ seeded | 0 | 0 |
 | ch4 | 缓冲区和内存管理 | p.159-166 | ○ seeded | 0 | 0 |
 | ch5 | PHY接口使用 | p.167-212 | ◑ growing | 3 | 1 |

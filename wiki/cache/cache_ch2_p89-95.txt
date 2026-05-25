@@ -1,0 +1,244 @@
+--- Page 89 ---
+89 Synopsys, Inc. Table 2-6  provides description of Outer VLAN Tag and Inner VLAN Tag fields of ATI Control Word.
+Table 2-6 Outer VLAN Tag  and Inner VLAN Tag Fields of ATI Control Word
+Table 2-7  provides description of Timestam p Low field of ATI Control Word.
+Table 2-7 Timestamp Low Field of ATI Control Word
+Table 2-8  provides description of Timestam p High field of ATI Control Word.
+Table 2-8 Timestamp High Field of ATI Control Word
+2.4.1.2 Transmit Operation
+The following two modes of operation trig ger reading of the data towards the MAC:
+■Threshold mode:
+In Threshold (or cut-through) mode, as soon as the number of bytes in the Qu eue cross the configured
+threshold level (or when the end of packet is written before the thresh old is crossed), the data is ready
+to be popped out and forwarded to the MAC. The th reshold level is configured by using the TTC bits
+of MTL_TxQ0_Operation_Mode register corresponding to an MTL queue.Field Field Name Description
+31:16 VLT2 Inner VLAN Tag: This field contains the inner VLAN Tag to be inserted or replaced in the
+transmitted packet.This field is valid when the following are true:
+■The Enable SA and VLAN Insertion on Tx and Enable Double VLAN Processing
+options are selected.
+■The VLTI bit is set in MAC_Inner_VLAN_Incl register
+■The IVTIR field in Tx Control Word 0 indicates inner VLAN Tag insertion or replace-
+ment.
+15:0 VLT1 Outer VLAN Tag: This field contains the outer VLAN Tag to be inserted or replaced in the
+transmitted packet. This field is valid when the following are true:
+■The Enable SA and VLAN Insertion on Tx option is selected.
+■The VLTI bit is set in the MAC_VLAN_Incl register.
+■The VTIR field in Tx Control Word 0 indicates VLAN Tag insertion or replacement.
+Field Field Name Description
+31:0 TSSL Transmit Packet Timestamp Low
+This field contains the lower 32-bits of time stamp when one-step timestamp correction is
+enabled. This field is validated by OSTC bit in  Tx Control Word 0. This field is valid when
+the Enable One-Step Timestamp Feature option is selected.
+Field Field Name Description
+31:0 TSSH Transmit Packet Timestamp High
+This field contains the higher 32-bits of timestamp when one-step timestamp correction is enabled. This field is validated by the OSTC bi t in Tx Control Word 0. This field is valid
+when the Enable One-Step Timestamp Feature option is selected.
+
+--- Page 90 ---
+90Synopsys, Inc. ■Store-and-forward mode:
+In store-and-forward mode, the MT L pops out the packet towards th e MAC only when one or more
+of the following conditions are true:
+❑A complete packet is stored in the Queue
+❑The Tx FIFO becomes almost full
+❑The ATI watermark becomes low
+The watermark becomes low when the requested Qu eue does not have space to accommodate the
+requested burst length on the ATI.  Therefore, the MTL wh en operating in the store-and-forward mode
+allows packet transmission even if the pack et length is bigger than the Tx Queue size.
+The application can flush complete content of the Tx Queue by setting Bit 0 (FTQ) of Transmit Operation
+Mode register corresponding to an MT L queue. This bit is self-clearing an d initializes the Queue pointers to
+the default state. If the FTQ bit is set during a pack et transfer from the MTL to the MAC, the MTL stops
+further transfer because the queue is considered to be  empty. Therefore, an unde rflow event occurs at the
+MAC transmitter.
+For information about the initialization and tran smit operations for the MTL Layer, see Section 2.4.1.3
+through Sections 2.4.1.5 . The timing diagrams are provided in “ Transmit Path Timing”  on page 93.
+2.4.1.3 Initialization Flow
+Upon reset, the MTL is ready to manage the flow of  data to and from the a pplication or DMA, and MAC.
+For configurations with a single Transmit Queue, ther e are no initialization re quirements for enabling the
+MTL. For configurations with multiple Transmit Queues , you need to initialize the Queue size for each of
+the queues by programming the TQS bits of MTL_ TxQ0_Operation_Mode register corresponding to a
+Transmit queue. You also need to initialize the MAC block. For EQOS-AHB, EQOS-AXI, and EQOS-DMA
+configurations, the internal DMA controllers must be individually enabled through their respective CSRs.
+2.4.1.4 Data Flow Between DMA and MTL
+This section describes the interaction process betw een the MTL and the DMA in the EQOS-AHB, EQOSAXI,
+and EQOS-DMA configurations.
+2.4.1.4.1 Single-Packet Transmit Operation
+The following flow is valid when the core is operatin g in non-OSP mode, that is, when bit 4 (OSP) of the
+DMA_CH(#i)_TX_Control (for i = 0; i <= DWC_E QOS_NUM_DMA_TX_CH-1) register of the DMA
+channel is set to 0.
+During a Transmit operation, the MTL block is a slave for the DMA controller. The general sequence of
+events for a Transmit operation is as follows:
+1. If the system has data to be transferred, the DMA controller (if enabled) fetches the data from the appli-
+cation through the AHB, AXI, or Native DMA master interface and starts forwarding it to the MTL. The
+DMA descriptor memory contains the information related to packet control which is used to drive the ATI Control Word. The DMA data buffer memory contains the packet data.
+2. The MTL pushes the data received from the DMA in to the corresponding queue. This process continues
+until the EOP is transferred.
+
+--- Page 91 ---
+91 Synopsys, Inc. 3. When the threshold level is crosse d or a full packet of data is rece ived into the queue, the MTL reads
+the packet data and drives it to the MAC.
+4. The queue controller continues to transfer data from the queue until a complete packet is transferred to
+the MAC.
+5. When the packet transfer is comp lete, the MTL receives the status from the MAC and notifies the DMA
+controller.
+Figure 2-35  shows the MTL single-packet transmit operation.
+Figure 2-35 MTL Single Packet Transmit Flow
+When the Disable Transmit Status in MTL option is selected or Bit 1 (DTXSTS) of
+MTL_Operation_Mode register is set, the MTL does not provide any status to the DMA.Start
+The application pushes the
+Ethernet packets read from
+the system memory into the
+corresponding queue
+Threshold mode ?
+Store and
+Forward Mode ?
+Wait till the number of
+bytes in the Queue
+cross the configured
+threshold level
+When the end of
+packet is written
+before the threshold is
+crossedWait till a complete
+packet is stored in the
+Queue
+The Tx FIFO becomes
+almost full
+The ATI watermark
+becomes low
+Pass the
+Transmission Status
+to the ApplicationPop out the
+packet to MAC
+Wait for the
+Transmission
+Status from MACThreshold
+modeStore and
+Forward Mode
+Note
+
+--- Page 92 ---
+92Synopsys, Inc. 2.4.1.4.2 Transmit Operation - Two Packets in the Buffer
+The following flow is valid when the core is operat ing in OSP mode, that is, when bit 4 (OSP) of the
+DMA_CH(#i)_TX_Control (for i = 0; i <= DWC_E QOS_NUM_DMA_TX_CH-1) register of the DMA
+channel is set to 1.
+The flow is similar to the flow described in “ Single-Packet Transmit Operation”  on page 90”. However after
+fetching a packet DMA instead of waiting for the status, it continues to fetch anothe r packet if available in
+the system memory. So, MTL can receive the second packet  while it is processing th e first packet. This flow
+improves the performance be cause the DMA can process two packets ba ck to back before waiting for the
+status of the first packet.
+2.4.1.4.3 Relationship Between the Number of Tx DMA Channels and Tx Queues
+The number of Tx DMA channels is always equal to the Tx queues selected in your configuration. This is
+because the DMA is designed to arbitrate among multip le channels (to fetch the descriptor and packet data
+from the system memory) in terms of PBLs (Programmable Bursts Lengths). However, the Tx queues are
+packet-based storage memory. Theref ore, one to one mapping is required between the DMA channels and
+Tx queues to maintain th e packet-level coherency.
+2.4.1.4.4 Transmit Operation - Multiple Packets in Buffer
+In the EQOS-MTL configuration, the Tx FIFO can be co nfigured to accept more than two packets at a time.
+This option limits the number of status words that can be stored in the MTL before it is transferred to the
+DMA or application. By default, this number is limited to two but it can be configured for 4 or 8. When the
+MTL queue accepts the number of pack ets equal to the depth of the Status  FIFO, it stops accepting further
+packets unless the Tx Status is give n and accepted by the application.
+2.4.1.4.5 Retransmission During Collision
+While a packet is being transferre d from the MTL to the MAC, a collis ion event can occur on the MAC line
+interface in half-duplex mode. The MAC indicates a Retry attempt to the MTL by giving the status even
+before the EOP is transferred from the MTL. The MT L then enables the retransmission by popping out the
+packet again from the queue.
+After more than 96 bytes (or 548 bytes in 1000-Mbps mode) are read out towards the MAC, the Queue
+Controller frees up that space and makes it available to the application or the DM A to push in more data.
+This means that the retransmission is not possible after this threshold is crossed or when the MAC indicates a late-collision event.
+When a packet transmission is aborted because of underflow and a collision event immediately follows
+(initiating a retry), retry has higher priority than abort,  as described in Table 2-15 .
+2.4.1.5 Transmit Status Word
+At the end of transfer of the Ethernet packet to the MAC and after the MAC completes the transmission of
+the packet, the MTL provides the Tran smit status validity by asserting ati_txstatus_val_o[] on respective
+queues.For configurations with a single queue, ati_ txstatus_o indicates the status of the queue when
+ati_txstatus_val_o is asserted. The application can read the status by asserting the ati_txstatus_ack_i signal.
+For configurations with multiple Tx queues, the ati_txstatus_val_o signal indicates the availability of status
+on individual queues and application should read the status on ati_txstatus_o[17:0] by driving the Tx queue
+number on ati_txsqnum_i and by asserting ati_txstatus_ack_i.
+
+--- Page 93 ---
+93 Synopsys, Inc. The detailed description of the Transmit Status is the sa me as for Bits[17:0] of TDES3 normal descriptor in
+write-back format, given in Table 21 -10. If IEEE 1588 Timestamp feature is  enabled, the MTL returns 64-bit
+timestamp of the packet, along with the Transmit status of ATI on ati_txstatus_o[81:18]. A valid timestamp
+is indicated by an active high on ati_txstatus_o[17].
+If the Disable Transmit Status in MTL option is select ed while configuring the core, the Transmit Status is
+not provided to the application or DM A. When this option is selected, th e application (or DMA) can push as
+many packets as possible into the Tx queues because the application or DMA is not required to read the
+status words from the Status FIFO. If this option is not selected, you can program Bit 1 (DTXSTS) of
+MTL_Operation_Mode register to di sable the dependency of the application or DMA to read the status
+words from the status FIFO.
+2.4.1.6 Transmit Path Timing
+This section describes the timing sp ecifications for the MAC Transaction layer (MTL) interface signals in the
+Transmit path.
+2.4.1.6.1 Application Transmit Interface
+Figure 2-36  illustrates the timing specifications for the Application Transmit Interf ace (ATI) signals. The
+handshake mechanism involved in packet transmission is as follows:
+Figure 2-36 Application Transmit Interface (ATI) Timing (1 of 2)
+1. Before starting a burst transfer of data to ATI, the application should check whether the MTL Tx queue
+has space to accommodate the burst.  The length of the proposed burs t transfer is put on ati_q#_pbl_i
+on the corresponding queue.
+2. In response, the MTL asserts or de-asserts ati_tx watermark_o[ ] on the corre sponding queue one clock
+later, indicating whether it can accommodate the burst data transfer or not.If the Enable IEEE 1588 Timestamp Support option is not selected, the width of ati_txstatus_o[] is 18.
+If this options is selected, the width of the ati_txstatus_o is 82. The upper 64-bits indicate the timestamp captured for that packet if the IEEE 1588 timing stamping is enabled for the packet through Packet Control Word (Bit 19).
+Note
+
+--- Page 94 ---
+94Synopsys, Inc. 3. At any point during the transfer, the MTL can alert the application to stop the transfer by de-asserting
+the ati_rdy_o signal. The ati_rdy_o signal is de-asserted only when either of the following happens:
+■The queue is almost full
+■The Tx queue is being flushed or checksum is  being written if the Enable Transmit TCP/IP
+Checksum Offload op tion is selected
+The Tx queue-full event does not occur if the app lication ensures that enough space is available
+before the start of data transfer, as described in step 1 and step 2.
+4. The application starts a packet transfer by assert ing the ati_ctrl_val_i and ati_ctrl_type_i signals (for
+writing the control word) followed by  the ati_val_i and ati_sop_i sign als. The MTL accepts the control
+word or data whenever ati_rdy_o is assert ed along with ati_ctrl_val_i or ati_val_i.
+In configurations with multiple Tx queues, the ati_ qnum_i[] signal should be associated with the ati_c-
+trl_val_i and ati_val_i signals to in dicate the Tx queue to which the co ntrol word or data is addressed.
+5. When the application wants to transfer the last by tes of a packet, ati_eop_i should be asserted along
+with the byte enables (ati_be_i), indicating the valid number of data bytes on th e bus. All data transfers
+except the EOP transfer must have  the byte-enables as all-ones.
+6. After transferring the packet to the Ethernet PH Y, the MAC gives the transmission status to the MTL
+(not shown in the diagram).
+7. In configurations with a single queue, the MTL gives the Transmit status of the packet to the application
+through ati_txstatus_o by asserting ati_txstatus_val _o. The application accepts the status by asserting
+ati_ack_i.
+In configurations with multiple queues, the MTL asse rts the ati_txstatus_val_o[] to indicate the status
+availability on the corresponding queue. The applicat ion should read the status on ati_txstatus_o[] by
+driving Tx queue number on  ati_txsqnum_i[] and asserting ati_txstatus_ack_i.
+8. The application need not wait for step 6 and step 7 to start the transfer of next packet on the ATI. It can
+go to step 2 by driving the new PBL on ati_q#_pbl_i to check for the watermark.
+Figure 2-36  shows the application driving the cont rol word followed by the packet data.
+Figure 2-37  shows the status (driven by MTL) of the packet after transmission is complete.
+Figure 2-37 Application Transmit Interface (ATI) Timing (2 of 2)
+
+--- Page 95 ---
+95 Synopsys, Inc. 2.4.1.6.2 Transmit Queue Write Interface
+The MTL Tx Queue controller transfer s the data accepted through ATI to the external memory. Timing
+specifications for the memory interface signals (twc_wr_* signals) are shown in Figure 2-38 . This figure also
+shows the timing relationship of the memory in terface signals with respect to the ATI signals.
+Figure 2-38 Transmit Queue Write Interface Timing
+The external memory used for storing packet mu st be synchronous two-port RAM as shown in Figure 2-53
+on page 112.
+2.4.1.6.3 Transmit Queue Read Interface
+The Tx Queue Read controller reads the data from th e Tx queue and transfers it to the MAC on the MAC
+Transmit Interface (MTI). The timi ng relationship of the MTI signals with the Transmit Queue Read
+Interface signals is shown in Figure 2-39 . The external memory of Tx Queue is configured as synchronous
+RAM in the figure.
+The sequence of events during the transfer of a packet from Tx Queue to the MTI is as follows:
+1. When the Tx queue has data (not shown in the diagram), the Read Controller starts the read transfers
+by asserting the trc_rd_addr_o and trc_rd_csn_o signals. The assertion of trc_rd_en_o is delayed by 1
+clock cycle as per synchronous RAM timing requirements. The first loca tion of the packet has Packet
+Control and Packet Length. These are required to assert some of  the sideband signals (such as
+mti_crc_pad_ctrl_i) of the MAC.
+2. The data is read on the trc_rd_data_i bus in the next  clock cycle. Because the da ta is directly transferred
+to the mti_data bus to the MAC (MTI ), mti_val_i is also asserted. The mti_sop_i signal is also asserted
+along with mti_val_i in Figure 2-39  because the data corresponds to start of packet.
+3. The Tx Queue Read Controller can pre-fetch data  from three locations (two in Asynchronous RAM
+port) so that it can sustain continuous tran sfers to the MTI interf ace without any delay.
+4. If the MAC accepts the data (activ e mti_rdy_o), more data is read fr om the queue. If the MAC deasserts
+mti_rdy_o, the read operations ar e suspended in the next clock cycl e and trc_rd_csn_o is deasserted.In configurations with multiple Tx queues, the ar bitration scheme selects the nonempty Tx queue for
+transmission. Before Tx queue arbitration, the firs t location from each Tx queue is pre-fetched
+(containing the packet control and packet length). The packet length information is required for Tx queue arbitration (WFQ and DWRR arbitration schemes).
+Note

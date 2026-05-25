@@ -1,0 +1,1090 @@
+--- Page 41 ---
+41 Synopsys, Inc. 2
+Architecture
+This chapter describes the DWC_ether_qos interfaces, protocols, functionality,  and implementation. It
+contains the following sections:
+■“CSR Slave Interface”  on page 42
+■“Application Master Interface”  on page 49
+■“DMA Controller”  on page 64
+■“MAC Transaction Layer”  on page 83
+■“MAC”  on page 118
+■“Interrupts”  on page 145
+
+--- Page 42 ---
+42Synopsys, Inc. 2.1 CSR Slave Interface
+You can access the CSR space by specifying a CSR slave interface in coreConsultant.
+The CSR slave interface provid es access to the CSR space.
+You can select a slave interface by  using the CSR Interface option in  coreConsultant. The DWC_ether_qos
+can have one of the following slave interfaces:
+■AHB Slave interface
+■AXI3 or AXI4-Lite slave interface
+■APB, APB3, or APB4  slave interface
+■MCI slave interface
+By default, all the slave interfaces of DWC_ether_ qos except MCI slave interface (which do not have
+provision for providing error response) will provide OK AY response to all CSR ac cesses. If SEEN bit of
+MAC_CSR_SW_Ctrl register is programmed to 1, DWC_ether_qos will provide error response when
+reserved registers within the CSR space are accessed.
+2.1.1 AHB Slave Interface
+The AHB slave is supported in the EQOS-AHB and EQOS-AXI configurations. The 32-bit AHB slave
+interface provides access to the DMA, MTL, and MAC CSR space. The AHB slave interface supports the
+following features:
+■Fully AMBA 2.0 Compliant AHB slave—no restrictions
+■Single and all burst transfers
+■Busy and early terminations
+■32-bit, 16-bit, and 8-bit write or read transfers to the CSR
+The 32-bit CSR access is recommended to avoid any software synchronization problems.
+■OKAY response
+The SPLIT or RETRY responses are not supported. When  a reserved address is read in MAC register
+space, it gives all zeros data and generates an OKAY response (When SEEN bit is set, MAC generates ERROR response). Similarly, when a reserved address is written, the DWC_ether_qos ignores the write request and generates an OKAY response (When SEEN bit is set, MAC generates ERROR response).
+2.1.1.1 AHB Slave Port Timing
+Figure 2-1  shows a register write access (to address 0x001C) followed by a register read access (to address
+0x1014) on the AHB slave port. The waveform is as per the AMBA 2.0 specification. The AHB slave port completes all read and write transfers in three clocks and therefore, hready_o is DE-asserted for two clocks
+for any register access. The AHB slave port supports burst operations, and the timing response remains the
+same (three clocks for completion of any read or write cycle).
+
+--- Page 43 ---
+43 Synopsys, Inc. Figure 2-1 Register Write Access Followed by Register Read Access on AHB Slave
+Port
+2.1.1.2 Interfacing AHB Slave Port with a Wider AMBA Bus
+To interface the 32-bit AHB slave port to a wider AM BA bus, extra logic described in Section 3-15 of
+AMBA 2.0 specification is required. You can include this logic by select ing the CSR Port Data Width option
+while configuring the controller. In such configurations, even though th e AHB slave port indicates a 64-bit
+or 128-bit data bus, all slave port accesses must still be 32 bits or less. If a 64-bit or 128-bit access is
+performed, the AHB slave port internally completes a 32-bit access and gives an OKAY response. During
+the AHB slave write operation, the data on higher lane s is ignored. During the AH B slave Read transfer, the
+lower 32-bit lane  is duplicated.
+2.1.2 AXI Slave Interface
+The AXI slave is supported in the EQOS-AXI config urations. The features supported for the AXI slave
+interface are listed in “ AXI Slave Interface Features”  on page 33.
+The slave interface does not support the following features:
+■Data reordering
+■Data interleaving
+■WRAP burst transfers
+■Signals awcache/awprot or arcache/arprot
+■Atomic accesses
+■Exclusive Access
+You can select the AXI4-Lite slave interface instead of the default AXI3 slave. In this configuration, only
+single beat transfers are supported and so many AXI3 control signals get removed as listed in the AMBA
+specification.DWC_ether_qos provides only OKAY response on br esp_s_o and rresp_s_o. It does not provide the
+EXOKAY , SLVERR, and DECERR responses.
+Note
+
+--- Page 44 ---
+44Synopsys, Inc.  Figure 2-2  shows the timing on the AXI slave interface for a burst-write transfer.
+Figure 2-2 Write Channel Timing of 32-Bit AXI Slave Interface
+The AXI slave interface receives a wr ite burst of length four, which ge ts accepted in seven clocks. The
+respective write response takes additional three clocks. Similarly, a single write transfer gets completed in
+four clocks, as shown in Figure 2-3 .
+Figure 2-3 Single Write and Read Transfer
+The AXI slave interface supports all types of byte, half-w ord, and word burst-size transfers. The latencies
+may vary for a 64-bit AXI slave interface, depending on  the address offset and da ta bus width as shown in
+Figure 2-4
+
+--- Page 45 ---
+45 Synopsys, Inc. Figure 2-4 Latencies for a 64-bit AXI Slave Interface
+In Figure 2-5 , the AXI slave receives a read request of burst le ngth 2. For the first data to be output on the
+AXI bus, the latency is four clocks . The remaining beats are output two clocks after the AXI master accepts
+the previous beat. In the AXI-read ch annel, the latencies depend on the bu rst length, data bus width, and the
+address offset.
+Figure 2-5 AXI Slave Receives a Read Request of Burst Length 2
+The EQOS-AXI configuration supports the little-endian and byte-invariant big-endian modes on the
+AXI slave ports. For more information about the supported endian modes, see “ Endian Support”  on
+page 1397 .
+Note
+
+--- Page 46 ---
+46Synopsys, Inc. 2.1.3 APB, APB3, and APB4 Slave Interface
+The APB, APB3, or APB4 slave interfac es are supported in all configurations. You can enable an APB port to
+access the DMA, MTL, and MAC CSR space.
+This topic discusses the following sections:
+■“APB Port Timing”  on page 46
+■“APB3 Port Timing”  on page 46
+■“APB4 Port Timing”  on page 47
+2.1.3.1 APB Port Timing
+Figure 2-6  shows a register write access followed by a re gister read access on the APB port. The APB port
+signals behave as per the AMBA 2.0 specification. All re gister accesses are completed in two clock cycles to
+support an APB port.
+Figure 2-6 APB Port Timing
+2.1.3.2 APB3 Port Timing
+Figure 2-7  shows a register write access followed by a regi ster read access on the APB3 port. The APB port
+signals behave as per the AMBA3 APB Protocol specific ation. Each write transfer completes in two clock
+cycles whereas each read transfer  completes in three clock cycles.
+Figure 2-7 APB3 Port Timing
+
+--- Page 47 ---
+47 Synopsys, Inc. 2.1.3.3 APB4 Port Timing
+Figure 2-8  shows a register write access followed by a regi ster read access on the APB4 port. The APB port
+signals behave as per the AMBA4 APB Protocol specific ation. Each write transfer completes in two clock
+cycles whereas each read transfer completes in three cl ock cycles. The pstrb_i signal  enables the byte to be
+written.
+Figure 2-8 APB4 Port Timing
+2.1.4 MAC Control Interface
+The MAC Control Interface (MCI) is supporte d in EQOS-CORE, EQOS-MTL, and EQOS-DMA
+configurations. This interface connects the application with the Control and Status register (CSR) module of the Media Access Controller to provide the control path for programming the MAC registers. The
+application initiates a register write or register read by asserting the command valid signal mci_val_i (with
+the valid data mci_wdata_i and valid byte enables mci_be_i), along with the register address on mci_addr_i.
+The mci_rdwn_i control signal indicates a Write (1’b0) or Read (1’b1) operation. The application assumes a
+successful data transfer when it rece ives an acknowledgment (mci_ack_o) asserted for one clock cycle. The
+CSR module drives the Read data on mci_rdata_o. The application can de-assert the command valid after receiving the acknowledgment.
+If the application continues to assert the command valid signal (on receivin g an acknowledgment), the
+MAC considers it as the next access and responds to it  by asserting the mci_ack_o after one clock cycle. The
+MAC completes the access to reserved registers with dummy read or write operations. This means that the write operations to the reserved a ddresses have no effect and the read operations are completed with an
+all-zero data output on the mci_rdata_o bus.
+All write accesses to the CSR complete  in two clock cycles and read acce sses to the CSR complete in three
+clock cycles. The mac_ack_o signal is asserted after a delay of one clock cy cle after the mci_val_i signal goes
+high. The mci_rdata_o signal is register ed. Therefore, there is an additional  delay of one clock in assertion of
+the mci_ack_o signal. Therefore, each read access is completed in three cl ock cycles for such configurations.
+
+--- Page 48 ---
+48Synopsys, Inc. 2.1.4.1 MCI Port Timing
+Figure 2-9  shows read and write accesses on the MCI port.
+Figure 2-9 MCI Port Timing
+The flow shown in Figure 2-9  is as follows:
+1. The first access to address 0x0004 is a single re ad cycle which completes in three clock cycles. The
+mci_val_i signal and the correspond ing address and control signals sh ould be kept asserted for the
+whole duration of the transaction.
+2. The second and third accesses are single write oper ation cycles to addresses 0x0004 and 0x0000, respec-
+tively. The mci_ack_o signal is asserted one clock af ter the mci_val_i signal is  asserted. The write oper-
+ations are completed in two clock cycles.
+3. The following accesses are burst write and burs t read operations starting from address 0x0040.
+Each individual wr ite or read transaction in the burst is identi cal to the single write or read transactions
+with respect to timing.
+
+--- Page 49 ---
+49 Synopsys, Inc. 2.2 Application Master Interface
+The DMA Controller interfaces with the applicat ion through one of the following interfaces:
+■“AHB Master Interface”  on page 49
+■“AXI Master Interface”  on page 54
+■“AXI4 Master Interface”  on page 60
+■“AXI Low-Power Interface”  on page 60
+2.2.1 AHB Master Interface
+In the EQOS-AHB configuration, th e DMA controller interfaces with the application through the AMBA
+AHB interface. The AHB master interface controls th e data transfers and the AHB slave interface accesses
+the CSR space.
+The DMA can be used in the 32-bit, 64-bit, and 128-bi t embedded applications wh ere the DMA is required
+to optimize the data transfer be tween the MAC and the system memory . For information about the data
+transfers in little-endian an d big-endian modes, see “ Area and Power”  on page 1387 .
+This section covers the following topics:
+■“AHB Master Interface Features”  on page 49
+■“Burst Length Modes”  on page 50
+■“Aligning AHB Burst Transf ers to An Address Value”  on page 51
+■“AHB Memory Read”  on page 51
+■“AHB Memory Write”  on page 52
+■“Early Burst Termination”  on page 52
+■“Error Response and Fatal Bus Error Interrupt”  on page 52
+■“Split or Retry Response”  on page 53
+■“Descriptor Write Back”  on page 53
+2.2.1.1 AHB Master Interface Features
+The AHB master interface converts the internal DM A request cycles into AHB cycles. The AHB master
+interface has the following features:
+■The AHB master interface is AMBA 2.0-compliant AHB master with no restrictions
+■The AHB master interface supports the following burs t length modes: fixed, unspecified, and mixed.
+These modes are explained in the “ Burst Length Modes”  on page 50.
+■The AHB slaves interfacing with the AHB mast er support the SINGLE and INCR transfers.
+■The AHB master interface can handle the AHB SP LIT, RETRY, and ERROR conditions. Any ERROR
+response halts all further transactions for that DMA and indicates the error as fatal through CSR and interrupt. The application can choose to give a hard or  soft reset to the module to restart the operation.
+■The AHB master interface can handle  the AHB 1K boundary breaking.
+■The AHB master interface can handle all 32-bit, 64-bit, or 128-bit data transfers (according to the data
+bus width configuration), except for Descriptor  Status Write accesses (which may be 32-bit).
+In any burst data transfer, the addr ess bus value is always aligned to  the data bus width and need not
+be aligned to the beat size.
+
+--- Page 50 ---
+50Synopsys, Inc. ■The AHB master interface can align all AHB burst tran sfers to an address value.  For more information,
+see “ Aligning AHB Burst Transfers to An Address Value”  on page 51.
+■The DMA requests an AHB Burst Read transfer only when it can completely accept the received burst
+data. The data read from the AHB is always pushed into the DM A without any delay or Busy cycles.
+However, when multiple channels  are selected, there may be some  delay and Busy cycles may be
+inserted because of the shared-mem ory architecture for the channels.
+■The DMA requests an AHB Burst Writ e transfer only when it has th e sufficient data to completely
+transfer the burst. The AHB interface always assumes that it has the data ava ilable to push into the
+AHB bus. However, the DMA can prem aturely indicate end-of-valid data  (because of the transfer of
+EOP of an Ethernet packet) during the burst.
+In Fixed Burst Length mode, the AHB master interf ace continues the burst with dummy data until the
+specified length is completed. In INCR mo de, it ends the burst transfer prematurely.
+2.2.1.2 Burst Length Modes
+The AHB master interface supports the following burst length modes:
+■Fixed Burst Length
+In fixed burst length mode , the AHB master always initiates a bu rst with SINGLE, INCR4, INCR8, or
+INCR16 type. However, when such a burst is resp onded with SPLIT, RETRY,  or Early Burst Termina-
+tion (EBT), by default, the AHB ma ster again initiates the pending trans fers of the burst with INCR or
+SINGLE burst length type. When only one beat is remaining, the AHB ma ster performs a SINGLE
+transfer. If more than one beat is remaining, the AHB master performs an INCR transfer. The AHB
+master terminates such INCR burs ts when remaining beats of the or iginal requested fixed burst are
+transferred.
+To ensure that the AHB master always performs the INCRx and SI NGLE transfers even when a part
+of the burst is initiated again after a SPLIT, RETRY,  or EBT response, use the RIB bit of the DMA_Mode
+register. However, when you enable  this mode, the pending burst may further get split into multiple
+transfers as per the following rules be fore any new transfer is initiated:
+❑If the DMA requests a burst transf er that is not equal to INCR4, INCR8, or INCR16, the AHB appli-
+cation interface splits the transfer into multip le burst transactions. For example, if the DMA
+requests a 15-beat burst transfer, the AHB interface splits it into multiple transfers of INCR8 and
+INCR4, and three SINGLE transactions.
+❑If the burst length is more than 16, the AHB master interface splits it into multiple burst transfers. For example, if the burst length is 32 and the DM A starts a 32-beat transfer, the AHB master splits
+the burst into two INCR16.
+■Unspecified Burst Length
+In unspecified burst mode, the AHB master always initiates a transf er with INCR and completes the
+DMA requested burst in one transfer.
+■Mixed Burst Mode
+In mixed burst mode, the AHB master always initia tes the bursts with fixe d-size (INCRx) when the
+DMA requests transfers of size less than or equal to 16 beats. When the DMA requests bursts of length
+more than 16, the AHB master initiates such tran sfers with INCR and comp letes the request in one
+transfer.
+To ensure that the pending burst of a transfer is rebuilt only wi th INCRx transfers when an INCRx
+transfer is interrupted by RETRY, SPLIT, or EBT  response, use the RB bit of the DMA_SysBus_Mode
+
+--- Page 51 ---
+51 Synopsys, Inc. register. However, if an INCR burst initiated in this  mode is interrupted, the AHB master rebuilds the
+burst only with INCR transfers.
+You can choose the burst modes by programming the FB bit in the DMA_SysBus_Mode register.
+2.2.1.3 Aligning AHB Burst Transfers to An Address Value
+The AHB master interface can align all AH B burst transfers to an address value.
+You can enable aligning all AHB burst transfers to  an address value, by using the AAL bit in the
+DMA_SysBus_Mode register. If Bit 0 and Bit 12 of  DMA_SysBus_Mode register are set to1, the AHB
+interface and the DMA ensure that al l initiated beats are aligned to th e address, completing the packet
+transfer in the minimum number of required beats.
+For example, in 32-bit data bus mode, if the start address of a data buffer transfer is 0xF000_0008 and the
+DMA is configured for a maximum beat size of 16, the AHB transfers occur in  the following sequence:
+1. Two SINGLE transfers at addresses 0xF000_0008 and 0xF000_000C
+2. One INCR 4 transfer at address 0xF000_00103. One INCR 8 transfer at address 0xF000_0020
+4. All subsequent beats are INCR 16 transfers starting from address 0xF000_0040
+For an address-aligned INCR 16 tr ansfer, the six least-significant bits of the address must be 0.
+Similarly, the AHB interface and the DMA split such un aligned address beats for a 64-bit (or 128-bit) data
+bus and initiate INCR16 beats only when  the seven (or eight) least-significan t bits of the address have a zero
+value.
+2.2.1.4 AHB Memory Read
+Figure 2-10  shows the AHB master performing a memory read starting from address 0x40110000. The AHB
+master port uses the INCR 4 burst in this scenario.
+Figure 2-10 AHB Memory Read TimingThe AHB master does not generate the WRAP bursts , and locked or protected transfers. Therefore,
+the DWC_ether_qos does not have the HLOCK or HPROT output signals.
+Note
+
+--- Page 52 ---
+52Synopsys, Inc. 2.2.1.5 AHB Memory Write
+Figure 2-11  shows the AHB master performing a burst memory write transaction, starting from address
+0x401252F4. This data transfer corresponds to an Ethernet packet being written to the system memory by
+the Rx DMA. The AHB master uses th e INCR4 burst. The data bus does no t change values for last two beats
+in the INCR4 transaction. This is because the DMA to the AHB master port internally gave the EOP of the
+packet with the second beat transfer. Because the AHB master started a fixed INCR4 burst, it completes the
+burst with dummy data (same data) for last two beats.
+Figure 2-11 AHB Memory Write Timing
+2.2.1.6 Early Burst Termination
+Figure 2-12  shows an early burst terminatio n occurring when the AHB master carries out an INCR (Write)
+transaction. This figure shows how the AHB master re quests the bus grant again and completes the transfer
+with a SINGLE transaction.
+Figure 2-12 Early Burst Termination Timing
+2.2.1.7 Error Response and Fatal Bus Error Interrupt
+Figure 2-13  shows the behavior of the AHB master when an error response is received. The DUT tries to
+carry out the INCR 4 transaction. Howe ver, it receives a two-cycle error response during the data phase of
+the first beat. The sbd_intr_o interrupt is asserted as a result of this response. For more information about
+the interrupt functions, see “ Interrupts”  on page 145.
+
+--- Page 53 ---
+53 Synopsys, Inc. Figure 2-13 Error Response and Fatal Bus Error Interrupt Timing
+2.2.1.8 Split or Retry Response
+Figure 2-14  shows how the AHB master port reacts to a split or retry response (to address 0x00120560)
+during a transaction. The AHB master receives a two- cycle retry response and immediately reconstructs the
+transaction and requests for the bus by again asserting the hreq_o signal. The hreq_o signal is de-asserted
+only for one cycle when the retry or split response is  sampled in the first cycle of the two-cycle response.
+The behavior remains same for Split response but the second request (hreq_o) from this master is masked in
+the AHB arbiter until the correspondin g AHB slave is ready with the data.
+Figure 2-14 Split/Retry Response Timing
+2.2.1.9 Descriptor Write Back
+Figure 2-15  shows a descriptor being closed on a 64-bit AHB at address 0x40110050. For a big-endian
+configuration, only 32-bit status is written back to  the memory and this appears on upper 32-bits of the
+hwdata_o bus. For a little-endian configuration, the 32-bit  descriptor data appears on lower 32 bits of 64-bit
+AHB bus.
+Figure 2-15 Descriptor Write-Back Timing
+
+--- Page 54 ---
+54Synopsys, Inc. 2.2.2 AXI Master Interface
+In the EQOS-AXI configuration, the DMA controller in terfaces with the application through the AMBA 3
+AXI interface. The AMBA 3 AXI bus in terface provides the characteristic s to support highly-effective data
+traffic throughput. The system bus utilization is ma ximized by allowing simultaneous read and write
+transfers initiated from different DMA channels. For ex ample, the Tx descriptor read and Rx descriptor
+write-back (status update) operations can happen simultaneously. However, the Tx descriptor read and Tx
+descriptor write-back operations cannot happen simultaneously because the Tx DMA (or Rx DMA) does not initiate the next transfer unle ss the previous one is complete.
+The AXI master interface allows multiple numbers of  burst requests to be queued for Read or Write
+operation. The system bus utilization can be further enhanced by supporting Requests reordering and Data
+interleaving. This gives the AXI mast er the flexibility to dynamically and independently select multiple
+slaves for handling Priority Requests and Slow peripheral slaves. The EQOS-AXI configuration also
+supports the low-power interface de fined in the AXI specification.
+■“Burst Splitting and Burst Selection”  on page 54
+■“INCR Burst Type”  on page 55
+■“INCR_ALIGNED Burst Type”  on page 55
+■“Outstanding Transactions”  on page 56
+■“Priority of AXI Requests”  on page 56
+■“Bursts Reordering and Data Interleaving”  on page 56
+■“AXI-ID Translation”  on page 57
+■“Endianess Support”  on page 57
+■“Posted Writes”  on page 57
+■“Error Response Handling”  on page 58
+■“AXI Memory Read”  on page 58
+■“AXI Memory Write”  on page 59
+■“AXI Early Burst Termination”  on page 59
+2.2.2.1 Burst Splitting and Burst Selection
+In DWC_ether_eqos, the AXI master can split the DMA re quests into multiple bursts, in the AXI system bus.
+The AXI master splits the DMA requests into multiple bursts on the AXI system bu s. Splitting is based on
+the DMA count, the software-contr ollable burst enable bits (FB, BLEN256, BLEN128, BLEN64, BLEN32,
+BLEN16, BLEN8, BLEN4), and the soft ware-controllable burst types (INCR and INCR_ALIGNED). For
+more information, see DMA_SysBus_Mode register.
+The AXI master also handles splitting the transfers that cross 4 KB address boundary, with an option to limit
+it to 1-KB address boundary. The Burst Length Select  Priority is in the following sequence: FB, BLEN256,
+BLEN128, BLEN64, BLEN32, BLEN16, BLEN8, and BLEN4.Y ou can select AXI4 compat ible interface also. This interface has additional signals and capabilities as
+compared to the AXI3 signal interface.
+Note
+
+--- Page 55 ---
+55 Synopsys, Inc. 2.2.2.2 INCR Burst Type
+If FB is disabled, the AXI master always chooses th e maximum allowed burst leng th based on the BLEN256,
+BLEN128, BLEN64, and BLEN32 bits (po ssible maximum burst lengths are 25 6, 128, 64, 32, or 16). The AXI
+master chooses a burst length of any value less than the maximum enabled burst length (all lesser burst
+length enables are redundan t) in the following cases:
+■The DMA requests are not multiples of the maximum allowed burst length
+■The 4K/1K address boundary crossing condition is enabled
+For example, when only BLEN64, BLEN16, and BLEN4 are enabled, and the DMA requ ests a burst transfer
+of 102 beats size, the AXI master splits it into two bursts of 64 and 38 beats size, respectively.
+If FB is enabled, the burst length is based on the priority of the enabled bits in the following order: BLEN256,
+BLEN128, BLEN64, BLEN32, BLEN16 , BLEN8, and BLEN4. When the DMA re quests to transfer a burst, the
+AXI interface splits the requested bu rsts into multiple transfers by us ing only the enabled burst lengths.
+This splitting can occur in following cases:
+■The requested burst is not a multip le of the maximum enabled burst
+■The 4K/1K address boundary crossing condition is enabled
+If the AXI interface cannot choose any of the enabled bu rst lengths, it selects th e burst length as 1. For
+example, if only BLEN64, BLEN16, and BLEN4 are enabled and the DMA requests a burst transfer of
+size102 beats, the AXI interface splits it into multiple bu rsts of size 64, 16, 16, 4, 1, and 1 beats, respectively.
+The sequence is in decreasing burst lengths.
+2.2.2.3 INCR_ALIGNED Burst Type
+When the address-aligned burst type is  enabled, then in addition to the burst splitting conditions explained
+in INCR Burst Type, the AXI interface splits the DMA requested bursts such that each burst length is
+aligned to the least significant bits of the start address.  The AXI interface initially generates smaller bursts so
+that the remaining transfers can be transferred with the maximum possible (enabled) fixed burst lengths.
+For example, in the same setting as explained earlier for FB (BLEN64 , BLEN16 and BLEN4 are enabled), the
+DMA requests a burst of size 102 beats at the start address of 0x0000_03A4 (32-bit bus). The AXI master starts the first transfer with size 23 such that the address of the next burst is aligned (0x0000_0400) for a
+burst of 64. Therefore, the sequence of bursts is 23, 64, and 15, respectively.
+When FB is set, the sequence of burst transfers is 1, 1, 1, 4, 16, 64, 4, 4, 4, 1, 1, and 1 in same scenario,
+respectively. The sequence of smaller bursts at the be ginning aligns the address to the next higher enabled
+burst lengths programmed in the register.The DWC_ether_qos supports the burst length of up to 256 beats in AXI3 and AXI4 modes although
+the maximum burst length specified in the AXI3 standard is 16 beats. You can configure the maximum burst length (16, 32, 64, 128, or 256) allowed on the AXI bus by using the AXI Maximum Burst Length option in coreConsultant. This feature is provided for the systems which require larger than 16-beats burst length for optimum utiliz ation of the bus bandwidth.
+Note
+
+--- Page 56 ---
+56Synopsys, Inc. 2.2.2.4 Outstanding Transactions
+The AXI master supports configurable outstanding read/w rite requiests on the AXI bus. You can control the
+outstanding requests by programm ing the DMA_SysBus_Mode register.
+The AXI master supports up to 4, 8, or 16 (configu rable in coreConsultant) outstanding Read or Write
+requests on the AXI bus. You can also control these outstanding requests throug h software by programming
+Bits[24:21] and Bits[19:16] in the DMA_SysBus_Mode register. This is a useful workaround for any system-level issues with ha ndling of multiple requests.
+2.2.2.5 Priority of AXI Requests
+The descriptor transfers have higher pr iority than the data transfers. Ther efore, if there are two requests, Rx
+Descriptor Read and Tx Data Read, the Rx Descriptor Read is given higher priority so that the next Rx Data
+Write (subsequent to Rx Desc riptor Read) need not wait for the Tx Data Read transfer to complete. If there
+are descriptor read requests from both DMAs, these requ ests are serviced based on the first-come first-serve
+basis. The Rx DMA has higher priority if descriptor read requests, generated fr om both DMAs, are in the
+same clock. Similarly, in the writ e channel, descriptor writes from an y DMA have higher priority than the
+data-write transfers for the Rx DMA.
+When you enable the AV or DCB feature, the DMA ma y contain multiple channels. If the requests are
+generated from different channels simultaneously in  the same clock, the request priority among the
+channels is: Channel 7 (if present), Channel 6,..., Channel 1, and Channel 0.
+2.2.2.6 Bursts Reordering and Data Interleaving
+The AXI protocol allows reordering of  data transfers with different AXI-ID s with respect to the sequence of
+requests. It also allows data in terleaving between transfers of different AXI-IDs for Read channels.
+In EQOS-AXI configurations, the requests from each internal master (Rx DMA and Tx DMA) are generated
+with different AXI-ID. Therefore, reordering and data  interleaving can be perf ormed as two DMAs operate
+independently and are allocated different  address space on the slave memory.
+The AXI master supports reordering and interleaving from the AXI slaves on the Read channel. Each DMA
+internally ensures that a Read request and Write request is never generated at the same time to the same address (it can occur for only descri ptor accesses). The Tx DMA ensures that Tx Descriptor Read, Tx Data
+Read, and Tx Descriptor Write-Back requests are gene rated only after the previous requests are complete. The maximum number of outstanding requests is divided equally between the requests generated by
+the two internal masters (Rx DMA and Tx DMA). This means that when you select eight outstanding AXI requests while configuring the core, each DMA is limited to a maximum of four outstanding requests in each Read or Write channel. When you reduce the outstanding request (for example, to four) by programming the respective control bits, all outstanding requests can be from the same DMA. The minimum number of outstanding requests per channel is two.
+The Maximum outstanding requests on the AXI is limited to parameter
+DWCXG_AXI_GM_MAX_RD_REQUESTS a nd DWCXG_AXI_GM_MAX_WR_REQUESTS
+corresponding to Read and Write Channels respectively. Y ou can limit this by programming RD_OSR_LMT and WR_OSR_LMT of DMA_SysBus_Mode register.
+Note
+Note
+
+--- Page 57 ---
+57 Synopsys, Inc. The Rx DMA generates only Descriptor reads on the Read channel with a different ID. Therefore, data
+reordering and interleaving on the Read channel does not cause any problems in the MAC.
+2.2.2.7 AXI-ID Translation
+The AXI master selects unique IDs for each DMA channel and also for each Tx/Rx DMA channel. The AXI
+master selects the IDs as follows:
+■AXI Master ID[0] = 0
+Rx DMA access for Read and Write
+■AXI Master ID[0] = 1
+Tx DMA access for Read and Write
+■AXI Master ID[3:1] = 0, 1, 2, 3, 4, 5, 6, or 7
+DMA channel number when multiple DMA channels are present, that is, when you select the AV or
+DCB feature. Otherwise, it  is hardwired to zeros.
+2.2.2.8 Endianess Support
+The AXI master supports the little-endian and byte-invariant big-endian modes on the AXI master ports.
+The AXI master does not support narrow transfers and always performs full data-width transfers. For more
+information about the supported endian modes, see “Endian Support”.
+2.2.2.9 Posted Writes
+In posted writes, the write channel of AXI master trans fers an OKAY response to the DMA as soon as the
+last cycle or beat of data is accepted by the AXI in terconnect. The AXI master sends this response without
+waiting for the response from the target AXI slave on the write response channel. In non-posted writes, the
+AXI master interface transfers the response re ceived from the AXI slave channel to the DMA.
+For transferring the Ethernet data to system memory, the Rx DMA always issues posted write requests to
+the AXI master interface. This enables pipelining of th e data requests without de lays. The AXI master does
+not support out-of-order write transfers. However, the Rx DMA ensures that the se quence is maintained for
+descriptor writes, descriptor  reads, and data transfers.
+For writing descriptors (status or ti mestamp), the DMA always issues the non-posted write requests. This is
+needed because the Transfer Complete Interrupt is ge nerated based on the descri ptor writes for which the
+DMA needs completion response from the memory slave. This ensures no race condition between the
+hardware and the software because th e interrupt is generated only after the data and descriptor are written
+to the slave memory.The AXI master does not support data reordering and interleaving on the Write channel which is
+compliant with the latest AXI 4 specification.
+The AXI system bus ID width is configurable. The default width for the AXI master is 4 bits. The unused
+bits are hardwired to zeros. The default width for the AXI slave interface is 8 bits.
+Note
+Note
+
+--- Page 58 ---
+58Synopsys, Inc. 2.2.2.10 Error Response Handling
+Whenever there is an error response  from the AXI slave (as shown in Figure 2-16  with rresp_m_i[1:0] = 3),
+the respective DMA channel which generated the re quest gets disabled. The AXI master asserts the
+interrupt (sbd_intr_o in Figure 2-16 ) when the corresponding “Fatal Bus Error” interrupt is enabled. Only
+the DMA whose specific transaction had the error response gets affected and goes to STOP state. The application can re-initialize that specific DMA and restart the operation. The traffic on the other channels
+does not get affected if an erro r is detected for a DMA Channel.
+Figure 2-16 Error Response Timing
+2.2.2.11 AXI Memory Read
+Figure 2-17  shows the AXI master read timings. Two requests are placed for ID 0 and ID 1. The Read data is
+interleaved by the interconnect (by way of ID 0 and ID 1) and received by the AXI master. The Tx DMA in
+AXI master always ensures that it has enough space in its FIFO to accept th e requested burst of data.
+Therefore, the r_ready_m_o response is always high.For data transfer to system memory, the Rx DMA al ways issues posted writes. So, after the data is
+accepted by AXI interconnect, DMA moves out of Buffer data write state to descriptor write state without waiting for the response from the target AXI slave, on the write response channel. Therefore, after the ERROR response for the previous buffer wr ite is received, DMA initiates a Descriptor Write
+and captures ERROR status (received during Descriptor Write) as bus error, into the CSR space.
+Note
+
+--- Page 59 ---
+59 Synopsys, Inc. Figure 2-17 AXI Memory Read Timing
+2.2.2.12 AXI Memory Write
+Figure 2-18  shows the AXI write interface diagram. There are two requests for ID0. These requests are
+issued with burst lengths of 16 and 2. The latency be tween the first write request and the corresponding first
+data is two clocks. Th e Rx DMA ensures that it always has the requested burst of data available in its FIFO
+before the request is generated. Therefore, there are no  further latencies or delays in the data transfer. The
+complete 18 beats of write data of the two requests are transferred in 18 clocks, prov ided there is no delay in
+the acceptance of that data by the AXI slave, as shown in Figure 2-18 .
+Figure 2-18 AXI Memory Write Timing
+2.2.2.13 AXI Early Burst Termination
+Figure 2-19  shows the early burst termination on Write channel. This can happen during data transfer when
+the EOP is read out of the Rx queue before the reques ted burst transfer is comp leted. Five requests are
+issued, but the EOP gets transferred in the middle of th e first burst. The AXI master  still continues the data
+phases of the outstanding requested bursts but does not allow further data to be written to the slave
+memory by de-asserting the write-strobes (as indicated by wstrb_m_o[3:0] = 0).
+
+--- Page 60 ---
+60Synopsys, Inc. Two extra request commands (@address 0x00026e18 and 0x00026e58) are active when the write-strobes are
+de-asserted after EOP transfer. The firs t request has already been issued to  the slave. Therefore, it is not
+changed. The second request is a dumm y request with a single beat required  to generate a last data transfer
+(with wlast high).
+Figure 2-19 AXI Early Burst Termination Timing
+2.2.3 AXI4 Master Interface
+In the EQOS-AXI4 configuration, the DMA controller interfaces with the application through the AMBA
+AXI4 interface. The EQOS-AXI4 configuration is same as EQOS-AXI configuration except for features listed
+in this section.
+The EQOS-AXI4 configuration provides additional in terface signals AxQOS (arqos_m_o and awqos_m_o)
+and AxDOMAIN (ardomain_m_o and awdomain_m_o).
+2.2.4 AXI Low-Power Interface
+The EQOS-AXI configuration supports the low-power interface defined by the AXI specification. Bits[31:30,
+10] of DMA_SysBus_Mode register co ntrol the behavior of the AXI master in the low-power mode. When
+Bit31 (EN_LPI) is set, the AXI Master  enables the low-power feature. The se tting of Bit[10] determines if the
+AXI Master can also initiate the entry to low-power stat e. Bit30 controls the low-power exit due to reception
+of packets from the line.After transferring the EOP data to the system memory, a lot of AXI bandwidth may be wasted because
+of dummy writes. Therefore, it is recommended to have two or less than two outstanding requests on the AXI master write channel by appropriately programming DMA_SysBus_Mode.
+■The wid_m_o signal can be left unconnected in EQOS-AXI4 configurations.
+■If the system does not support ACE-Lite, AxDOMAIN (ardomain_m_o and awdomain_m_o) signals
+can be left unconnected in EQOS-AXI4 configurations.
+Note
+Note
+
+--- Page 61 ---
+61 Synopsys, Inc. This means that the AXI master accepts the low-power request and goes into the low-power mode in which
+the application can remove the AXI cl ock when the following conditions ar e true for a duration equal to the
+value programmed in the AXI_LPI_Entry_Interval register.
+■The MAC transmitter and receiver are in the Idle mode
+■Both DMA engines are in Idle mode
+■There is no data in the Transmit  or Receive data  path or queue
+■Slave interface is idle
+If the MAC is in the active state (not idle) at the time of low-power initiation request, the AXI master waits
+for a period of 16 AXI clock cycles. If the MAC is st ill in the active state at th e end of this period, the
+low-power request is denied.
+If the MAC goes to idle (inactive) within 16 clock cy cles, the AXI master monitors the inactive state for a
+further period indicated by the AX I_LPI_Entry_Timer. If the MAC rema ins inactive for this period, the
+low-power request is accepted and acknowledged by going into the low-power state. Otherwise (if the
+MAC becomes active before the expiry of this interval), the request is denied.
+After the MAC goes into low-power state and acknowledges it (csysack_o is made low), the AXI system can
+gate-off or remove the AXI cloc k when cactive_o is made low,
+2.2.4.1 AXI System Initiated Low-Power Entry
+The AXI system initiates a low-powe r mode request to the AXI master by setting csysreq_i to 0. When
+EN_LPI is set, the AXI master checks the active state of  the data paths within the controller before giving a
+response. The timing and behavior of the EQOS-AXI low-power interface signals is according to the Figure
+12-2 of the AXI Specification.
+Note
+
+--- Page 62 ---
+62Synopsys, Inc. Figure 2-20 AXI Low-Power Entry Flow
+2.2.4.2 Automatic AXI Low-Power Entry
+In addition to the system initiated AXI low power entry (where DWC_ether_qos enters low power upon
+request from system controller), DWC_ether_qos also supports AXI low-power entry when there is no
+activity within the controller for a configured interval of time. This  feature makes the DWC_ether_qos to
+automatically (that is, without any request from system  controller) enter into AXI low-power state when the
+idle condition is reached.
+This mode is enabled when AALE bi t of DMA_SysBus_Mode Register (Bit 10) is set. The minimum idle
+period before the AXI low-power request is triggered by the MAC is programmed in the
+AXI_LPI_Entry_Inte rval register.
+In this mode, when the MAC is in the inactive state (as mentioned in“ AXI Low-Power Interface”  on page 60)
+for the programmed duration, it auto matically initiate s the AXI low-power mode by making cactive_o low.
+The AXI system can gate-off (disab le) the AXI clock in this state.
+IDLE timer is the timer that gets loaded with the programmed interval when MAC is active. IDLE timer
+decrements when MAC is IDLE.On entering here, monitor the state o f the MA C for 16 cycles On entering here, monitor the state of the MAC for 16 cycles
+MAC becomes /is already
+inactive anyt ime during this
+windowMAC becomes/is already
+inactive anytime during this
+window
+Monitor further till it
+becomes act ive or idle
+timer exp iresMonitor further till it
+becomes active or idle
+timer expires
+MAC remains inactive
+throughout the
+programmed intervalMAC remains inactive
+throughout the
+programmed interval
+Accept Accept DenyDenyMAC remains active during MAC remains active durin g
+this windowMAC remains active during
+this window
+MAC becomes active e MAC becomes activeUpon Receiving Low-Power Request Upon Receiving Low-Power Request
+
+--- Page 63 ---
+63 Synopsys, Inc. 2.2.4.3 Coming Out of Low-Power Mode
+AXI Master comes out of low-power mode when one of the following occurs:
+■AXI system restores the AXI clock and initiates the exit by removing the low-power request (csysreq_i
+is made high); the AXI Master acknowledges it (by making csysack_o and cactive_o high) and exits
+the low-power state.
+■The MAC itself initiates a low-power exit by making cactive_ o high when it receives a packet from the
+line. If Bit[30] of DMA_SysBus_Mode  register is set, it initiates the exit only if a valid magic packet or
+remote wake-up packet is received. In this scenario the request signal assertion (cactive_o) is synchro-
+nous to the clk_rx_i clock because the AXI clock is assumed to be absent.
+■If the CSR slave port is operates with a different clock than AXI Master cloc k, the MAC initiates the
+low-power exit when any read/write access is made  to any of the DMA or MTL registers. In this
+scenario the request signal assertion (cactive_o) is  synchronous to the clk_csr_i clock because the AXI
+(aclk_i) clock is as sumed to be absent.
+In case of AXI system initiated exit (due to csysre q_i assertion), the clock controller should enable
+the clock immediately along with csysreq_i. The cactive_o & csysack_o assertion is synchronous to this clock
+For MAC initiated low-power exits, the clock controller must restore the AXI clock immediately after
+the cactive_o is made high. Otherwise, it can affect the CSR register operations due to misbehavior of CDC synchronization circuit especially for back-2-back register writes.
+Note
+
+--- Page 64 ---
+64Synopsys, Inc. 2.3 DMA Controller
+The DMA has independent Transmit (Tx) and Receive (Rx) engines, and a CSR space. The Tx engine
+transfers data from the system memory to the device po rt (MTL), whereas the Rx engine transfers data from
+the device port to the system memory. The DMA engine  uses descriptors to effi ciently move data from
+source to destination with minimal application CPU in tervention. The DMA is designed for packet-oriented
+data transfers such as packets in Ethernet. The DM A controller can be programmed to interrupt the
+application CPU for situations such as Packet Transmit and Receive Tran sfer completion, and other normal
+or error conditions.
+The DMA and the application communicate through the following two data structures:
+■Control and Status registers (CSR)
+■Descriptor lists and data buffers
+The DMA supports up to 8 Tx and 8 Rx Descriptor list s (or DMA channels). The base address of each list is
+written to the respective Tx Descript or List Address register  and Rx Descriptor List  Address register. The
+descriptor list is forward lin ked and the next descriptor is always considered at a fixed offset to the current
+one. The offset is controlled by th e DSL field of DMA_Ch[n]_Control regi ster. The number of descriptors in
+the list is programmed in the respective Tx (or Rx ) Descriptor Ring Length register. Once the DMA
+processes the last descriptor in the list, it automatica lly jumps back to the descriptor in the List Address
+register to create a descriptor ring.
+The descriptor lists reside in the physical memory a ddress space of the application. Each descriptor can
+point to a maximum of two buffers in the system memory. This enables two buffers to be used, physically
+addressed, rather than cont iguous buffers in memory.
+A data buffer resides in the applicatio n physical memory space and consists of an entire packet or part of a
+packet but cannot exceed a single packet. Buffers contain only data. Bu ffer status is ma intained in the
+descriptor. Data chaining re fers to packets that span multiple data  buffers. However, a single descriptor
+cannot span multiple packets. The DMA skips to the data buffer of next packet when EOP is detected.
+The DWC_ether_qos supports the ring structure for the DMA descriptor. For more information on the
+descriptor, see “ Descriptors”  on page 1315  that describes the descriptor structure and how the DMA
+accesses the descriptors.
+The following sections discuss in detail the various operations of a DMA controller:
+■“DMA Application Bus Burst Access”  on page 65
+❑“DMA Application Data Buffer Alignment”  on page 66
+❑“DMA Buffer Size Calculations”  on page 66
+❑“DMA Arbiter (EQOS-DMA and EQOS-AHB Configurations)”  on page 67
+■“Transmission”  on page 68
+❑“Transmit DMA Operation: Default (Non-OSP) Mode”  on page 68■When DWC_ether_qos is configured with an address greater than 32 bits, the DMA considers that
+all the descriptors in a list are present in a memory page with maximum size of 4GB. In other words,
+address bits greater than 32 are taken to be constant and equal for all the descriptors in the ring. However, the upper bits of the various buffer addresses can be different and independent.
+■When DWC_ether_qos is operated with an address greater than 32 bits, the Tx Descriptor can have only one buffer address. However, the Rx De scriptor can still have two buffer addresses.
+Note
+
+--- Page 65 ---
+65 Synopsys, Inc. ❑“DMA Transmit Operation: OSP Mode”  on page 71
+❑“Transmit Packet  Processing”  on page 73
+❑“Transmit Polling Suspended”  on page 73
+❑“DMA Transmit Channel Arbitration”  on page 74
+■“DMA Receive Operation”  on page 75
+❑“Receive Descriptor Acquisition”  on page 78
+❑“Receive Packet Processing”  on page 78
+■“Interrupts”  on page 145
+❑“Periodic Scheduling of Tran smit and Receive Interrupt”  on page 149
+❑“Per Channel Transfer Complete Interrupt”  on page 149
+■“Error Response to DMA”  on page 79
+■“DMA Native Interface”  on page 79
+2.3.1 DMA Application Bus Burst Access
+The DMA engines attempts to transfer data in a burst of maximum size as programmed in the PBL fields of
+Transmit Control and Receive Control registers of th e respective DMA. The Rx and Tx descriptors are
+always accessed in the maximum possible (limited by P BL or 16 * 8/bus width) burst length for 16 bytes to
+be read. The burst transfers initiate d by the DMA can be split into multiple burst transfers as per the
+Application Interface protoc ol (AHB or AXI) requirements and the settings of DMA_SysBus_Mode register.
+The Tx DMA initiates a data transfer  only when sufficient space is available in the MTL Tx Queue to
+accommodate either of the following:
+■Bytes corresponding to the conf igured burst (PBL * bus_width/8)
+■Remaining bytes in Tx Buffer without EOP
+■Number of bytes till EOP
+The Rx DMA initiates a data transf er in the following conditions:
+■Sufficient data is available in MTL Rx Qu eue to accommodate the configured burst
+■EOP (when it is less than the configured burst length) is detected in the Rx Queue
+The DMA indicates the star t address and the number of transfers required to the AHB or AXI master
+interface. When the AHB or AXI Interface is configured for fixed-length burst, it transfers the data by using
+the best combination of INCR4, INCR8, or INCR16 and SINGLE transactions. If EOP is reached before the fixed-burst ends on the AHB or AXI interface, dumm y transfers are performed in-order to complete the
+fixed-burst. Otherwise [Bit 0 of DMA_SysBus_Mode re gister is reset], the DMA transfers the data using
+INCR (undefined length) and SINGLE transactions.
+When the AHB or AXI interface is configured for addr ess-aligned beats, both DMA engines ensure that the
+first burst transfer initiated by the AHB or AXI is less than  or equal to the size of the configured PBL.
+Therefore, all subsequent beats start at an address that  is aligned to the configured PBL. The DMA can only
+align the address for beats up to size 16 (for PBL > 16) for AHB interface because it does not support more
+than INCR16.
+Similarly, the DMA can only align the address for beats up to 256 size (for PBL > 256) because the AXI
+interface does not support more than BLEN 256.
+
+--- Page 66 ---
+66Synopsys, Inc. 2.3.1.1 DMA Application Data Buffer Alignment
+The Tx and Rx data buffers do not have any restrictions on start address alignment. For example, in systems
+with 32-bit memory, the start address for buffers can be aligned to any of the four bytes. However, the DMA
+always initiates write transfers with  address aligned to the bus width and dummy data (old data) in the
+invalid byte lanes. This typically ha ppens during the transfer of the beginni ng or end of an Ethernet packet.
+The software driver should discard the dummy bytes base d on the start address of the buffer and size of the
+packet.
+Table 2-1 Application Data Buffer Alignment Examples
+2.3.1.2 DMA Buffer Size Calculations
+The DMA does not update the size fields in the Tx and Rx descriptors. The DM A updates only the status
+fields (RDES and TDES) of the descriptors. The driver has to perform the size calculations.
+The Tx DMA transfers the exact number of bytes (indic ated by buffer size field of TDES2) towards the MAC.
+If a descriptor is marked as first (FD bit of TDES3 is set), the DMA marks the first transfer from the buffer as
+SOP. If a descriptor is marked as last (LD bit of TD ES3), the DMA marks the last transfer from that data
+buffer as EOP to the MTL.
+The Rx DMA transfers data to a buffer until the buffer is full or the end of  packet is receiv ed from the MTL.
+When the FD bit of a descriptor is se t, the amount of valid data in a bu ffer is accurately  indicated by the
+buffer size field (programmed in DMA Channel Receive Control regist er) minus the data buffer pointer
+offset. The offset is zero when the data buffer pointer is aligned to the data bus width. If a descriptor is
+marked as last, the buffer may not be full (as indicated by the buffer size  in Bits[14:1] of Receive Control
+register). To compute the amount of valid data in this  final buffer, the driver mu st read the packet length
+(PL bits of RDES3[14:0]) and subtract the sum of the bu ffer sizes of the preceding buffers in this packet. The
+Rx DMA always transfers the start of next packet with a new descriptor.Examples
+Buffer Read If the Tx buffer address is 32’h00000FF2 (for 32-bit data bus), and 15 bytes need to be transferred, the
+DMA reads five full words from address 32’h00000FF0, but when transferring data to the MTL Tx queue, the extra bytes (the first two bytes) are dropped or ignored. Similarly, the last 3 bytes of the last transfer are also ignored. The DMA always ensures that it transfers a full 32-bit data to the MTL Tx queue, unless it is the end of packet.
+Buffer Write If the Rx buffer address is 32’h0000FF2 (for 64-bit data bus) and 16 bytes of a received packet need to
+be transferred, the DMA writes 3 full words from address 32’h00000FF0. However, the first 2 bytes of the first transfer and the last 6 bytes of the third transfer have dummy data. The DMA considers the offset address only if it is the first Rx buffer of the packet. The DMA ignores the offset address and performs full word writes for the middle and the last Rx buffer of the packet.
+Even when the start address of a Rx buffer is not aligned to the data width of system bus, the system
+should allocate a Rx buffer of a size aligned to the system bus width. For example, if the system allocates a Rx buffer of 1,024 bytes (1 KB) starting from address 0x1000, the software can program the buffer start address in the Rx descriptor to have a 0x1002 offset.The Rx DMA writes the packet to this buffer with dummy data in the first two locations (0x1000 and 0x1001). The actual packet is written from location 0x1002. Therefore, the actual useful sp ace in this buffer is 1,022 bytes, even though the
+buffer size is programmed as 1,024 bytes, because of the start address offset.
+Note
+
+--- Page 67 ---
+67 Synopsys, Inc. 2.3.1.3 DMA Arbiter (EQOS-DMA and EQOS-AHB Configurations)
+The arbiter inside the DMA module performs the arbitr ation between the Tx and Rx channel accesses to the
+AHB master interface. The following tw o types of arbitrations are supported:
+■Round-Robin Arbitration
+When Bit 1 of the DMA_Mode register is reset and both Tx and Rx DMAs are simultaneously
+requesting for access, the arbiter allocates the da ta bus in ratio set by Bits[14:12] of DMA_Mode
+register.
+■Fixed-Priority Arbitration
+When Bit 1 of the DMA_Mode register is set, the Rx DMA always gets priority over the Tx DMA for
+data access by default. When Bit 11 of DMA_Mode Register is also set, the Tx DMA gets priority over the Rx DMA as explained in Table 8-3  on page 286.
+2.3.1.4 DMA Start/Stop Control Through Sideband Signals
+The DMA can be started/stopped by performing  any or both of the following operations:
+■Programming ST bit in DMA_CH[n]_ Tx_Control and SR bit in DMA_ CH[n]_Rx_Control register for
+Tx and Rx DM A respectively
+■Appropriately driving the sbd_txdm a_start_i[n] and sbd_rxdma_start_i[ n] inputs for Tx and Rx DMA
+respectively
+The DMA Start/Stop through Sideband  Signals has higher precedence.The Rx DMA places the next request only after the earlier request is complete. There is delay to find
+data availability in the MTL queue (ari _rdy and ari_pbl is ena bled, if data equal to PBL is available; MTL
+asserts ari_rxwatermark which indicates requir ed data availability) and place the request.
+So, there is no overlap of Rx DMA request with Tx DMA request when operating in single DMA mode.
+However, this is possible with multiple Rx DMA enabled.
+Note
+
+--- Page 68 ---
+68Synopsys, Inc. Table 2-2  shows the behavior when the above operations  are performed simultan eously or distinctly:
+Table 2-2 DMA Start/Stop Through Sideband Signals
+2.3.2 Transmission
+2.3.2.1 Transmit DMA Operation: Default (Non-OSP) Mode
+The Tx DMA engine in defaul t mode proceeds as follows:
+1. The application sets up the Transmit descriptor (TDES0–TDES3) and sets the Own bit (TDES3[31]) after
+setting up the corresponding data bu ffer(s) with Ethernet Packet data.
+2. The application advances the Descriptor Tail  pointer offset value of the Transmit Channel.
+3. While in the Run state, the DMA runs an Arbitration cycle to select the next Tx DMA channel from
+which the packets requiring transmission should be processed.
+4. The DMA fetches the descriptor from the application memory.5. If the DMA detects one of the following conditions , the transmission from that channel is suspended
+and Bit 2 and Bit 16 of Status Register of corresponding DMA channel are set and the Tx Engine proceeds to step 11:
+■The descriptor is flagged as owned by the application (TDES3 [31] = 1'b0)
+■The Descriptor Tail pointer is equal to the Curren t Descriptor pointer in Ring Descriptor list Mode
+■An error condition occurs
+6. If the acquired descriptor is flagged as owned by the DMA (TDES3 [31] = 1’b1), the DMA decodes the
+Transmit Data Buffer address from the acquired descriptor.
+7. The DMA fetches the Transmit data from the syst em memory and transfers the data to the MTL for
+transmission.Start(1)/Stop(0)
+through
+Sideband
+SignalsStart(1)/Stop(0) through
+software
+programming Current State New State
+Comments
+0 0 0 0  Default/Reset value0 -> 1 0 0 1 DMA Started by Sideband0 0 -> 1 0 1 DMA Started by SW1 1 x 1 DMA Started by both Sideband Signals and software
+programming
+1 -> 0 1, 0 1 0 DMA Stopped by Sideband Signals1, 0 1 -> 0 1 0 DMA Stopped by SW programming0 -> 1 1 -> 0 x 1 Sideband Signals Start DMA and SW programming
+Stop DMA in same clock cycle
+1 -> 0 0 -> 1 x 0 Sideband Signals Stop DMA and SW programming
+Start DMA in same clock cycle
+
+--- Page 69 ---
+69 Synopsys, Inc. 8. If an Ethernet packet is stored over data buffers  in multiple descriptors, the DMA closes the interme-
+diate descriptor and fetc hes the next descriptor. Steps 3 thro ugh 7 are repeated until the end of-
+Ethernet-packet data is transferred to the MTL.
+9. When packet transmission is co mplete, if IEEE 1588 Timestamp feat ure was enabled for the packet (as
+indicated in the Tx status), the timestamp value obtained from MTL is written to the Tx descriptor
+(TDES0 and TDES1) that contains the EOP buffer. The st atus information is written to this Tx descriptor
+(TDES3). The application now owns this descriptor because the Own bit is cleared during this step.
+If timestamp feature is not enabled for this packet , the DMA does not alter the contents of TDES0 and
+TDES1.
+10. Bit 0 of Status Register of corresponding channel is  set after completing transmission of a packet that
+has Interrupt on Completion (TDES2[31]) set in its Last Descriptor. The DMA engine returns to step 3.
+11. In the Suspend state, the DMA tries to acquire the descriptor again (and thereby return to step 3). A poll
+demand command is triggered by writing any value to the DMA_CH0_TxDesc_Tail_Pointer when it
+receives a Transmit Poll demand and the Underflow In terrupt Status bit is cleared. If the application
+stopped the DMA by clearing Bit 0 of Transmit Cont rol Register of corresponding DMA channel, the
+DMA enters the Stop state.
+The Tx DMA transmission flow in default mode is shown in Figure 2-21 .By default, the Tx DMA places subsequent reques t after the current descriptor write request is
+completed to the descriptor memory. If posted descriptor write is enabled by setting DSPW bit in DMA_Mode register, the Tx DMA will place subsequen t request after the curr ent descriptor write
+request is placed without waiting for its completion, thereby improving the throughput.
+Note
+
+--- Page 70 ---
+70Synopsys, Inc. Figure 2-21 Transmit DMA Operation in Default Mode
+
+--- Page 71 ---
+71 Synopsys, Inc. 2.3.2.2 DMA Transmit Operation: OSP Mode
+In the Run state, if Bit 4 is set in the Transmit Cont rol Register of corresponding DMA channel, the Transmit
+process can simultaneously acquire tw o packets without closing the Status descriptor of  the first packet. As
+the Transmit process finishes transferring the first pack et, it immediately polls the Transmit Descriptor list
+for the second packet. If the second packet is valid, the Transmit process transfers this packet before writing
+the status information of the first packet.
+In OSP mode, the Run state Tx DMA operates in the following sequence:
+1. The DMA operates as described in step 1 to step 7 of the Tx DMA (default mode).
+2. The DMA fetches the next descriptor without cl osing the last descriptor of previous packet.
+3. If the DMA owns the acquired descriptor, the DMA decodes the transmit buffer address in this
+descriptor. If the DMA does not own the descriptor, the DMA goes into Suspend mode and skips to
+step 7.
+4. The DMA fetches the Transmit packet from the sy stem memory and transfers the packet to the MTL
+until the EOP data is transferred, closing the intermediate descriptors if this packet is split across
+multiple descriptors.
+5. The DMA waits for the packet transmission status and timestamp of previous packet. When the status
+is available, the DMA writes the timestamp to TDES0 and TDES1 if such timestamp was captured (as indicated by a status bit). The DM A writes the status, with a cleared Own bit, to the corresponding
+TDES1, thus closin g the descriptor.
+If Timestamp feature is not enabled for the previous  packet, the DMA does not alter the contents of
+TDES2 and TDES3.
+6. The Transmit interrupt is set (if enabled). The DMA fetches the next descriptor  and proceeds to step 3
+(when Status is normal). If the previous transmission status shows an underflow error, the DMA goes into Suspend mode (step 7).
+7. In Suspend mode, if a pending status and timest amp are received from the MTL, the DMA does the
+following:
+■Writes the timestamp (if enabled for th e current packet) to TDES0 and TDES1
+■Writes the status to the corresponding TDES1
+■Sets relevant inte rrupts and returns to Suspend mode
+If no status is pending and the application stopped the DMA by clearing Bit 0 of Transmit Control
+Register of corresponding DMA channel, the DMA enters the Stop state.
+8. The DMA can exit Suspend mode and enter the Run state (goes to step 1 or step 2 depending on
+pending status) only after receiving a Transmit Po ll demand in Transmit Descriptor Tail Pointer
+register of corresponding channel.
+The basic flow is described in Figure 2-22 .The DMA fetches the next descriptor before closing the current descriptor. Therefore, the descriptor
+ring length must be more than two. Synopsys recommends having a minimum descriptor length of four.
+Note
+
+--- Page 72 ---
+72Synopsys, Inc. Figure 2-22 Tx DMA Operation in OSP Mode
+Stop Tx DMA(Re)Fetch Next Descriptor from
+Selected Tx Queue
+Transfer Data from Buffer(s)Yes
+Timestamp Present?
+Write Timestamp to TDES0
+and TDES1
+Write Status Word to TDES3Own Bit Set?
+DMA Tx SuspendedNo
+Packet Read Completely?
+Second Packet?
+Wait for Status of Previous
+PacketYes
+NoClose Intermediate
+Descriptor
+Descriptor End of Ring?YesNoStart Tx DMA
+DMA Tx Stopped?YesNo
+YesNo
+Tx Poll Demand?
+YesNoNoPrev Packet’s Status
+Available?
+
+--- Page 73 ---
+73 Synopsys, Inc. 2.3.2.3 Transmit Packet Processing
+The Tx DMA expects that the data buffers contain co mplete Ethernet packets,  excluding preamble, pad
+bytes, and FCS fields. The DA, SA, an d Type/Length fields contain valid da ta. If the Tx Descriptor indicates
+that the MAC must disable CRC or PAD insertion, the buffer must have complete Ethernet packets
+(excluding preamble), including the CRC bytes.
+Packets can be data-chained and can span several buffers. Packets must be delimited by the First Descriptor
+(TDES3[29]) and the La st Descriptor (TDES3[28]). As transmission starts, the First Descriptor must have
+TDES3[29] set. When this occurs, th e packet data is transferred from the application buffer to the MTL Tx
+Queue. Concurrently, if the curren t packet has the Last Descriptor (TDES3[28]) clear, the Tx Process
+attempts to acquire the Next Descriptor. The Tx Proces s expects this descriptor to have TDES3[29] clear. If
+TDES3[28] is clear, it indicates an in termediary buffer. If TDES3[28] is set,  it indicates the last buffer of the
+packet.
+After the last buffer of the packet ha s been transmitted, the DMA writes ba ck the final status information to
+the Transmit Descriptor 3 (TDES3) word of the descriptor  that has the Last Descriptor Bit set in Transmit
+Descriptor 3 (TDES3[28]). At this time, if Interrupt on Completion (TDE S2[31]) is set, Bit 0 of Status Register
+of corresponding DMA channel is set,  the Next Descriptor is fetched, and the process repeats. The actual
+packet transmission begins after either of the following:
+■The MTL Tx Queue has reached a programmable Trans mit threshold (Bits[6:4] of Transmit Operation
+Mode register of corresp onding MTL Transmit Queue)
+■A full packet is contained in the FIFO
+You can also use the store-and-forward mode (Bit 1 of  MTL Transmit Operation Mode Register of a queue).
+In this mode, descriptors are releas ed (Own bit TDES0[31] clears) when the DMA finishes transferring the
+packet.
+2.3.2.4 Transmit Polling Suspended
+Transmit polling can be suspended by any of the following conditions:
+■The DMA detects a descriptor owned by the application (TDES3[31]=0).
+To resume, the driver must give descriptor owne rship to the DMA and then issue a Poll Demand
+command by writing the Tail Pointer register. If the DMA goes into SUSPEND state because of this
+condition, Bit 15 and Bit 2 of Status Register of corresponding DMA channel are set.
+■A packet transmission is aborted when a Tran smit error is detected because of underflow.
+The appropriate Transmit Descriptor 3 (TDES3) bit is set. When this  condition occurs, the following
+bits are set and the information is written to Transmit Descriptor 0, causing the suspension:
+❑Bit 14 of Status Register of corresponding DMA channel
+❑Transmit Underflow bit of correspond ing queue in MTL_Interrupt_Status
+■The DMA detects that the Tail Pointer is equal to the Current descript or closed by the it.
+To resume, the software driver must modify the Tail Pointer register.To ensure proper transmission of a packet and the next packet, you must specify a non-zero buffer size
+for the Transmit descriptor that has the Last Descriptor (TDES3[28]) set.
+Note
+
+--- Page 74 ---
+74Synopsys, Inc. In all conditions, the position in the Transmit List is re tained. The retained position is that of the descriptor
+following the Last Descriptor closed  by the DMA. The driver must expl icitly issue a Transmit Poll Demand
+command after rectifying the suspension cause.
+2.3.2.5 DMA Transmit Channel Arbitration
+An arbiter provides access to multiple DMAs trying to access the Bus Interface Unit (BIU). Figure 2-23 shows
+the arbitration process.
+Figure 2-23 DMA Transmit Channel Arbitration Process
+DMA Tx Arbiter Idle
+Tx Queue Requests?
+Descriptor Fetch Requests
+from any Queue?
+Packet Buffer Fetch
+Requests from any
+Queue?
+Process Buffer Fetch from
+Selected Tx QueueDMA Tx Arbitration Cycle to
+Select QueueProcess DMA Request
+and Fetch Next
+DescriptorYes
+YesNo
+
+--- Page 75 ---
+75 Synopsys, Inc. When there is any request in the Tx  queue, the DMA arbiter checks the type of the request: packet buffer
+fetch or descriptor fetch request. The descriptor fetch requests have higher priority than the buffer
+requests.Therefore, when there is a descriptor fe tch request, the DMA arbiter acknowledges the DMA
+channel that is requesting for a descri ptor fetch. If there is no descriptor  fetch request, the arbiter looks for
+packet buffer fetch requests.
+The DMA arbiter acknowledges the desc riptor fetch request of one DMA c hannel at a time. Descriptor fetch
+requests are granted using a fixed priority with the high er channel having higher priority (Channel 1 having
+priority over Channel 0, Channel 2 having priority over  Channel 1 and so on). For packet buffer fetches, the
+DMA arbiter uses the programmed channel weight and priority to decide which channel to acknowledge.
+The DMA arbiter performs a burst-by-burst arbitr ation based on one of the following algorithms:
+■Weighted Strict Priority (WSP): In WSP arbitratio n mode, the arbiter first processes Channel 7 (or the
+last enabled channel) and then Channel 6, Channel 5, and so on. If any channel does not have a frame to transmit, the weight of that channel gets reassigned to Channel7 (or last enabled channel). If Channel 7 has no frames to transmit, the remaining weight is assigned to Channel 6 and so on.
+■Weighted Round Robin (WRR): In WRR arbitration mo de, the arbiter first sele cts the channel with the
+highest weight programmed, and then  the channel with next highest weight, and so on. If any channel
+does not have a frame to transmit, the weight of th at channel gets equally di stributed to all channels
+that have frames to transmit.
+■Fixed priority (FP): In Fixed priority mode, Channe l 0 has the lowest priority and the last selected
+channel has the highest priority. Th e weight programmed in the Transmit Control register of a channel
+is ignored.
+In WSP or WRR arbitration, the channel weight corr esponds to the number of DMA burst transfers for
+which the DMA arbiter grants the bus to a channel. Wh en a channel completes all the DMA burst transfers,
+the arbiter grants the bus to the next channel.
+2.3.3 DMA Receive Operation
+In the Receive path, the DMA reads a packet from the MTL receive queue an d writes it to the packet data
+buffers of the corresponding DMA ch annel. The ARI data at the start of the frame indicates the channel
+number to which the current frame must be written. If only one DMA channel is selected, this information is
+not provided.
+Figure 2-24  shows the reception sequence for Rx DMA engine . The following list describes this sequence:
+1. The application sets up the Rx descriptor s (RDES0-RDES3) and th e Own bit (RDES3[31]).
+The application must set the correct  value in the Receive Descriptor Tail Pointer register of corre-
+sponding DMA channel.
+2. When Bit 0 of Receive Control register of corresp onding DMA channel is set, the DMA enters the Run
+state.
+The DMA looks for free descriptors based on the Rx Current Descript or and Descriptor Tail Pointer
+register values. If there are no fr ee descriptors, the DMA Channel ente rs the suspend state and goes to
+step 11.
+3. The DMA fetches the next available descriptor in the ring and decodes the re ceive data buffer address
+from acquired descriptors.
+4. If IEEE 1588 timestamping is enabled and the timest amp is available for the previous packet, the DMA
+writes the timestamp (if available) to the RDES0 an d RDES1 of current descri ptor and sets the CTXT
+field (RDES3[30]).
+5. The DMA processes the incoming packets and places these in the data buffers of acquired descriptor.
+
+--- Page 76 ---
+76Synopsys, Inc. 6. If the current packet transfer is not complete, the DMA closes the current descri ptor as intermediate and
+goes to step 10.
+7. The DMA takes the status of the Receive frame from  the MTL and writes the status word to current
+descriptor with the Ow n bit cleared and the La st Descriptor bit set.
+8. The DMA writes the Frame Length to RDES3 and VL AN Tag to RDES0. The DMA also writes the MAC
+control frame opcode, OAM control frame code, and extended status information (if available) to RDES1 of the last descriptor.
+9. If IEEE 1588 Timestamp feature is  enabled, the DMA stores the ti mestamp (if available). The DMA
+writes the context descriptor afte r the last descriptor for the curr ent packet (in the next available
+descriptor).
+10. If more descriptors are available in the Rx DMA Desc riptor Ring, go to step 3; otherwise, go to the
+Suspend state (step 11).
+11. The Receive DMA exits the Suspend state when a Receive Poll demand is gi ven and the application
+advances the Receive Tail Po inter register of a channel.
+The engine proceeds to step 2 and re-fetches the next descriptor.
+
+--- Page 77 ---
+77 Synopsys, Inc. Figure 2-24 Receive DMA Operation
+(Re)Fetch next
+descriptor
+Own bit set?
+Yes Suspend Rx DMA
+Packet data
+available?
+Wait for packet data Write data to buffer(s)Yes
+Packet Transfer
+Complete?No
+Timestamp
+Present?
+Close RDES3 as last
+descriptorSet Pending TimestampClose RDES3 as
+Intermediate Descriptor
+YesReceive Poll
+Demand
+YesStart Rx DMA
+Rx DMA Stopped?
+NoRx DMA Stopped?
+End of Descriptor
+Ring?Stop Rx DMA
+Timestamp
+Pending?
+NoWrite Timestamp to
+RDES0 and RDES1Yes
+Clear Pending
+Timestamp
+
+--- Page 78 ---
+78Synopsys, Inc. 2.3.3.1 Receive Descriptor Acquisition
+The Receive Engine always attempts to acquire an extr a descriptor in anticipation  of an incoming packet.
+Descriptor acquisition is attempted if any of the following conditions is satisfied:
+■Bit 0 of Receive Control Register of corresponding DMA channel is set immediately after being placed
+in the Run state.
+■The Descriptor Tail pointer register value is ahead of the Current Descriptor acquired by the Rx DMA.
+■The controller has completed packet  reception, but the cu rrent Receive Descriptor is not yet closed.
+■A Receive poll demand is issued (update of the Tail Pointer register).
+2.3.3.2 Receive Packet Processing
+The sequence for processing a Receive packet is as follows:
+1. The MAC transfers the received packets to the MTL me mory only if the packet passes the address filter.
+If the packet fails the address filt ering, it is dropped in the MAC bl ock (unless Bit 31 of MAC_Packet_-
+Filter register is set).
+2. If packet size is greater than or equal to configur able threshold bytes set for Rx Queue of MTL, or when
+the complete packet is written to  the queue in the store-and-forwar d mode, the MTL block requests the
+DMA block to begin transferring the packet data to the Receive Buffer pointed by the current descriptor.
+Packets smaller than 64 bytes, because of collision or premature termination, are removed from the
+MTL Receive Queue.
+3. When the DMA application Interface (AHB/AXI or MDC) becomes ready, it transfers the data and sets
+the following:
+■If the packet fits in a single descriptor, the DM A sets both Last Descript or (RDES3[28]) and First
+Descriptor (RDES3[29]).
+■If the packets fits into more than one descriptor , the DMA sets the First Descriptor (RDES3[29]) to
+delimit the packet.
+4. The DMA releases the descriptors by resetting th e Own (RDES3[31]) bit to 1’b0, either because the
+Receive buffer filled up or the last  segment of the packet is transf erred to the Receive buffer. The
+received packets status is up dated in the last descriptor.
+5. If Interrupt Enabled on Completion  (RDES3[30]) bit is set in any of  the Descriptors between the First
+and Last Descriptor of th e Packet and Bit 6 of Inte rrupt Enable Register of corresponding DMA channel
+is set, the DMA sets Bit 6 of Status register of corresponding DMA channel.
+The same process repeats unless the DMA encounters a descriptor flagged as being owned by the appli-
+cation or when there are no more descriptors in the ring. When the DMA finds a descriptor owned by
+the application and if Bit 7 of Interrupt Enable Re gister of corresponding DMA channel is set, the
+Receive Process sets Bit 7 of Status register of co rresponding DMA channel and then enters the Suspend
+state. The position in th e receive list is retained.
+
+--- Page 79 ---
+79 Synopsys, Inc. 2.3.4 Error Response to DMA
+For any data transfer initia ted by a DMA channel, if the slave replies with an error response, the DMA stops
+all operations and updates the error bits and the Fatal Bus Error bit in the Status Register of corresponding
+DMA channel. The application can either perform a reset to DWC_ether_qos or re-initialize the DMA
+descriptor list and start again. The rest of the DMA channels are not affected by such errors. This is
+applicable for the following configurations:
+■EQOS-DMA: In this configuration,  the DMA receives the error resp onse through mdc_error_i signal
+(shown in Figure 2-31  on page 82).
+■EQOS-AHB: In this configuration, the DMA receiv es the error response through hresp_i signal
+(shown in Figure 2-13  on page 53).
+■EQOS-AXI: In this configuration, the DMA receives the error respon se through rresp_m_i (shown in
+Figure 2-16  on page 58) or bresp_m_i signal.
+2.3.5 DMA Native Interface
+The subsystem can be configured (EQOS-DMA) to ha ve DMA with a native FIFO-like interface on the
+application side and an MCI (Optionally APB) interfac e for CSR port. All function s and features of the DMA
+remain the same as descri bed in earlier sections.
+On the native interface, the DMA uses a simple hardw are protocol to initiate the data or descriptor
+transfers. The DMA always starts a transaction with th e proper values on the a ddress bus, transfer size,
+burst length, and type of transfer (whether read or write). For read transfers, the application can provide
+valid data by asserting th e mdc_rdata_val_i signal. For write transf ers, the DMA can provide valid data by
+asserting the mdc_wdata_val_i signal. The application can pause the transfer s by de-asserting the respective
+mdc_rdata_val_i or mdc_wdata_rdy_i control signals.
+Figure 2-25 MDC Interface Burst Transfers
+After transferring all of the requested data, the application must terminate the DMA transaction with the
+mdc_xfer_done_i signal. The applicatio n can indicate an error by activating the mdc_error_i signal and then The values on the address bus, burst length, and transfer size are not updated immediately on
+receiving the mdc_rdata_val_i or mdc_wdata_rdy_i signals. The address, burst length, and transfer size are valid only at the start of the transfer. In certain types of access, the burst length may not even change during the transfers as shown in Figure 2-25 . Before asserting the mdc_xfer_done_i signal for
+proper transfer of data, the application must assert the mdc_rdata_val_i or mdc_wdata_rdy_i signal for clocks equal to the burst length requested at the start of transfer (unless a premature write transfer is
+indicated by DMA as explained in the next section).
+Note
+
+--- Page 80 ---
+80Synopsys, Inc. the respective DMA (Rx or Tx) goes to the Fatal Erro r state and all operations stop. The application must
+provide a soft reset to restart the DMA operation.
+2.3.5.1 Write Data Transfer
+Figure 2-26  shows the transfer sequence of a data buffer being written to system memory. The sequence is as
+follows:
+Figure 2-26 Write Data Transfer Timing (1 of 3)
+1. The subsystem initiates the transaction by asserting the mdc_start_xfer_o (pulse) signal along with the
+following:
+■System memory address (mdc_addr_o)
+■Read/Write control signal (mdc_rd_wrn_o = 0)
+■Number of beats (mdc_burst_count_o)
+■Transfer size (mdc_xfer_size_o)
+It also drives the first data beat of the burst on the mdc_wdata_o bus along with mdc_wdata_val_o
+asserted.
+2. The application asserts the mdc_wdata_rdy_i signal to accept the data.
+3. If the application is not ready to handle the data , it can de-assert mdc_wdat a_rdy_i and delay the data
+transfer. The DMA holds the values on the data  bus when the “rdy” control is de-asserted.
+4. After all of the data has been transferred as indi cated by mdc_burst_count_o,  the application must end
+the DMA transfer by asserting the mdc_xfer_done_i (pulse) signal.
+5. The DMA can prematurely end the burst transfer if an  EOP is being transferred to the application. The
+DMA marks the EOP data on mdc_wdata_o with the assertion of mdc_eop_o. The application must then complete the transaction by asserting the mdc_xfer_done_i sign al after accepting the EOP data
+even if the initial burst length given at  start of transaction is not completed.
+Figure 2-27  shows the transfer sequence when a data buffer is written to system memory with the burst
+transfer ending prematurely because of the assertio n of mdc_eop_o. The DMA terminates the burst by
+asserting mdc_eop_o after completing 3 cycles of the requested 4-cycle burst. The application must respond
+by asserting the mdc_xfer_done_i signal without asserting any more mdc_wdata_rdy_i.
+The application should sample mdc_eop_o along with  the corresponding data being accepted, that is,
+mdc_eop_o should be sampled when mdc_wdata_rdy_i is high. The mdc_eop_o si gnal can go high when
+the data on mdc_wdata_o is updated with the EOP data even before the start of next transfer indicated
+bymdc_start_xfer_o. It need not go low immediately af ter the application accepts the EOP data because the
+MDC may not have new data to update. It can go low anytime before the start of next write transfer. The
+mdc_eop_o signal may also go high with  the last beat of the requested burs t transfer if it coincides with the
+EOP data being presented to the application.

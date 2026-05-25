@@ -4,7 +4,6 @@ import { ArrowLeft, FileText, Clock, ChevronRight, ChevronDown } from 'lucide-re
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import growingTree from '@wiki/growing_knowledge_tree.json'
 import CachedContent from '@/components/CachedContent'
 import LeafContent from '@/components/LeafContent'
 import FlowChart from '@/components/FlowChart'
@@ -70,7 +69,20 @@ export default function ChapterDetail() {
   const location = useLocation()
   const navigate = useNavigate()
   const [sourceOpen, setSourceOpen] = useState(false)
-  const chapter = (growingTree.chapters as any[]).find((ch: any) => ch.id === (chapterId || ''))
+  const [tree, setTree] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}growing_knowledge_tree.json`)
+      .then(r => r.json())
+      .then(data => {
+        setTree(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const chapter = tree?.chapters?.find((ch: any) => ch.id === (chapterId || ''))
 
   // Scroll to leaf anchor on mount / hash change (HashRouter safe)
   useEffect(() => {
@@ -92,6 +104,14 @@ export default function ChapterDetail() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
+        <p className="text-slate-400">加载中...</p>
+      </div>
+    )
+  }
+
   if (!chapter) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
@@ -106,17 +126,16 @@ export default function ChapterDetail() {
     )
   }
 
-  const cache = (growingTree as any).cache?.entries || {}
-  const leaves = (growingTree as any).leaves?.entries || []
+  const cache = tree?.cache?.entries || {}
+  const leaves = tree?.leaves || []
   const chCacheKeys = Object.keys(cache).filter((k) => k.startsWith(chapter.id + '_'))
   const chLeaves = leaves
     .filter((l: any) => l.chapter_id === chapter.id)
     .filter((l: any) => l.status !== 'archived')
-  const qaLog = ((growingTree as any).qa_log?.entries || []).filter((q: any) => q.chapter_ids?.includes(chapter.id))
 
-  const idx = growingTree.chapters.findIndex((c: any) => c.id === chapter.id)
-  const prev = idx > 0 ? growingTree.chapters[idx - 1] : null
-  const next = idx < growingTree.chapters.length - 1 ? growingTree.chapters[idx + 1] : null
+  const idx = tree?.chapters?.findIndex((c: any) => c.id === chapter.id) ?? -1
+  const prev = idx > 0 ? tree.chapters[idx - 1] : null
+  const next = idx < (tree?.chapters?.length ?? 0) - 1 ? tree.chapters[idx + 1] : null
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -132,7 +151,6 @@ export default function ChapterDetail() {
               <p className="text-xs text-slate-400">{chapter.title}</p>
             </div>
           </div>
-          <Link to="/qa" className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">提问</Link>
         </div>
       </header>
 
@@ -219,7 +237,7 @@ export default function ChapterDetail() {
                       <CachedContent
                         key={key}
                         cacheKey={key}
-                        content={cache[key]}
+                        contentPath={cache[key]}
                         chapterPageStart={chapter.page_start}
                         defaultOpen={false}
                       />
@@ -292,29 +310,11 @@ export default function ChapterDetail() {
                 </div>
               )}
 
-              {/* Related Q&A — compact */}
-              {qaLog.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">相关问答</p>
-                  <div className="space-y-1.5">
-                    {qaLog.slice(0, 3).map((q: any, i: number) => (
-                      <div key={i} className="text-xs text-slate-500 dark:text-slate-400 leading-snug">
-                        {q.question}
-                      </div>
-                    ))}
-                    {qaLog.length > 3 && (
-                      <p className="text-xs text-slate-400">+{qaLog.length - 3} 更多</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Chapter jump — compact nav */}
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">跳转</p>
                 <div className="space-y-1 text-sm">
                   <Link to="/" className="block text-slate-500 hover:text-blue-600 transition-colors">← 返回目录</Link>
-                  <Link to="/qa" className="block text-slate-500 hover:text-blue-600 transition-colors">智能问答</Link>
                 </div>
               </div>
             </div>

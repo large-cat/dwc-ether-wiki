@@ -1,0 +1,14 @@
+<h level="2">Rx DMA Descriptor Acquisition and Packet Processing</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>Receive Engine always attempts to acquire an extra descriptor in anticipation of incoming packet. Descriptor acquisition is attempted when: (1) Bit 0 of Receive Control Register is set immediately after Run state; (2) Descriptor Tail pointer is ahead of Current Descriptor; (3) Packet reception completed but current descriptor not yet closed; (4) Receive poll demand issued (Tail Pointer update). Packet processing sequence: (1) MAC transfers received packets to MTL only if packet passes address filter (dropped in MAC unless Bit 31 of MAC_Packet_Filter is set); (2) If packet size &gt;= threshold or complete packet in store-and-forward mode, MTL requests DMA transfer; packets &lt;64 bytes are removed; (3) When interface ready, DMA transfers data - if single descriptor, sets both Last and First Descriptor bits; if multiple descriptors, sets First Descriptor bit; (4) DMA releases descriptors by resetting Own bit (RDES3[31]) when buffer full or last segment transferred; (5) If IOC (RDES3[30]) is set and Bit 6 of Interrupt Enable Register is set, DMA sets Bit 6 of Status register.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

@@ -1,0 +1,14 @@
+<h level="2">Tx DMA Operation - OSP Mode</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>In OSP (Operate on Second Packet) mode, when Bit 4 is set in Transmit Control Register, the Transmit process can simultaneously acquire two packets without closing the Status descriptor of the first packet. After finishing the first packet transfer, it immediately polls for the second packet and transfers it before writing the status of the first packet. Sequence: (1) DMA operates as default mode steps 1-7; (2) Fetches next descriptor without closing last descriptor of previous packet; (3) If DMA owns descriptor, decodes buffer address; if not, goes to Suspend; (4) Fetches and transfers second packet to MTL; (5) Waits for previous packet status/timestamp, writes to TDES0/TDES1 and status to TDES1 with cleared Own bit; (6) Sets Transmit interrupt; (7) In Suspend mode, handles pending status/timestamp or enters Stop state. Descriptor ring length must be more than two; Synopsys recommends minimum of four descriptors.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

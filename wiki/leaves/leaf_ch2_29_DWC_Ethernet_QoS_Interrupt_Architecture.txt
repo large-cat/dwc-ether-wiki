@@ -1,0 +1,18 @@
+<h level="2">DWC Ethernet QoS Interrupt Architecture</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p141-150</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>三级中断架构：</p>
+<p>- MAC层：链路状态、PMT事件、时间戳、LPI状态</p>
+<p>- MTL层：队列状态、FIFO溢出/下溢</p>
+<p>- DMA层：Tx/Rx完成、总线错误、描述符不可用</p>
+<p>INTM控制中断聚合，支持常规中断和脉冲中断模式。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

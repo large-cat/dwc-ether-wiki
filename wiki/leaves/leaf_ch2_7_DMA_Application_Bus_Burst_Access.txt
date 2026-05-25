@@ -1,0 +1,14 @@
+<h level="2">DMA Application Bus Burst Access</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The DMA engines attempt to transfer data in bursts of maximum size programmed in the PBL fields of Transmit Control and Receive Control registers. The Rx and Tx descriptors are always accessed in the maximum possible burst length (limited by PBL or 16*8/bus width) for 16 bytes to be read. Burst transfers can be split into multiple bursts per AHB/AXI protocol requirements. Tx DMA initiates transfer only when sufficient space is available in MTL Tx Queue. Rx DMA initiates transfer when sufficient data is available in MTL Rx Queue or EOP is detected. When AHB/AXI is configured for fixed-length burst, it uses best combination of INCR4, INCR8, INCR16 and SINGLE transactions.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

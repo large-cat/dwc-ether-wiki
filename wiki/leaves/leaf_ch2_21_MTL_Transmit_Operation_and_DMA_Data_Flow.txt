@@ -1,0 +1,18 @@
+<h level="2">MTL Transmit Operation and DMA Data Flow</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p88-95</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>MTL发送操作模式：</p>
+<p>- Single-Packet：单包发送，DMA将完整数据包推入MTL队列</p>
+<p>- Multiple Packets in Buffer：一个缓冲区包含多个包</p>
+<p>- Retransmission During Collision：半双工冲突后重传</p>
+<p>支持多通道与多队列映射。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

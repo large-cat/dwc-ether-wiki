@@ -1,0 +1,14 @@
+<h level="2">AXI Low-Power Interface</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The AXI Master supports low-power entry when the following conditions are true for a duration equal to AXI_LPI_Entry_Interval register value: (1) MAC transmitter and receiver are in Idle mode; (2) Both DMA engines are in Idle mode; (3) No data in Transmit or Receive data path or queue; (4) Slave interface is idle. If MAC is active at low-power request time, AXI master waits 16 AXI clock cycles. If still active, request is denied. If MAC goes idle within 16 cycles, it monitors inactive state for AXI_LPI_Entry_Timer period before accepting. Two modes: (1) System Initiated - AXI system sets csysreq_i to 0; (2) Automatic - enabled by AALE bit (Bit 10) of DMA_SysBus_Mode register, enters low-power automatically when idle for programmed duration. Exit occurs when: AXI system restores clock and removes request; MAC initiates exit by setting cactive_o high on packet reception; or CSR slave port access occurs with different clock.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

@@ -1,0 +1,499 @@
+--- Page 41 ---
+41 Synopsys, Inc. 2
+Architecture
+This chapter describes the DWC_ether_qos interfaces, protocols, functionality,  and implementation. It
+contains the following sections:
+■“CSR Slave Interface”  on page 42
+■“Application Master Interface”  on page 49
+■“DMA Controller”  on page 64
+■“MAC Transaction Layer”  on page 83
+■“MAC”  on page 118
+■“Interrupts”  on page 145
+
+--- Page 42 ---
+42Synopsys, Inc. 2.1 CSR Slave Interface
+You can access the CSR space by specifying a CSR slave interface in coreConsultant.
+The CSR slave interface provid es access to the CSR space.
+You can select a slave interface by  using the CSR Interface option in  coreConsultant. The DWC_ether_qos
+can have one of the following slave interfaces:
+■AHB Slave interface
+■AXI3 or AXI4-Lite slave interface
+■APB, APB3, or APB4  slave interface
+■MCI slave interface
+By default, all the slave interfaces of DWC_ether_ qos except MCI slave interface (which do not have
+provision for providing error response) will provide OK AY response to all CSR ac cesses. If SEEN bit of
+MAC_CSR_SW_Ctrl register is programmed to 1, DWC_ether_qos will provide error response when
+reserved registers within the CSR space are accessed.
+2.1.1 AHB Slave Interface
+The AHB slave is supported in the EQOS-AHB and EQOS-AXI configurations. The 32-bit AHB slave
+interface provides access to the DMA, MTL, and MAC CSR space. The AHB slave interface supports the
+following features:
+■Fully AMBA 2.0 Compliant AHB slave—no restrictions
+■Single and all burst transfers
+■Busy and early terminations
+■32-bit, 16-bit, and 8-bit write or read transfers to the CSR
+The 32-bit CSR access is recommended to avoid any software synchronization problems.
+■OKAY response
+The SPLIT or RETRY responses are not supported. When  a reserved address is read in MAC register
+space, it gives all zeros data and generates an OKAY response (When SEEN bit is set, MAC generates ERROR response). Similarly, when a reserved address is written, the DWC_ether_qos ignores the write request and generates an OKAY response (When SEEN bit is set, MAC generates ERROR response).
+2.1.1.1 AHB Slave Port Timing
+Figure 2-1  shows a register write access (to address 0x001C) followed by a register read access (to address
+0x1014) on the AHB slave port. The waveform is as per the AMBA 2.0 specification. The AHB slave port completes all read and write transfers in three clocks and therefore, hready_o is DE-asserted for two clocks
+for any register access. The AHB slave port supports burst operations, and the timing response remains the
+same (three clocks for completion of any read or write cycle).
+
+--- Page 43 ---
+43 Synopsys, Inc. Figure 2-1 Register Write Access Followed by Register Read Access on AHB Slave
+Port
+2.1.1.2 Interfacing AHB Slave Port with a Wider AMBA Bus
+To interface the 32-bit AHB slave port to a wider AM BA bus, extra logic described in Section 3-15 of
+AMBA 2.0 specification is required. You can include this logic by select ing the CSR Port Data Width option
+while configuring the controller. In such configurations, even though th e AHB slave port indicates a 64-bit
+or 128-bit data bus, all slave port accesses must still be 32 bits or less. If a 64-bit or 128-bit access is
+performed, the AHB slave port internally completes a 32-bit access and gives an OKAY response. During
+the AHB slave write operation, the data on higher lane s is ignored. During the AH B slave Read transfer, the
+lower 32-bit lane  is duplicated.
+2.1.2 AXI Slave Interface
+The AXI slave is supported in the EQOS-AXI config urations. The features supported for the AXI slave
+interface are listed in “ AXI Slave Interface Features”  on page 33.
+The slave interface does not support the following features:
+■Data reordering
+■Data interleaving
+■WRAP burst transfers
+■Signals awcache/awprot or arcache/arprot
+■Atomic accesses
+■Exclusive Access
+You can select the AXI4-Lite slave interface instead of the default AXI3 slave. In this configuration, only
+single beat transfers are supported and so many AXI3 control signals get removed as listed in the AMBA
+specification.DWC_ether_qos provides only OKAY response on br esp_s_o and rresp_s_o. It does not provide the
+EXOKAY , SLVERR, and DECERR responses.
+Note
+
+--- Page 44 ---
+44Synopsys, Inc.  Figure 2-2  shows the timing on the AXI slave interface for a burst-write transfer.
+Figure 2-2 Write Channel Timing of 32-Bit AXI Slave Interface
+The AXI slave interface receives a wr ite burst of length four, which ge ts accepted in seven clocks. The
+respective write response takes additional three clocks. Similarly, a single write transfer gets completed in
+four clocks, as shown in Figure 2-3 .
+Figure 2-3 Single Write and Read Transfer
+The AXI slave interface supports all types of byte, half-w ord, and word burst-size transfers. The latencies
+may vary for a 64-bit AXI slave interface, depending on  the address offset and da ta bus width as shown in
+Figure 2-4
+
+--- Page 45 ---
+45 Synopsys, Inc. Figure 2-4 Latencies for a 64-bit AXI Slave Interface
+In Figure 2-5 , the AXI slave receives a read request of burst le ngth 2. For the first data to be output on the
+AXI bus, the latency is four clocks . The remaining beats are output two clocks after the AXI master accepts
+the previous beat. In the AXI-read ch annel, the latencies depend on the bu rst length, data bus width, and the
+address offset.
+Figure 2-5 AXI Slave Receives a Read Request of Burst Length 2
+The EQOS-AXI configuration supports the little-endian and byte-invariant big-endian modes on the
+AXI slave ports. For more information about the supported endian modes, see “ Endian Support”  on
+page 1397 .
+Note
+
+--- Page 46 ---
+46Synopsys, Inc. 2.1.3 APB, APB3, and APB4 Slave Interface
+The APB, APB3, or APB4 slave interfac es are supported in all configurations. You can enable an APB port to
+access the DMA, MTL, and MAC CSR space.
+This topic discusses the following sections:
+■“APB Port Timing”  on page 46
+■“APB3 Port Timing”  on page 46
+■“APB4 Port Timing”  on page 47
+2.1.3.1 APB Port Timing
+Figure 2-6  shows a register write access followed by a re gister read access on the APB port. The APB port
+signals behave as per the AMBA 2.0 specification. All re gister accesses are completed in two clock cycles to
+support an APB port.
+Figure 2-6 APB Port Timing
+2.1.3.2 APB3 Port Timing
+Figure 2-7  shows a register write access followed by a regi ster read access on the APB3 port. The APB port
+signals behave as per the AMBA3 APB Protocol specific ation. Each write transfer completes in two clock
+cycles whereas each read transfer  completes in three clock cycles.
+Figure 2-7 APB3 Port Timing
+
+--- Page 47 ---
+47 Synopsys, Inc. 2.1.3.3 APB4 Port Timing
+Figure 2-8  shows a register write access followed by a regi ster read access on the APB4 port. The APB port
+signals behave as per the AMBA4 APB Protocol specific ation. Each write transfer completes in two clock
+cycles whereas each read transfer completes in three cl ock cycles. The pstrb_i signal  enables the byte to be
+written.
+Figure 2-8 APB4 Port Timing
+2.1.4 MAC Control Interface
+The MAC Control Interface (MCI) is supporte d in EQOS-CORE, EQOS-MTL, and EQOS-DMA
+configurations. This interface connects the application with the Control and Status register (CSR) module of the Media Access Controller to provide the control path for programming the MAC registers. The
+application initiates a register write or register read by asserting the command valid signal mci_val_i (with
+the valid data mci_wdata_i and valid byte enables mci_be_i), along with the register address on mci_addr_i.
+The mci_rdwn_i control signal indicates a Write (1’b0) or Read (1’b1) operation. The application assumes a
+successful data transfer when it rece ives an acknowledgment (mci_ack_o) asserted for one clock cycle. The
+CSR module drives the Read data on mci_rdata_o. The application can de-assert the command valid after receiving the acknowledgment.
+If the application continues to assert the command valid signal (on receivin g an acknowledgment), the
+MAC considers it as the next access and responds to it  by asserting the mci_ack_o after one clock cycle. The
+MAC completes the access to reserved registers with dummy read or write operations. This means that the write operations to the reserved a ddresses have no effect and the read operations are completed with an
+all-zero data output on the mci_rdata_o bus.
+All write accesses to the CSR complete  in two clock cycles and read acce sses to the CSR complete in three
+clock cycles. The mac_ack_o signal is asserted after a delay of one clock cy cle after the mci_val_i signal goes
+high. The mci_rdata_o signal is register ed. Therefore, there is an additional  delay of one clock in assertion of
+the mci_ack_o signal. Therefore, each read access is completed in three cl ock cycles for such configurations.
+
+--- Page 48 ---
+48Synopsys, Inc. 2.1.4.1 MCI Port Timing
+Figure 2-9  shows read and write accesses on the MCI port.
+Figure 2-9 MCI Port Timing
+The flow shown in Figure 2-9  is as follows:
+1. The first access to address 0x0004 is a single re ad cycle which completes in three clock cycles. The
+mci_val_i signal and the correspond ing address and control signals sh ould be kept asserted for the
+whole duration of the transaction.
+2. The second and third accesses are single write oper ation cycles to addresses 0x0004 and 0x0000, respec-
+tively. The mci_ack_o signal is asserted one clock af ter the mci_val_i signal is  asserted. The write oper-
+ations are completed in two clock cycles.
+3. The following accesses are burst write and burs t read operations starting from address 0x0040.
+Each individual wr ite or read transaction in the burst is identi cal to the single write or read transactions
+with respect to timing.
+
+--- Page 49 ---
+49 Synopsys, Inc. 2.2 Application Master Interface
+The DMA Controller interfaces with the applicat ion through one of the following interfaces:
+■“AHB Master Interface”  on page 49
+■“AXI Master Interface”  on page 54
+■“AXI4 Master Interface”  on page 60
+■“AXI Low-Power Interface”  on page 60
+2.2.1 AHB Master Interface
+In the EQOS-AHB configuration, th e DMA controller interfaces with the application through the AMBA
+AHB interface. The AHB master interface controls th e data transfers and the AHB slave interface accesses
+the CSR space.
+The DMA can be used in the 32-bit, 64-bit, and 128-bi t embedded applications wh ere the DMA is required
+to optimize the data transfer be tween the MAC and the system memory . For information about the data
+transfers in little-endian an d big-endian modes, see “ Area and Power”  on page 1387 .
+This section covers the following topics:
+■“AHB Master Interface Features”  on page 49
+■“Burst Length Modes”  on page 50
+■“Aligning AHB Burst Transf ers to An Address Value”  on page 51
+■“AHB Memory Read”  on page 51
+■“AHB Memory Write”  on page 52
+■“Early Burst Termination”  on page 52
+■“Error Response and Fatal Bus Error Interrupt”  on page 52
+■“Split or Retry Response”  on page 53
+■“Descriptor Write Back”  on page 53
+2.2.1.1 AHB Master Interface Features
+The AHB master interface converts the internal DM A request cycles into AHB cycles. The AHB master
+interface has the following features:
+■The AHB master interface is AMBA 2.0-compliant AHB master with no restrictions
+■The AHB master interface supports the following burs t length modes: fixed, unspecified, and mixed.
+These modes are explained in the “ Burst Length Modes”  on page 50.
+■The AHB slaves interfacing with the AHB mast er support the SINGLE and INCR transfers.
+■The AHB master interface can handle the AHB SP LIT, RETRY, and ERROR conditions. Any ERROR
+response halts all further transactions for that DMA and indicates the error as fatal through CSR and interrupt. The application can choose to give a hard or  soft reset to the module to restart the operation.
+■The AHB master interface can handle  the AHB 1K boundary breaking.
+■The AHB master interface can handle all 32-bit, 64-bit, or 128-bit data transfers (according to the data
+bus width configuration), except for Descriptor  Status Write accesses (which may be 32-bit).
+In any burst data transfer, the addr ess bus value is always aligned to  the data bus width and need not
+be aligned to the beat size.
+
+--- Page 50 ---
+50Synopsys, Inc. ■The AHB master interface can align all AHB burst tran sfers to an address value.  For more information,
+see “ Aligning AHB Burst Transfers to An Address Value”  on page 51.
+■The DMA requests an AHB Burst Read transfer only when it can completely accept the received burst
+data. The data read from the AHB is always pushed into the DM A without any delay or Busy cycles.
+However, when multiple channels  are selected, there may be some  delay and Busy cycles may be
+inserted because of the shared-mem ory architecture for the channels.
+■The DMA requests an AHB Burst Writ e transfer only when it has th e sufficient data to completely
+transfer the burst. The AHB interface always assumes that it has the data ava ilable to push into the
+AHB bus. However, the DMA can prem aturely indicate end-of-valid data  (because of the transfer of
+EOP of an Ethernet packet) during the burst.
+In Fixed Burst Length mode, the AHB master interf ace continues the burst with dummy data until the
+specified length is completed. In INCR mo de, it ends the burst transfer prematurely.
+2.2.1.2 Burst Length Modes
+The AHB master interface supports the following burst length modes:
+■Fixed Burst Length
+In fixed burst length mode , the AHB master always initiates a bu rst with SINGLE, INCR4, INCR8, or
+INCR16 type. However, when such a burst is resp onded with SPLIT, RETRY,  or Early Burst Termina-
+tion (EBT), by default, the AHB ma ster again initiates the pending trans fers of the burst with INCR or
+SINGLE burst length type. When only one beat is remaining, the AHB ma ster performs a SINGLE
+transfer. If more than one beat is remaining, the AHB master performs an INCR transfer. The AHB
+master terminates such INCR burs ts when remaining beats of the or iginal requested fixed burst are
+transferred.
+To ensure that the AHB master always performs the INCRx and SI NGLE transfers even when a part
+of the burst is initiated again after a SPLIT, RETRY,  or EBT response, use the RIB bit of the DMA_Mode
+register. However, when you enable  this mode, the pending burst may further get split into multiple
+transfers as per the following rules be fore any new transfer is initiated:
+❑If the DMA requests a burst transf er that is not equal to INCR4, INCR8, or INCR16, the AHB appli-
+cation interface splits the transfer into multip le burst transactions. For example, if the DMA
+requests a 15-beat burst transfer, the AHB interface splits it into multiple transfers of INCR8 and
+INCR4, and three SINGLE transactions.
+❑If the burst length is more than 16, the AHB master interface splits it into multiple burst transfers. For example, if the burst length is 32 and the DM A starts a 32-beat transfer, the AHB master splits
+the burst into two INCR16.
+■Unspecified Burst Length
+In unspecified burst mode, the AHB master always initiates a transf er with INCR and completes the
+DMA requested burst in one transfer.
+■Mixed Burst Mode
+In mixed burst mode, the AHB master always initia tes the bursts with fixe d-size (INCRx) when the
+DMA requests transfers of size less than or equal to 16 beats. When the DMA requests bursts of length
+more than 16, the AHB master initiates such tran sfers with INCR and comp letes the request in one
+transfer.
+To ensure that the pending burst of a transfer is rebuilt only wi th INCRx transfers when an INCRx
+transfer is interrupted by RETRY, SPLIT, or EBT  response, use the RB bit of the DMA_SysBus_Mode
+
+--- Page 51 ---
+51 Synopsys, Inc. register. However, if an INCR burst initiated in this  mode is interrupted, the AHB master rebuilds the
+burst only with INCR transfers.
+You can choose the burst modes by programming the FB bit in the DMA_SysBus_Mode register.
+2.2.1.3 Aligning AHB Burst Transfers to An Address Value
+The AHB master interface can align all AH B burst transfers to an address value.
+You can enable aligning all AHB burst transfers to  an address value, by using the AAL bit in the
+DMA_SysBus_Mode register. If Bit 0 and Bit 12 of  DMA_SysBus_Mode register are set to1, the AHB
+interface and the DMA ensure that al l initiated beats are aligned to th e address, completing the packet
+transfer in the minimum number of required beats.
+For example, in 32-bit data bus mode, if the start address of a data buffer transfer is 0xF000_0008 and the
+DMA is configured for a maximum beat size of 16, the AHB transfers occur in  the following sequence:
+1. Two SINGLE transfers at addresses 0xF000_0008 and 0xF000_000C
+2. One INCR 4 transfer at address 0xF000_00103. One INCR 8 transfer at address 0xF000_0020
+4. All subsequent beats are INCR 16 transfers starting from address 0xF000_0040
+For an address-aligned INCR 16 tr ansfer, the six least-significant bits of the address must be 0.
+Similarly, the AHB interface and the DMA split such un aligned address beats for a 64-bit (or 128-bit) data
+bus and initiate INCR16 beats only when  the seven (or eight) least-significan t bits of the address have a zero
+value.
+2.2.1.4 AHB Memory Read
+Figure 2-10  shows the AHB master performing a memory read starting from address 0x40110000. The AHB
+master port uses the INCR 4 burst in this scenario.
+Figure 2-10 AHB Memory Read TimingThe AHB master does not generate the WRAP bursts , and locked or protected transfers. Therefore,
+the DWC_ether_qos does not have the HLOCK or HPROT output signals.
+Note
+
+--- Page 52 ---
+52Synopsys, Inc. 2.2.1.5 AHB Memory Write
+Figure 2-11  shows the AHB master performing a burst memory write transaction, starting from address
+0x401252F4. This data transfer corresponds to an Ethernet packet being written to the system memory by
+the Rx DMA. The AHB master uses th e INCR4 burst. The data bus does no t change values for last two beats
+in the INCR4 transaction. This is because the DMA to the AHB master port internally gave the EOP of the
+packet with the second beat transfer. Because the AHB master started a fixed INCR4 burst, it completes the
+burst with dummy data (same data) for last two beats.
+Figure 2-11 AHB Memory Write Timing
+2.2.1.6 Early Burst Termination
+Figure 2-12  shows an early burst terminatio n occurring when the AHB master carries out an INCR (Write)
+transaction. This figure shows how the AHB master re quests the bus grant again and completes the transfer
+with a SINGLE transaction.
+Figure 2-12 Early Burst Termination Timing
+2.2.1.7 Error Response and Fatal Bus Error Interrupt
+Figure 2-13  shows the behavior of the AHB master when an error response is received. The DUT tries to
+carry out the INCR 4 transaction. Howe ver, it receives a two-cycle error response during the data phase of
+the first beat. The sbd_intr_o interrupt is asserted as a result of this response. For more information about
+the interrupt functions, see “ Interrupts”  on page 145.
+
+--- Page 53 ---
+53 Synopsys, Inc. Figure 2-13 Error Response and Fatal Bus Error Interrupt Timing
+2.2.1.8 Split or Retry Response
+Figure 2-14  shows how the AHB master port reacts to a split or retry response (to address 0x00120560)
+during a transaction. The AHB master receives a two- cycle retry response and immediately reconstructs the
+transaction and requests for the bus by again asserting the hreq_o signal. The hreq_o signal is de-asserted
+only for one cycle when the retry or split response is  sampled in the first cycle of the two-cycle response.
+The behavior remains same for Split response but the second request (hreq_o) from this master is masked in
+the AHB arbiter until the correspondin g AHB slave is ready with the data.
+Figure 2-14 Split/Retry Response Timing
+2.2.1.9 Descriptor Write Back
+Figure 2-15  shows a descriptor being closed on a 64-bit AHB at address 0x40110050. For a big-endian
+configuration, only 32-bit status is written back to  the memory and this appears on upper 32-bits of the
+hwdata_o bus. For a little-endian configuration, the 32-bit  descriptor data appears on lower 32 bits of 64-bit
+AHB bus.
+Figure 2-15 Descriptor Write-Back Timing
+
+--- Page 54 ---
+54Synopsys, Inc. 2.2.2 AXI Master Interface
+In the EQOS-AXI configuration, the DMA controller in terfaces with the application through the AMBA 3
+AXI interface. The AMBA 3 AXI bus in terface provides the characteristic s to support highly-effective data
+traffic throughput. The system bus utilization is ma ximized by allowing simultaneous read and write
+transfers initiated from different DMA channels. For ex ample, the Tx descriptor read and Rx descriptor
+write-back (status update) operations can happen simultaneously. However, the Tx descriptor read and Tx
+descriptor write-back operations cannot happen simultaneously because the Tx DMA (or Rx DMA) does not initiate the next transfer unle ss the previous one is complete.
+The AXI master interface allows multiple numbers of  burst requests to be queued for Read or Write
+operation. The system bus utilization can be further enhanced by supporting Requests reordering and Data
+interleaving. This gives the AXI mast er the flexibility to dynamically and independently select multiple
+slaves for handling Priority Requests and Slow peripheral slaves. The EQOS-AXI configuration also
+supports the low-power interface de fined in the AXI specification.
+■“Burst Splitting and Burst Selection”  on page 54
+■“INCR Burst Type”  on page 55
+■“INCR_ALIGNED Burst Type”  on page 55
+■“Outstanding Transactions”  on page 56
+■“Priority of AXI Requests”  on page 56
+■“Bursts Reordering and Data Interleaving”  on page 56
+■“AXI-ID Translation”  on page 57
+■“Endianess Support”  on page 57
+■“Posted Writes”  on page 57
+■“Error Response Handling”  on page 58
+■“AXI Memory Read”  on page 58
+■“AXI Memory Write”  on page 59
+■“AXI Early Burst Termination”  on page 59
+2.2.2.1 Burst Splitting and Burst Selection
+In DWC_ether_eqos, the AXI master can split the DMA re quests into multiple bursts, in the AXI system bus.
+The AXI master splits the DMA requests into multiple bursts on the AXI system bu s. Splitting is based on
+the DMA count, the software-contr ollable burst enable bits (FB, BLEN256, BLEN128, BLEN64, BLEN32,
+BLEN16, BLEN8, BLEN4), and the soft ware-controllable burst types (INCR and INCR_ALIGNED). For
+more information, see DMA_SysBus_Mode register.
+The AXI master also handles splitting the transfers that cross 4 KB address boundary, with an option to limit
+it to 1-KB address boundary. The Burst Length Select  Priority is in the following sequence: FB, BLEN256,
+BLEN128, BLEN64, BLEN32, BLEN16, BLEN8, and BLEN4.Y ou can select AXI4 compat ible interface also. This interface has additional signals and capabilities as
+compared to the AXI3 signal interface.
+Note
+
+--- Page 55 ---
+55 Synopsys, Inc. 2.2.2.2 INCR Burst Type
+If FB is disabled, the AXI master always chooses th e maximum allowed burst leng th based on the BLEN256,
+BLEN128, BLEN64, and BLEN32 bits (po ssible maximum burst lengths are 25 6, 128, 64, 32, or 16). The AXI
+master chooses a burst length of any value less than the maximum enabled burst length (all lesser burst
+length enables are redundan t) in the following cases:
+■The DMA requests are not multiples of the maximum allowed burst length
+■The 4K/1K address boundary crossing condition is enabled
+For example, when only BLEN64, BLEN16, and BLEN4 are enabled, and the DMA requ ests a burst transfer
+of 102 beats size, the AXI master splits it into two bursts of 64 and 38 beats size, respectively.
+If FB is enabled, the burst length is based on the priority of the enabled bits in the following order: BLEN256,
+BLEN128, BLEN64, BLEN32, BLEN16 , BLEN8, and BLEN4. When the DMA re quests to transfer a burst, the
+AXI interface splits the requested bu rsts into multiple transfers by us ing only the enabled burst lengths.
+This splitting can occur in following cases:
+■The requested burst is not a multip le of the maximum enabled burst
+■The 4K/1K address boundary crossing condition is enabled
+If the AXI interface cannot choose any of the enabled bu rst lengths, it selects th e burst length as 1. For
+example, if only BLEN64, BLEN16, and BLEN4 are enabled and the DMA requests a burst transfer of
+size102 beats, the AXI interface splits it into multiple bu rsts of size 64, 16, 16, 4, 1, and 1 beats, respectively.
+The sequence is in decreasing burst lengths.
+2.2.2.3 INCR_ALIGNED Burst Type
+When the address-aligned burst type is  enabled, then in addition to the burst splitting conditions explained
+in INCR Burst Type, the AXI interface splits the DMA requested bursts such that each burst length is
+aligned to the least significant bits of the start address.  The AXI interface initially generates smaller bursts so
+that the remaining transfers can be transferred with the maximum possible (enabled) fixed burst lengths.
+For example, in the same setting as explained earlier for FB (BLEN64 , BLEN16 and BLEN4 are enabled), the
+DMA requests a burst of size 102 beats at the start address of 0x0000_03A4 (32-bit bus). The AXI master starts the first transfer with size 23 such that the address of the next burst is aligned (0x0000_0400) for a
+burst of 64. Therefore, the sequence of bursts is 23, 64, and 15, respectively.
+When FB is set, the sequence of burst transfers is 1, 1, 1, 4, 16, 64, 4, 4, 4, 1, 1, and 1 in same scenario,
+respectively. The sequence of smaller bursts at the be ginning aligns the address to the next higher enabled
+burst lengths programmed in the register.The DWC_ether_qos supports the burst length of up to 256 beats in AXI3 and AXI4 modes although
+the maximum burst length specified in the AXI3 standard is 16 beats. You can configure the maximum burst length (16, 32, 64, 128, or 256) allowed on the AXI bus by using the AXI Maximum Burst Length option in coreConsultant. This feature is provided for the systems which require larger than 16-beats burst length for optimum utiliz ation of the bus bandwidth.
+Note
+
+--- Page 56 ---
+56Synopsys, Inc. 2.2.2.4 Outstanding Transactions
+The AXI master supports configurable outstanding read/w rite requiests on the AXI bus. You can control the
+outstanding requests by programm ing the DMA_SysBus_Mode register.
+The AXI master supports up to 4, 8, or 16 (configu rable in coreConsultant) outstanding Read or Write
+requests on the AXI bus. You can also control these outstanding requests throug h software by programming
+Bits[24:21] and Bits[19:16] in the DMA_SysBus_Mode register. This is a useful workaround for any system-level issues with ha ndling of multiple requests.
+2.2.2.5 Priority of AXI Requests
+The descriptor transfers have higher pr iority than the data transfers. Ther efore, if there are two requests, Rx
+Descriptor Read and Tx Data Read, the Rx Descriptor Read is given higher priority so that the next Rx Data
+Write (subsequent to Rx Desc riptor Read) need not wait for the Tx Data Read transfer to complete. If there
+are descriptor read requests from both DMAs, these requ ests are serviced based on the first-come first-serve
+basis. The Rx DMA has higher priority if descriptor read requests, generated fr om both DMAs, are in the
+same clock. Similarly, in the writ e channel, descriptor writes from an y DMA have higher priority than the
+data-write transfers for the Rx DMA.
+When you enable the AV or DCB feature, the DMA ma y contain multiple channels. If the requests are
+generated from different channels simultaneously in  the same clock, the request priority among the
+channels is: Channel 7 (if present), Channel 6,..., Channel 1, and Channel 0.
+2.2.2.6 Bursts Reordering and Data Interleaving
+The AXI protocol allows reordering of  data transfers with different AXI-ID s with respect to the sequence of
+requests. It also allows data in terleaving between transfers of different AXI-IDs for Read channels.
+In EQOS-AXI configurations, the requests from each internal master (Rx DMA and Tx DMA) are generated
+with different AXI-ID. Therefore, reordering and data  interleaving can be perf ormed as two DMAs operate
+independently and are allocated different  address space on the slave memory.
+The AXI master supports reordering and interleaving from the AXI slaves on the Read channel. Each DMA
+internally ensures that a Read request and Write request is never generated at the same time to the same address (it can occur for only descri ptor accesses). The Tx DMA ensures that Tx Descriptor Read, Tx Data
+Read, and Tx Descriptor Write-Back requests are gene rated only after the previous requests are complete. The maximum number of outstanding requests is divided equally between the requests generated by
+the two internal masters (Rx DMA and Tx DMA). This means that when you select eight outstanding AXI requests while configuring the core, each DMA is limited to a maximum of four outstanding requests in each Read or Write channel. When you reduce the outstanding request (for example, to four) by programming the respective control bits, all outstanding requests can be from the same DMA. The minimum number of outstanding requests per channel is two.
+The Maximum outstanding requests on the AXI is limited to parameter
+DWCXG_AXI_GM_MAX_RD_REQUESTS a nd DWCXG_AXI_GM_MAX_WR_REQUESTS
+corresponding to Read and Write Channels respectively. Y ou can limit this by programming RD_OSR_LMT and WR_OSR_LMT of DMA_SysBus_Mode register.
+Note
+Note
+
+--- Page 57 ---
+57 Synopsys, Inc. The Rx DMA generates only Descriptor reads on the Read channel with a different ID. Therefore, data
+reordering and interleaving on the Read channel does not cause any problems in the MAC.
+2.2.2.7 AXI-ID Translation
+The AXI master selects unique IDs for each DMA channel and also for each Tx/Rx DMA channel. The AXI
+master selects the IDs as follows:
+■AXI Master ID[0] = 0
+Rx DMA access for Read and Write
+■AXI Master ID[0] = 1
+Tx DMA access for Read and Write
+■AXI Master ID[3:1] = 0, 1, 2, 3, 4, 5, 6, or 7
+DMA channel number when multiple DMA channels are present, that is, when you select the AV or
+DCB feature. Otherwise, it  is hardwired to zeros.
+2.2.2.8 Endianess Support
+The AXI master supports the little-endian and byte-invariant big-endian modes on the AXI master ports.
+The AXI master does not support narrow transfers and always performs full data-width transfers. For more
+information about the supported endian modes, see “Endian Support”.
+2.2.2.9 Posted Writes
+In posted writes, the write channel of AXI master trans fers an OKAY response to the DMA as soon as the
+last cycle or beat of data is accepted by the AXI in terconnect. The AXI master sends this response without
+waiting for the response from the target AXI slave on the write response channel. In non-posted writes, the
+AXI master interface transfers the response re ceived from the AXI slave channel to the DMA.
+For transferring the Ethernet data to system memory, the Rx DMA always issues posted write requests to
+the AXI master interface. This enables pipelining of th e data requests without de lays. The AXI master does
+not support out-of-order write transfers. However, the Rx DMA ensures that the se quence is maintained for
+descriptor writes, descriptor  reads, and data transfers.
+For writing descriptors (status or ti mestamp), the DMA always issues the non-posted write requests. This is
+needed because the Transfer Complete Interrupt is ge nerated based on the descri ptor writes for which the
+DMA needs completion response from the memory slave. This ensures no race condition between the
+hardware and the software because th e interrupt is generated only after the data and descriptor are written
+to the slave memory.The AXI master does not support data reordering and interleaving on the Write channel which is
+compliant with the latest AXI 4 specification.
+The AXI system bus ID width is configurable. The default width for the AXI master is 4 bits. The unused
+bits are hardwired to zeros. The default width for the AXI slave interface is 8 bits.
+Note
+Note
+
+--- Page 58 ---
+58Synopsys, Inc. 2.2.2.10 Error Response Handling
+Whenever there is an error response  from the AXI slave (as shown in Figure 2-16  with rresp_m_i[1:0] = 3),
+the respective DMA channel which generated the re quest gets disabled. The AXI master asserts the
+interrupt (sbd_intr_o in Figure 2-16 ) when the corresponding “Fatal Bus Error” interrupt is enabled. Only
+the DMA whose specific transaction had the error response gets affected and goes to STOP state. The application can re-initialize that specific DMA and restart the operation. The traffic on the other channels
+does not get affected if an erro r is detected for a DMA Channel.
+Figure 2-16 Error Response Timing
+2.2.2.11 AXI Memory Read
+Figure 2-17  shows the AXI master read timings. Two requests are placed for ID 0 and ID 1. The Read data is
+interleaved by the interconnect (by way of ID 0 and ID 1) and received by the AXI master. The Tx DMA in
+AXI master always ensures that it has enough space in its FIFO to accept th e requested burst of data.
+Therefore, the r_ready_m_o response is always high.For data transfer to system memory, the Rx DMA al ways issues posted writes. So, after the data is
+accepted by AXI interconnect, DMA moves out of Buffer data write state to descriptor write state without waiting for the response from the target AXI slave, on the write response channel. Therefore, after the ERROR response for the previous buffer wr ite is received, DMA initiates a Descriptor Write
+and captures ERROR status (received during Descriptor Write) as bus error, into the CSR space.
+Note
+
+--- Page 59 ---
+59 Synopsys, Inc. Figure 2-17 AXI Memory Read Timing
+2.2.2.12 AXI Memory Write
+Figure 2-18  shows the AXI write interface diagram. There are two requests for ID0. These requests are
+issued with burst lengths of 16 and 2. The latency be tween the first write request and the corresponding first
+data is two clocks. Th e Rx DMA ensures that it always has the requested burst of data available in its FIFO
+before the request is generated. Therefore, there are no  further latencies or delays in the data transfer. The
+complete 18 beats of write data of the two requests are transferred in 18 clocks, prov ided there is no delay in
+the acceptance of that data by the AXI slave, as shown in Figure 2-18 .
+Figure 2-18 AXI Memory Write Timing
+2.2.2.13 AXI Early Burst Termination
+Figure 2-19  shows the early burst termination on Write channel. This can happen during data transfer when
+the EOP is read out of the Rx queue before the reques ted burst transfer is comp leted. Five requests are
+issued, but the EOP gets transferred in the middle of th e first burst. The AXI master  still continues the data
+phases of the outstanding requested bursts but does not allow further data to be written to the slave
+memory by de-asserting the write-strobes (as indicated by wstrb_m_o[3:0] = 0).
+
+--- Page 60 ---
+60Synopsys, Inc. Two extra request commands (@address 0x00026e18 and 0x00026e58) are active when the write-strobes are
+de-asserted after EOP transfer. The firs t request has already been issued to  the slave. Therefore, it is not
+changed. The second request is a dumm y request with a single beat required  to generate a last data transfer
+(with wlast high).
+Figure 2-19 AXI Early Burst Termination Timing
+2.2.3 AXI4 Master Interface
+In the EQOS-AXI4 configuration, the DMA controller interfaces with the application through the AMBA
+AXI4 interface. The EQOS-AXI4 configuration is same as EQOS-AXI configuration except for features listed
+in this section.
+The EQOS-AXI4 configuration provides additional in terface signals AxQOS (arqos_m_o and awqos_m_o)
+and AxDOMAIN (ardomain_m_o and awdomain_m_o).
+2.2.4 AXI Low-Power Interface
+The EQOS-AXI configuration supports the low-power interface defined by the AXI specification. Bits[31:30,
+10] of DMA_SysBus_Mode register co ntrol the behavior of the AXI master in the low-power mode. When
+Bit31 (EN_LPI) is set, the AXI Master  enables the low-power feature. The se tting of Bit[10] determines if the
+AXI Master can also initiate the entry to low-power stat e. Bit30 controls the low-power exit due to reception
+of packets from the line.After transferring the EOP data to the system memory, a lot of AXI bandwidth may be wasted because
+of dummy writes. Therefore, it is recommended to have two or less than two outstanding requests on the AXI master write channel by appropriately programming DMA_SysBus_Mode.
+■The wid_m_o signal can be left unconnected in EQOS-AXI4 configurations.
+■If the system does not support ACE-Lite, AxDOMAIN (ardomain_m_o and awdomain_m_o) signals
+can be left unconnected in EQOS-AXI4 configurations.
+Note
+Note

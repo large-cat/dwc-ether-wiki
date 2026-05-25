@@ -1,0 +1,256 @@
+--- Page 101 ---
+101 Synopsys, Inc. of the packet is transferred to the Read Controller after the packet crosses th e receive threshold set by
+Bits[1:0] of MTL_RxQ0_Operation_Mode register of corresponding MTL queue.
+If the MTL Receive Queue is configured to operate in  the store-and-forward mode, all error packets can be
+filtered and dropped. For the application or DMA to fl ush the error packet being read from the queue, it
+must assert the ari_pkt_flush_i signal. The MTL then stops transferring data to the application (DMA). It internally reads the rest of the packet and drops it. The MTL then starts the transfer of next packet (if
+available).
+2.4.2.6 Receive Status Word Format
+The Rx packet status words are sent to the applicatio n after the packet data in Threshold mode and before
+the packet data in the Store and Forward Mode as explained in “ Multi-Packet Receive Operation”  on page
+100. Figure 2-42  illustrates the format of the Receive Status Word order for 32-bit data width configuration.
+Figure 2-42 Format of the Receive Status Word Order for 32-bit Datawidth Configuration
+The Normal status Word is always present. The contents of the Normal Status Word indicates the number
+of status words that follow.
+The VLAN Status Word is present only when Bit [25] or Bit [26] of the Normal status field is set to 1. Bit[25]
+or Bit[26] is set only when corres ponding VLAN Status Word is non-ze ro, this is applic able even when
+received VLAN Tag value is 0.
+The Extended Status Word is present only when the Bit[27] of the Normal status field is set to 1. Bit[27] is set
+only when Extended Status Word is non-zero.
+The MAC Filter Status word is present only when the Bit[29] of the Normal st atus field is set to 1. Bit[29] is
+set only when the corresponding MAC Filter Status Word is non-zero, th is is applicable even when the
+received DA matches MAC Address 0 register with Bit[18] reset.Timestamp Low
+Timestamp HighNormal Status
+VLAN Status
+Extended Status
+MAC Filter Status
+
+--- Page 102 ---
+102Synopsys, Inc. The Timestamp Status Low and Timestamp Status High status words are present only when bit [30] of the
+Normal Status Word is set to 1 and bit [15] of the Extended status Word is set to 0.
+
+--- Page 103 ---
+103 Synopsys, Inc. Figure 2-43  shows the format of the Receive Status Word order for 64-bit datawidth configuration.
+Figure 2-43 Format of the Receive Status Word Order for 64-bit Datawidth Configuration
+The Normal Status Word or VLAN Status Field is always  present. Its contents indicate the number of status
+words that follow.
+The Extended Status Word or Mac Filt er Status word is present only when  bit [27] or bit [29] of Normal
+status Word is set to 1.
+The Timestamp Status Low and Timestamp Status High status words are present only when bit [30] of
+Normal Status Field is set to 1 and bit [1 5] of Extended status Field is set to 0.
+Figure 2-44  shows the format of the Receive Status Word order for 128-bit datawidth configuration.
+Figure 2-44 Format of the Receive Status Word Order for 128-bit Datawidth Configuration
+Format of Normal Status Word
+Table 2-9  describes the format of the Normal Status Word.
+Table 2-9 Normal Status Word Format
+Field Description
+31 This field reserved30 Timestamp Status Received
+The Timestamp status is received from the MAC.
+Note:  The Timestamp status can be received from the MAC but dropped inside the MTL Queue because of
+the unavailability of the space for th e Timestamp Status. The availability of  the timestamp status is indicated
+through the bit[10] of the Extended Status Word.
+29 MAC filter Status Available
+When set, it indicates that the MAC Filter Status is present.
+28 This field is reserved.27 Extended Status Available
+When set, it indicates that the Extended status is present.
+26 Inner VLAN Tag Status Available
+When set, it indicates that Inner VLAN Tag stripped from the received packet is on VLAN Status Word[31:16]. When this bit is set then the VLAN Status Word will also be available in the Rx status Word.Timestamp Low Timestamp HighNormal Status VLAN Status
+Extended Status MAC Filter Status
+Normal Status VLAN Status Extended Status Timestamp Low Timestamp High MAC Filter Status
+
+--- Page 104 ---
+104Synopsys, Inc. 25 Outer VLAN Tag Status Available
+When set, it indicates that Outer VLAN Tag stripped from the received packet is present on VLAN Status Word [15:0]. When this bit is set then the VLAN Status Word is also present in the Rx Status Word.
+24 CRC Error
+When set, it indicates that a cyclic redundancy check (CRC) error occurred on the received packet.
+23 Giant Frame
+When set, it indicates that the packet length exceeds the maximum Ethernet specified size of 1518, 1522, or 2000 bytes (9018 or 9022 bytes if jumbo packet enable is set). Giant frame is only a packet length indication, and it does not cause any packet truncation.
+22 Watchdog Timeout
+When set, it indicates that the RPE module has received a packet with byte count greater than 2,048 (10,240 if Jumbo packet is enabled) bytes (DA + SA + LT + DATA + PAD + FCS). This bit is not set if the watchdog timer is disabled in the MAC Register 0 (MAC Configuration Register). However, even if the watchdog timer is disabled, this bit is set wh en the frame is greater than 32 KB in size.
+21 Overflow Error
+When set, this bit indicates that the received frame is damaged because of buffer overflow in Rx Queue.Note: This bit is set only when the MTL transfers a partial frame to the application. This happens only when the Rx FIFO is operating in the threshold mode. In the store-and-forward mode, all received partial frames which encounters overflow are dropped completely in Rx Queue.
+20 GMII Error
+When set, it indicates that the gmii_rxer_i was asserted during the reception of this packet. This error also includes carrier extension error in GMII and half-duplex mode. Error can be of less/no extension, or error (rxd = 1f) during extension.
+19 Dribbling Bit
+When set, it indicates that the packet contained a non-integer multiple of eight bits (valid only in MII mode). This bit is not valid if a collision is seen or if runt pa cket bits are set. If this bit is set and the CRC error is
+reset, then the packet is valid.
+18:16 Length/Type Field
+This field indicates if the packet received was a length packet or a type packet. The encoding of the 3 bits is as follows:
+■3'b000: The packet is a length packet
+■3'b001: The packet is a type packet
+■3'b100: The packet is a type packet with VLAN Tag
+■3'b101: The packet is a type packet with Double VLAN Tag
+■3'b110: The packet is a MAC Control packet type
+■3'b111: The packet is a OAM packet type
+■3'b010-3'b011: Reserved
+Note:  The packet type indication in this field is purely based on the LT field of received packet. For example,
+VLAN Tag or Double VLAN Tag indication does not ensure that corresponding VID match or VLAN filter
+pass.Field Description
+
+--- Page 105 ---
+105 Synopsys, Inc. Format of VLAN Status Word
+Table 2-10  describes the format of the VLAN Status Word.
+Table 2-10 VLAN Status Word Format
+Format of Extended Status Word
+This field is identical to the RDES1 field of the DMA in Write back Format shown in Table 19-23  on page
+134115 Error Summary
+Indicates the logical OR of the following error bits:
+■CRC Error
+■Dribble Error
+■Receive Error
+■Watchdog Timeout
+■Overflow Error
+■Giant Packet
+14:0 Packet Length
+Indicates the length, in bytes, of the received packet (including pad if applicable), and/or the FCS field when the Auto Pad/CRC Strip bit is de-asserted. Otherwise, it indicates the length without pad and/or FCS field. It also includes the 2-byte IP Checksum appended afte r the FCS when the IP Checksum module is present
+and enabled by setting the IPC bit of MAC Register 0 (MAC Configuration Register),and if the received frame is not a MAC control frame.
+It indicates the length without FCS field for Type packe ts (Length/Type >= 0x600), when Type CRCStrip bit is
+set. It indicates the length without VLAN Tag for VLAN tagged packets, when VLAN Tag stripping is enabled
+Field Description
+31:16 Inner VLAN Tag
+This field indicated the inner VLAN Tag Value
+This is valid only when the when bit[26] (outer VLAN ta g Available) of the Normal Status Field is set to
+15:0 Outer VLAN Tag
+This field indicates the outer VLAN Tag value.This is  valid only when the when bit[25] (outer VLAN tag
+Available) of the Normal Status Field is set to 1Field Description
+
+--- Page 106 ---
+106Synopsys, Inc. Format of MAC Filter Status Word
+Table 2-11  describes the format of the MAC Filter Status Word.
+Table 2-11 MAC Filter Status Word Format
+Field Description
+31:29 Layer 3 and Layer 4 Filter Number Matched
+These bits indicate the number of the Layer 3 and Layer 4 Filters that matched the received frame.
+■000: Filter 0
+■001: Filter 1
+■010: Filter 2
+■011: Filter 3
+■100: Filter 4
+■101: Filter 5
+■110: Filter 6
+■111: Filter 7
+This field is valid only when bits 28 or 27 are set high . When more than one filter matches, these bits give
+only the lowest filter number.
+28 Layer 4 Filter Match
+When set, this bit indicates that the received frame matches one of the enabled Layer 4 Port Number fields.
+This status is given only when one of the following conditions is true:
+■Layer 3 fields are not enabled and all enabled Layer 4 fields match.
+■All enabled Layer 3 and Layer 4 filter fields match.
+When more than one filter matches, this bit gives the layer 4 filter status of the filter indicated by bits [31:29].
+27 Layer 3 Filter Match
+When set, this bit indicates that the received frame matches one of the enabled Layer 3 IP Address fields. This status is given only when one of the following conditions is true:
+■All enabled Layer 3 fields match and all enabled Layer 4 fields are bypassed
+■All enabled filter fields match
+When more than one filter matches, this bit gives the layer 3 filter status of filter indicated by bits [31:29].
+26:19 MAC Address Match/Hash Value
+When bit 18, Hash Filter Status is reset, this field co ntains the number of the MAC address register which
+matches the Destination address of the received packet.
+When bit 18, Hash Filter Status is set, this field contains the hash value that is computed by the MAC.The bit corresponding to the hash value in the hash filter register is set, and so the frame passes the hash filter.
+18 Hash Filter Status When set, this bit indicates that the packet passed the MAC address hash filter. The bits
+[26:19] indicate the hash value.
+17 DA Filter Fail
+When this bit is set, it indicates that the Destination Ad dress filter failed. This means that this packet did not
+clear the DA filter.
+16 SA Filter Fail
+When this bit is set, it indicates that the Source Address filter failed. This means that this packet did not clear the SA filter.
+
+--- Page 107 ---
+107 Synopsys, Inc. Format of Timestamp Status Low Field
+This field is identical to the RDES0 field of  the Context Descriptor of the DMA shown in Table 19-26  on page
+1348 .
+Format of Timestamp Status High FieldThis field is identical to the RDES1 field of  the Context Descriptor of the DMA shown in Table 19-27  on page
+1348 . 15 VLAN Filter status
+When set, this bit indicates that the VLAN Tag of the received packet passed the VLAN filter.This bit is valid only when DWC_EQOS_ERVFE is no t enabled. If DWC_EQOS_ERVFE is enabled, the bit
+is redefined as Outer VLAN Tag Filter Status (OTS). For more details about OTS bit, see bit[15] “ RDES2
+Normal Descriptor (Write-Back Format)”  on page 1343
+14 Inner VLAN Tag Filter Status
+This bit is valid only when DWC_EQOS_ERVFE is enabled. For more details about ITS bit, see bit[14] “RDES2 Normal Descriptor (Write-Back Format)”  on page 1343
+13:6 Reserved5 ND Advertisement Not Generated
+When set, it indicates that the MAC has not generated ND Advertisement for the received ND Solicitation packet. This bit is valid when bit 4 (ND Solicitation Pa cket Received) is set. This bit is set when the MAC
+receives ND Solicitation Packet with Authentication extension header or non-zero extension headers.
+This bit is reserved when Enable ND Offload feature is not selected.
+4 ND Solicitation Packet Received
+When set, it indicates that ND Solicitation packet is re ceived. This bit is reserved when Enable ND Offload
+feature is not selected.
+3 Reserved2 ARP Reply Not Generated
+When set, it indicates that the MAC has not generated ARP Reply for the received ARP Request packet.
+This bit is set when the MAC is busy transmitting ARP reply to an earlier ARP request (only one ARP request processed at a time).
+This bit is reserved when Enable ARP Offload feature is not selected.
+1 Inner VLAN Tag Type
+When set, it indicates that Inner VLAN type is S-VLAN in the received packet.When reset, it indicates that Inner VLAN type is C-VLAN in the received packet.
+This field is reserved when Enable Double VLAN feature is not selected.
+0 Outer VLAN Tag Type
+When set, it indicates that Outer VLAN type is S-VLAN in the received packet.When reset, it indicates that Outer VLAN type is C-VLAN in the received packet.Field Description
+
+--- Page 108 ---
+108Synopsys, Inc. 2.4.2.7 Receive Path Timing Diagrams
+Timing specifications for the MAC Transaction laye r (MTL) interface signals in the receive path are
+illustrated in detail in the following  sections. The timing diagrams are organized to show the sequence of
+transactions that occur when a received packet is transferred from the MAC to the application.
+2.4.2.7.1 Receive FIFO Write Interface
+A packet received by the MAC is tr ansferred to the MTL over the MRI in terface. The transferred data is
+accepted and written to the Rx Queue by the write control logic. (See Figure 2-45 .)
+1. The MAC starts transferring the received packet to the MTL by asserting mri_val_o and mri_sop_o
+along with the corresponding 128-bit data on mri_data_o.
+This is directly transferred to the Rx queue in the next clock cycle. Th is can be seen by the assertion of
+rwc_csn_o and rwc_wr_en_o along with the corres ponding address and data. The MSB 5 bits of
+rwc_wr_data correspond to the value on mri_eop_o and mri_be_o signals accepted by the MTL.
+In store-and-forward mode, the MTL reserves locati ons for the status word before writing the first
+packet data. In Threshol d mode, the MTL does not reserve any locations for the status because the
+status is stored af ter the packet data.
+2. The MAC completes the packet transfer by the assert ing the mri_eop_o signal al ong with the valid data.
+The Receive packet status on mri_rxstatus_val_o is also valid with mri_eop_o.
+3. After writing the EOP data, the Rx Queue Write logic transfers the received status to the external RAM
+in the next clock cycle.
+In Threshold mode, the status words are written afte r the packet data. In st ore-and-forward mode, the
+status is written to the loca tions that were reserved ear lier (before the packet data).
+Figure 2-45 Receive Queue Write Interface Timing
+2.4.2.7.2 Application Receive Interface (ARI)
+The data received from the MAC and stored in the Rx Queue is transferred to the Application Receive
+Interface with the following sequ ence of events, as shown in Figure 2-46
+1. The application can check whether the Rx Queue has the amount of data (or the complete packet) to
+support the required burst length on ari_qnum_pbl_i.
+2. The MTL updates ari_watermark_o on  the corresponding queue in the next clock cycle which indicates
+that the MTL has enough da ta to sustain the burst transfer of le ngth given on ari_pbl_i (in step 1).
+3. In case of the Multiple Queue configuration, the application can drive ari_re ady_i[] to indicate the
+queues the application is ready to service.
+
+--- Page 109 ---
+109 Synopsys, Inc. 4. In configurations with multiple Rx queues, the MTL Read controller performs the arbitration among all
+non-empty queues, and all Queues for which ari_read y_i is asserted, and then selects one queue. The
+selected queue number is indicated through ari_qnum _o[] signal. The MTL indicates the availability of
+data by asserting the ari_val_o (in Threshold mode) or ari_rxstatus_val_o (in store-and-forward mode) signal along with the data. The ARI tr ansfers the data or status in ever y clock cycle as long as data or
+status is available in the Rx queue.
+5. The application accepts the data from the MTL by as serting ari_ack_i. The MTL updates the data in the
+next clock cycle if it is continuing the burst tran sfer. The application can pause the transfer by deas-
+serting ari_ack_i, as shown in Figure 2-46 .
+6. The MTL transfers the remaining data by assertin g the ari_val_o, ari_rxstatus_val_o, or ari_time-
+stamp_val_o signal and the corresponding data or stat us. When the last few bytes of packet (less bytes
+than the data bus width) are being transferred, ari_ eop_o is also asserted along with ari_be_o, indi-
+cating a valid number of bytes in that data phase.
+7. In Threshold mode, the Receive packet  status (indicated with the assertion of ari_rxstatus_val_o or ari_-
+timestamp_val_o) is transferred after the EOP data. Pa cket transfer is complete only after the ari_ack_i
+acknowledgment for status.
+Figure 2-46 Application Rece ive Interface (ARI) Timing
+2.4.2.7.3 ARI With Timestamp Feature in Threshold Mode
+Figure 2-47  shows the ARI timing when IEEE 1588 Timestam p feature is enabled. After the ARI outputs the
+EOP data, as indicated by ari_eop_o high, it gi ves the timestamp value on  ari_data_o. Asserting
+ari_timestamp_val_o validates the time stamp. In this figure, the 64-bit timestamp is output in two cycles,
+because the data bus is only 32-bit s wide. After the application accepts the timestamp (by asserting ari_ack_i
+for two clocks), the Rx status is given on the data bu s and validated with the assertion of ari_rxstatus_val_o.
+Figure 2-47 ARI Timing With I EEE 1588 Timestam ping Enabled
+
+--- Page 110 ---
+110Synopsys, Inc. Figure 2-48  shows the timing of the timestamp transfer when  the MAC is configured for a 64-bit data bus.
+The 64-bit timestamp is given in one cycle between the EOP data transfer and the Receive Status transfer.
+Figure 2-48 ARI Timing for 64-Bit Bus, IEEE 1588 Ti mestamp Feature Enabled
+2.4.2.7.4 ARI With Timestamp Feature in Store-and-Forward Mode
+In store-and-forward mode, the MTL starts the pa cket transfer with the st atus by asserting the
+ari_rxstatus_val_o and ari_data_o signals containing the status. After the application accepts the status
+words by asserting ari_ack_i, the MTL asserts ari_timestamp_val_o to indicate the availability of the
+timestamp on ari_data_o.
+Figure 2-49 ARI Timing with IEEE 1588 Timestamp Feature in Store-and-Forward Mode
+In Figure 2-50 , the 64-bit timestamp is output in two cycles because the data bus is only 32-bits wide. After
+the application accepts the timestamp (by asserting ar i_ack_i for two clocks), the MTL starts driving the
+packet data by asserting the ari_ val_o, ari_sop_o and ari_data_o.
+Figure 2-50 ARI Timing for 64-Bit Bus, IEEE 1588 Timestamp Feat ure in Store-and-Forward Mode

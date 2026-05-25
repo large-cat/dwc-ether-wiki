@@ -1,0 +1,14 @@
+<h level="2">Tx DMA Packet Processing and Suspension</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The Tx DMA expects data buffers to contain complete Ethernet packets excluding preamble, pad bytes, and FCS fields. DA, SA, and Type/Length fields must contain valid data. If CRC or PAD insertion is disabled, buffer must include CRC bytes. Packets can be data-chained across several buffers, delimited by First Descriptor (TDES3[29]) and Last Descriptor (TDES3[28]). After last buffer transmission, DMA writes final status to TDES3 of the descriptor with Last Descriptor bit set. If IOC (TDES2[31]) is set, interrupt is triggered. Transmission begins when MTL Tx Queue reaches programmable threshold or full packet is in FIFO. Store-and-forward mode (Bit 1 of MTL Tx Operation Mode) releases descriptors when DMA finishes transferring packet. Suspension causes: descriptor owned by application, underflow error, or Tail Pointer equals Current descriptor.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

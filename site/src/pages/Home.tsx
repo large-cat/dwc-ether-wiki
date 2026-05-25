@@ -1,10 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { BookOpen, MessageCircle, Search, ChevronRight, Layers, Cpu, Zap, Shield } from 'lucide-react'
+import { BookOpen, Search, ChevronRight, Layers, Cpu, Zap, Shield } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import growingTree from '@wiki/growing_knowledge_tree.json'
 
 const iconMap: Record<string, React.ReactNode> = {
   ch1: <Cpu className="w-5 h-5" />, ch2: <Layers className="w-5 h-5" />, ch3: <Zap className="w-5 h-5" />,
@@ -30,20 +29,29 @@ const statusLabel: Record<string, string> = {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
+  const [tree, setTree] = useState<any>(null)
 
-  const chapters = growingTree.chapters as any[]
-  const leaves = (growingTree as any).leaves?.entries || []
-  const qaLog = (growingTree as any).qa_log?.entries || []
-  const meta = growingTree.metadata as any
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}growing_knowledge_tree.json`)
+      .then(r => r.json())
+      .then(data => {
+        setTree(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  const chapters = tree?.chapters || []
+  const leaves = tree?.leaves || []
+  const meta = tree?.metadata || {}
 
   const filteredChapters = searchQuery
-    ? chapters.filter((ch) => {
+    ? chapters.filter((ch: any) => {
         const q = searchQuery.toLowerCase()
         if (ch.title_cn?.toLowerCase().includes(q)) return true
         if (ch.title?.toLowerCase().includes(q)) return true
         if (ch.description?.toLowerCase().includes(q)) return true
         const chLeaves = leaves.filter((l: any) => l.chapter_id === ch.id)
-        if (chLeaves.some((l: any) => l.topic?.toLowerCase().includes(q) || l.content?.toLowerCase().includes(q))) return true
+        if (chLeaves.some((l: any) => l.topic?.toLowerCase().includes(q))) return true
         return false
       })
     : chapters
@@ -75,10 +83,6 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <Link to="/qa" className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm">
-            <MessageCircle className="w-4 h-4" />
-            <span>智能问答</span>
-          </Link>
         </div>
       </header>
 
@@ -87,7 +91,6 @@ export default function Home() {
         <div className="flex gap-6 mb-8 text-sm text-slate-500 dark:text-slate-400">
           <span>{chapters.length} 个章节</span>
           <span>{leaves.length} 个知识点</span>
-          <span>{qaLog.length} 次问答</span>
           <span className="ml-auto">v{meta.knowledge_tree_version}</span>
         </div>
 
@@ -109,7 +112,7 @@ export default function Home() {
             章节索引
           </h2>
 
-          {filteredChapters.map((ch) => {
+          {filteredChapters.map((ch: any) => {
             const isExpanded = expandedChapters.has(ch.id)
             const chLeaves = leaves.filter((l: any) => l.chapter_id === ch.id)
 

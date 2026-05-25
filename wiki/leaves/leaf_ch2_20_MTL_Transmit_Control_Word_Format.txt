@@ -1,0 +1,15 @@
+<h level="2">MTL Transmit Control Word Format</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p83-88</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>MTL发送控制字从DMA传输到MTL，包含包长度、VLAN标签控制、校验和插入控制等字段。</p>
+<p>支持单次发送和多次发送操作。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

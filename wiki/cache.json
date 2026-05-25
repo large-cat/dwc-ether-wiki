@@ -1,0 +1,26 @@
+{
+  "_description": "Content read from PDF is stored here. Key format: ch{ID}_p{start}-{end}. Never delete entries - they are the persisted knowledge.",
+  "entries": {
+    "ch5_p167-172": "cache/cache_ch5_p167-172.txt",
+    "ch7_p243-248": "cache/cache_ch7_p243-248.txt",
+    "ch1_p23-37": "cache/cache_ch1_p23-37.txt",
+    "ch1_p23-30": "cache/cache_ch1_p23-30.txt",
+    "ch1_p38-40": "cache/cache_ch1_p38-40.txt",
+    "ch1_p26-37": "cache/cache_ch1_p26-37.txt",
+    "ch1_p23-27": "cache/cache_ch1_p23-27.txt",
+    "ch1_p23-40": "cache/cache_ch1_p23-40.txt",
+    "ch2_p41-60": "cache/cache_ch2_p41-60.txt",
+    "ch2_p101-110": "cache/cache_ch2_p101-110.txt",
+    "ch2_p111-120": "cache/cache_ch2_p111-120.txt",
+    "ch2_p121-130": "cache/cache_ch2_p121-130.txt",
+    "ch2_p131-140": "cache/cache_ch2_p131-140.txt",
+    "ch2_p141-150": "cache/cache_ch2_p141-150.txt",
+    "ch2_p41-80": "cache/cache_ch2_p41-80.txt",
+    "ch2_p81-100": "cache/cache_ch2_p81-100.txt",
+    "ch2_p83-100": "cache/cache_ch2_p83-100.txt",
+    "ch2_p83-88": "cache/cache_ch2_p83-88.txt",
+    "ch2_p89-95": "cache/cache_ch2_p89-95.txt",
+    "ch2_p96-100": "cache/cache_ch2_p96-100.txt"
+  },
+  "total_chars_cached": 477001
+}

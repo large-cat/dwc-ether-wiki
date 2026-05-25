@@ -1,0 +1,14 @@
+<h level="2">DMA Buffer Alignment and Size Calculations</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>Tx and Rx data buffers have no restrictions on start address alignment. However, the DMA always initiates write transfers with address aligned to bus width, using dummy data in invalid byte lanes. The software driver must discard dummy bytes based on buffer start address and packet size. The DMA does not update size fields in descriptors; only status fields (RDES/TDES) are updated. The driver must perform size calculations. For Rx: when FD bit is set, valid data amount = buffer size minus data buffer pointer offset. For the last descriptor, driver must read packet length (PL bits of RDES3[14:0]) and subtract sum of preceding buffer sizes. Rx buffer size should be allocated aligned to system bus width even if start address is not aligned.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

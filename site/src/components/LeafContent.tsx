@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useState, useEffect } from 'react'
 import { Info, AlertTriangle, Lightbulb, AlertCircle, HelpCircle } from 'lucide-react'
 import {
   Table,
@@ -13,7 +13,7 @@ interface LeafContentProps {
   leaf: {
     id: string
     topic: string
-    content: string
+    content_path: string
     confidence: string
     source: string
     created_at: string
@@ -292,12 +292,33 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 }
 
 export default function LeafContent({ leaf }: LeafContentProps) {
+  const [content, setContent] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`${import.meta.env.BASE_URL}${leaf.content_path}`)
+      .then(r => r.text())
+      .then(text => {
+        setContent(text)
+        setLoading(false)
+      })
+      .catch(() => {
+        setContent('')
+        setLoading(false)
+      })
+  }, [leaf.content_path])
+
   return (
     <article className="py-2">
       <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-4 pb-2 border-b border-slate-300 dark:border-slate-600">
         {leaf.topic}
       </h3>
-      <XmlContent xml={leaf.content} />
+      {loading ? (
+        <div className="text-sm text-slate-400">Loading content...</div>
+      ) : (
+        <XmlContent xml={content} />
+      )}
     </article>
   )
 }

@@ -1,0 +1,51 @@
+--- Page 38 ---
+38Synopsys, Inc. ■TCP Segmentation and UDP Fragmentation Offload
+■ARP Offload support
+■IEEE 1588 Ethernet frame timestamp support
+■AV, TSN, and DCB traffic qu euing and forwarding support
+■Endianness for all applic ation-side data paths
+■Station Management Agent (SMA) – MDIO module
+■Choice of APB, APB3, APB4, AHB, AXI3, AXI4 -Lite or native MCI interface for slave port
+■Separate application clocks option for slave port
+■SA and VLAN insertion or replacement
+■Configurable number of general purpos e inputs and output s (up to 16 each)
+■Packet transmission and reception through Sl ave interface instead of Master interface
+
+--- Page 39 ---
+39 Synopsys, Inc. 1.4 DWC_ether_qos Deliverables
+The deliverables included in  the DWC_ether_qos software package help in the integration of the controller
+with RTL, verification testbenches, IP-XACT component, and so on.
+The DWC_ether_qos is packaged as a dw_iip_DWC_ether_qos_5.10a.run file. The DWC_ether_qos requires
+the Synopsys coreConsultant tool to install, unpack , and configure the DWC_ether_qos. The license file
+required to install, unpack, and configure DWC_ether_qos is delivered separately.
+The DWC_ether_qos image includes the following:
+■Verilog RTL source code
+■Synthesis script generation for Synops ys Design Compiler and Synplify Pro.
+■Verification testbenches and test configurations derived from your parameter choices
+❑Verilog-based testbench environment for EQOS -AHB and EQOS-AXI configuration using DW
+AMBA VIP. You can use this testbench, along with the provided test cases, as a reference to build a verification environment for an SoC in whic h EQOS-AHB or EQOS-AXI integration can be
+tested.
+For more information about the VTB used to te st the EQOS-AHB/EQOS-AXI configurations using
+AMBA Verification IP (VIP), see Design Ware Cores Ethernet Quality-of-Service, User Guide .
+❑Verilog-based testbench environment and test cases for EQOS-DMA, EQOS-MTL, and
+EQOS-CORE configurations.
+❑Support for creating gate-level Device Unde r Test (DUT) models using a GTECH library.
+❑Verification scripts for running with three simu lators: Synopsys VCS, ModelSim, and NC-Verilog
+simulators.
+■IP-XACT component representation of the IP (XML format). The coreConsultant supports the gener-
+ation of configured core integration files that m eet the IP-XACT specifications. The coreConsultant
+also supports the file generation for IP-XACT-compliant software viewing of the configured core.
+The memory map is generated for all registers that are directly accessed by the host and are listed in
+Register Descriptions. However, the RevMII Registers are accessed indirectly through the MDIO interface. Therefore, these registers are not present in the Memory Map generated in the IP-XACT view.
+Contact Synopsys Support Center for software driver
+Note
+Note
+
+--- Page 40 ---
+40Synopsys, Inc. 1.5 Related Synopsys Products
+Synopsys offers demo drivers, demo boards, and PHYs that can be used with the DWC_ether_qos controller.
+The following products are available for the DWC_ethe r_qos controller through se parate part numbers and
+written agreements.
+■Demo drivers
+■Demo boards
+■PHYs

@@ -1,0 +1,14 @@
+<h level="2">DMA Error Response Handling</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>For any data transfer initiated by a DMA channel, if the slave replies with an error response, the DMA stops all operations and updates error bits and the Fatal Bus Error bit in the Status Register of the corresponding DMA channel. The application can either perform a reset to DWC_ether_qos or re-initialize the DMA descriptor list and start again. Other DMA channels are not affected. Error response paths: (1) EQOS-DMA: through mdc_error_i signal; (2) EQOS-AHB: through hresp_i signal; (3) EQOS-AXI: through rresp_m_i or bresp_m_i signals. The respective DMA (Rx or Tx) goes to Fatal Error state and all operations stop. The application must provide a soft reset to restart DMA operation.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

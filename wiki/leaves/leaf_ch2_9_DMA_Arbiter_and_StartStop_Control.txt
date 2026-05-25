@@ -1,0 +1,14 @@
+<h level="2">DMA Arbiter and Start/Stop Control</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The DMA arbiter performs arbitration between Tx and Rx channel accesses to the AHB master interface. Two arbitration types are supported: (1) Round-Robin Arbitration - when Bit 1 of DMA_Mode register is reset, bus is allocated in ratio set by Bits[14:12]; (2) Fixed-Priority Arbitration - when Bit 1 is set, Rx DMA gets priority over Tx DMA by default; when Bit 11 is also set, Tx DMA gets priority over Rx DMA. The DMA can be started/stopped by: (1) Programming ST bit in DMA_CH[n]_Tx_Control and SR bit in DMA_CH[n]_Rx_Control register; (2) Driving sbd_txdma_start_i[n] and sbd_rxdma_start_i[n] sideband signals. Sideband signal control has higher precedence.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

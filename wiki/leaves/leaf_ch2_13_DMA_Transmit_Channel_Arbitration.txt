@@ -1,0 +1,14 @@
+<h level="2">DMA Transmit Channel Arbitration</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>QA enrichment</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>The DMA arbiter provides access to multiple DMAs trying to access the Bus Interface Unit (BIU). Descriptor fetch requests have higher priority than packet buffer fetch requests. The arbiter acknowledges descriptor fetch request of one DMA channel at a time, using fixed priority with higher channel having higher priority (Channel 1 &gt; Channel 0, etc.). For packet buffer fetches, the arbiter uses programmed channel weight and priority with burst-by-burst arbitration based on: (1) Weighted Strict Priority (WSP) - processes highest enabled channel first, reassigning unused weights upward; (2) Weighted Round Robin (WRR) - selects by weight order, redistributing unused weights equally; (3) Fixed Priority (FP) - Channel 0 lowest, last selected highest; weight is ignored. In WSP/WRR, channel weight corresponds to number of DMA burst transfers granted.</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

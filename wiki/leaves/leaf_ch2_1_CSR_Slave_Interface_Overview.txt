@@ -1,0 +1,38 @@
+<h level="2">CSR Slave Interface Overview</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p41-48 Architecture</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>DWC_ether_qos 提供4种CSR Slave Interface用于访问配置和状态寄存器空间：</p>
+<p>1. AHB Slave Interface</p>
+<p>- 支持 EQOS-AHB 和 EQOS-AXI 配置</p>
+<p>- 32-bit接口，访问 DMA/MTL/MAC CSR</p>
+<p>- AMBA 2.0 完全兼容，支持 single 和所有 burst 传输</p>
+<p>- 支持 32/16/8-bit 读写（推荐32-bit以避免同步问题）</p>
+<p>- 仅返回 OKAY 响应，不支持 SPLIT/RETRY</p>
+<p>- 所有寄存器访问3个时钟周期完成</p>
+<p>- 可配置为 64/128-bit 数据总线（但实际访问仍限制为32-bit或更小）</p>
+<p>2. AXI3/AXI4-Lite Slave Interface</p>
+<p>- 仅支持 EQOS-AXI 配置</p>
+<p>- 不支持：数据重排序、数据交织、WRAP burst、awcache/awprot/arcache/arprot、原子访问、独占访问</p>
+<p>- AXI4-Lite 仅支持单拍传输</p>
+<p>- 仅返回 OKAY，不支持 EXOKAY/SLVERR/DECERR</p>
+<p>3. APB/APB3/APB4 Slave Interface</p>
+<p>- 所有配置均支持</p>
+<p>- APB: 读写均2个时钟周期</p>
+<p>- APB3: 写2周期，读3周期</p>
+<p>- APB4: 写2周期，读3周期，支持 pstrb_i 字节写使能</p>
+<p>4. MCI (MAC Control Interface)</p>
+<p>- 支持 EQOS-CORE/EQOS-MTL/EQOS-DMA 配置</p>
+<p>- 信号：mci_val_i, mci_addr_i, mci_wdata_i, mci_be_i, mci_rdwn_i, mci_ack_o, mci_rdata_o</p>
+<p>- 写操作2周期完成，读操作3周期完成</p>
+<p>- 不支持错误响应（对保留寄存器执行dummy操作）</p>
+<p>默认所有接口对保留寄存器访问返回 OKAY；设置 MAC_CSR_SW_Ctrl.SEEN=1 时返回 ERROR。</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

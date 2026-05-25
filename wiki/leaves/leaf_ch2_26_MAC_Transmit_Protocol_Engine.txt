@@ -1,0 +1,21 @@
+<h level="2">MAC Transmit Protocol Engine</h>
+<info>
+  <p>Chapter: [[架构]]</p>
+  <p>Source: <code>ch2 p121-130</code></p>
+  <p>Confidence: <code>high</code></p>
+</info>
+
+<p>TPE处理MAC发送路径：</p>
+<p>1. Preamble和SFD生成</p>
+<p>2. JAM模式：半双工冲突时发送Jam序列</p>
+<p>3. Carrier Extension：千兆半双工载波扩展</p>
+<p>4. Packet Bursting：包突发模式提高半双工效率</p>
+<p>5. STX调度器管理多队列调度</p>
+<p>6. CRC生成器自动计算FCS</p>
+<p>7. FTX处理Pause帧流控</p>
+
+<h level="3">Connections</h>
+
+<ul>
+  <li>[[ch2]] — Parent chapter</li>
+</ul>

@@ -61,15 +61,6 @@ declare module '@wiki/growing_knowledge_tree.json' {
         access_count: number;
       }>;
     };
-    qa_log: {
-      _description: string;
-      entries: Array<{
-        timestamp: string;
-        question: string;
-        chapter_ids: string[];
-        context_preview: string;
-      }>;
-    };
   };
   export default value;
 }

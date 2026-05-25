@@ -98,8 +98,10 @@ print_stats()
 results = search_knowledge("RGMII接口")
 content = get_or_load_content("ch5", 167, 171)
 
-# 保存新洞察
-add_knowledge_leaf("ch5", "RGMII时钟频率", "125MHz for Gigabit...")
+# 保存新洞察（内容使用 XML/HTML 语义标签）
+add_knowledge_leaf("ch5", "RGMII时钟频率",
+    "<h level=\"2\">RGMII时钟频率</h>\n"
+    "<p>RGMII在千兆模式下使用<kbd>125MHz</kbd>参考时钟。</p>")
 ```
 
 ### CLI 工具
