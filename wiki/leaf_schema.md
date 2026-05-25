@@ -1,6 +1,8 @@
 # Knowledge Leaf XML/HTML Schema v3.0
 
-> 叶子内容从 Markdown 语法迁移到 XML/HTML 语义标签，实现结构化存储 + 富语义渲染。
+> 叶子内容以 `.txt` 文件存储在 `wiki/leaves/` 目录下，由 `growing_knowledge_tree.json` 中的 `content_path` 字段引用。前端通过动态 fetch 按需加载。
+>
+> 格式：XML/HTML 语义标签，实现结构化存储 + 富语义渲染。
 
 ## 设计原则
 

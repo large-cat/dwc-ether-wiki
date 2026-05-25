@@ -15,15 +15,17 @@
 │
 ├── wiki/                             ← Layer 2: LLM-managed knowledge (read/write)
 │   ├── _context.md                   ← This wiki's purpose & rules
-│   ├── index.md                      ← Catalog of all chapters
-│   ├── overview.md                   ← Living synthesis of explored knowledge
-│   ├── log.md                        ← Append-only operation log
-│   ├── growing_knowledge_tree.json   ← ★ Core knowledge tree (machine format)
-│   └── leaves/                       ← XML/HTML semantic leaf exports (frontmatter + structured body)
+│   ├── growing_knowledge_tree.json   ← ★ Core knowledge tree — metadata index (chapters + leaf metadata)
+│   ├── cache.json                    ← Cache index (key → path)
+│   ├── cache/                        ← PDF cache content (.txt files)
+│   ├── leaves/                       ← Knowledge leaf content (.txt files, XML/HTML semantic tags)
+│   └── leaf_schema.md                ← Leaf XML/HTML tag reference
 │
 ├── site/                             ← Layer 3: Frontend platform (React SPA)
 │   ├── src/                          ← Source code
 │   ├── dist/                         ← Build output
+│   ├── public/                       ← Copied wiki assets at build time
+│   ├── scripts/                      ← Build helper scripts
 │   ├── package.json                  ← Frontend dependencies
 │   └── vite.config.ts                ← Build config
 │
@@ -46,7 +48,7 @@
 **Boundary rules:**
 - Agent Q&A only touches **Layer 1** (PDF read on cache miss) and **Layer 2** (search/cache/leaves).
 - **Layer 3** is only modified when updating frontend rendering rules or rebuilding the UI.
-- `tools/knowledge_growth.py` spans Layer 1+2. Leaf export to `wiki/leaves/` is handled by `sync_leaves_to_markdown()` within the engine. |
+- `tools/knowledge_growth.py` spans Layer 1+2. Leaf content is saved directly to `wiki/leaves/*.txt`; cache content to `wiki/cache/*.txt`.
 
 ---
 
@@ -98,8 +100,8 @@ Only two operations require the Python engine. Everything else can be done by re
 
 | Function | Purpose |
 |----------|---------|
-| `get_or_load_content(chapter_id, start, end)` | **Read PDF on cache miss** — the only way to access `raw/` |
-| `add_knowledge_leaf(chapter_id, topic, content, ...)` | **Persist insight** — append-only write to the knowledge tree |
+| `get_or_load_content(chapter_id, start, end)` | **Read PDF on cache miss** — the only way to access `raw/`; caches to `wiki/cache/*.txt` |
+| `add_knowledge_leaf(chapter_id, topic, content, ...)` | **Persist insight** — saves content to `wiki/leaves/*.txt`, metadata to tree |
 
 ---
 
@@ -109,8 +111,8 @@ Only two operations require the Python engine. Everything else can be done by re
 
 1. **raw/ is sacred.** Never modify, move, or delete files in `raw/`. They are the immutable source of truth.
 2. **wiki/ is append-only for leaves.** Never delete a knowledge leaf. If it's wrong, add a corrected one with higher confidence.
-3. **Cache is forever.** Once content is read from `raw/` into `wiki/cache.entries`, it stays. Don't delete cache entries.
-4. **Only read PDF on cache miss.** If `get_or_load_content()` returns cache hit, do not read the PDF again.
+3. **Cache is forever.** Once content is read from `raw/` into `wiki/cache/*.txt` (indexed by `cache.json`), it stays. Don't delete cache entries.
+4. **Only read PDF on cache miss.** If `get_or_load_content()` returns cache hit (from `wiki/cache/*.txt`), do not read the PDF again.
 5. **Agent Q&A only uses Layer 1+2.** Do not touch `site/` during Q&A sessions. Layer 3 is for frontend rendering only.
 6. **中文回答，英文术语.** Keep technical terms in English (RGMII, TSO, Descriptor), answer body in Chinese.
 
