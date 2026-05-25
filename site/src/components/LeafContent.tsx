@@ -23,13 +23,8 @@ interface LeafContentProps {
 }
 
 /* ────────────────────────────────────────────────────────────────
- *  XML/HTML Semantic Renderer with Markdown Fallback
+ *  XML/HTML Semantic Renderer
  * ──────────────────────────────────────────────────────────────── */
-
-function isXmlContent(content: string): boolean {
-  const trimmed = content.trim()
-  return trimmed.length > 0 && trimmed[0] === '<'
-}
 
 function XmlContent({ xml }: { xml: string }): React.ReactElement {
   const nodes = useMemo(() => {
@@ -37,16 +32,23 @@ function XmlContent({ xml }: { xml: string }): React.ReactElement {
       const parser = new DOMParser()
       const doc = parser.parseFromString(`<root>${xml}</root>`, 'application/xml')
       const error = doc.querySelector('parsererror')
-      if (error) return null
-      return renderXmlNodes(doc.documentElement.childNodes)
+      if (error) {
+        return (
+          <div className="my-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
+            XML parse error — content may be malformed
+          </div>
+        )
+      }
+      return <>{renderXmlNodes(doc.documentElement.childNodes)}</>
     } catch {
-      return null
+      return (
+        <div className="my-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
+          XML parse error — content may be malformed
+        </div>
+      )
     }
   }, [xml])
 
-  if (nodes === null) {
-    return <LegacyMarkdownContent content={xml} />
-  }
   return <>{nodes}</>
 }
 
@@ -289,278 +291,13 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
   }
 }
 
-/* ────────────────────────────────────────────────────────────────
- *  Legacy Markdown Parser (fallback for old content)
- * ──────────────────────────────────────────────────────────────── */
-
-interface DocBlock {
-  type: 'paragraph' | 'list' | 'table' | 'note' | 'heading'
-  content?: string
-  items?: string[]
-  rows?: { key: string; value: string }[]
-  headers?: string[]
-  level?: number
-}
-
-function parseContent(text: string): DocBlock[] {
-  const lines = text.split('\n')
-  const blocks: DocBlock[] = []
-  let i = 0
-
-  const isHeading = (s: string) => s.match(/^(#{1,3})\s+(.+)$/)
-  const isBullet = (s: string) => s.match(/^(\s*)[-*]\s+(.+)$/) || s.match(/^(\s*)[■❑▪•✓✔◦]\s*(.*)$/)
-  const isTableRow = (s: string) => s.match(/^\s*\|(.+)\|\s*$/)
-  const isTableSep = (s: string) => s.match(/^\s*\|[\s\-:|]+\|\s*$/)
-  const isNote = (s: string) => s.match(/^>\s*(.+)$/) || s.match(/^(?:注|注意|Note|提示|Tip)[:：]\s*(.+)$/i)
-
-  while (i < lines.length) {
-    const raw = lines[i]
-    const trimmed = raw.trim()
-
-    if (!trimmed) {
-      i++
-      continue
-    }
-
-    const hMatch = isHeading(trimmed)
-    if (hMatch) {
-      const hashes = hMatch[1].length
-      const level = hashes === 1 ? 2 : hashes
-      blocks.push({ type: 'heading', content: hMatch[2].trim(), level })
-      i++
-      continue
-    }
-
-    const nMatch = isNote(trimmed)
-    if (nMatch) {
-      const noteLines = [nMatch[1]]
-      let j = i + 1
-      while (j < lines.length) {
-        const cont = lines[j].trim()
-        if (!cont) break
-        const cm = isNote(cont)
-        if (cm) {
-          noteLines.push(cm[1])
-          j++
-        } else {
-          break
-        }
-      }
-      blocks.push({ type: 'note', content: noteLines.join(' ') })
-      i = j
-      continue
-    }
-
-    if (isTableRow(trimmed)) {
-      const tableLines: string[] = []
-      let j = i
-      while (j < lines.length && isTableRow(lines[j].trim())) {
-        tableLines.push(lines[j].trim())
-        j++
-      }
-      const dataLines = tableLines.filter((l) => !isTableSep(l))
-      if (dataLines.length >= 1) {
-        const cells = dataLines.map((l) =>
-          l.slice(1, -1).split('|').map((c) => c.trim())
-        )
-        const colCount = Math.max(...cells.map((r) => r.length))
-        if (colCount >= 2) {
-          const headers = cells[0]
-          const rows = cells.slice(1).map((row) => {
-            if (colCount === 2) {
-              return { key: row[0] || '', value: row[1] || '' }
-            }
-            return { key: row[0] || '', value: row.slice(1).join(' | ') }
-          })
-          blocks.push({ type: 'table', headers, rows })
-        }
-      }
-      i = j
-      continue
-    }
-
-    const bMatch = isBullet(trimmed)
-    if (bMatch) {
-      const items: string[] = []
-      let k = i
-      while (k < lines.length) {
-        const line = lines[k]
-        const lineTrim = line.trim()
-        if (!lineTrim) {
-          k++
-          continue
-        }
-        const bm = isBullet(lineTrim)
-        if (bm) {
-          items.push(bm[2])
-          k++
-        } else if (items.length > 0 && !isHeading(lineTrim) && !isTableRow(lineTrim) && !isNote(lineTrim)) {
-          items[items.length - 1] += ' ' + lineTrim
-          k++
-        } else {
-          break
-        }
-      }
-      if (items.length > 0) {
-        blocks.push({ type: 'list', items })
-      }
-      i = k
-      continue
-    }
-
-    const kvMatch = trimmed.match(/^([^:]+)\s*[:：]\s*(.+)$/)
-    if (kvMatch && kvMatch[1].length < 40 && !kvMatch[1].includes('。') && !kvMatch[1].includes('，')) {
-      blocks.push({ type: 'table', rows: [{ key: kvMatch[1].trim(), value: kvMatch[2].trim() }] })
-      i++
-      continue
-    }
-
-    const paraBuf: string[] = [trimmed]
-    let p = i + 1
-    while (p < lines.length) {
-      const next = lines[p].trim()
-      if (!next) break
-      if (isHeading(next) || isBullet(next) || isTableRow(next) || isNote(next)) break
-      if (next.match(/^[^:]+[:：].+$/) && next.split(/[:：]/).length === 2) {
-        const lookahead: string[] = []
-        let q = p
-        while (q < lines.length) {
-          const lq = lines[q].trim()
-          if (lq.match(/^[^:]+[:：].+$/) && lq.split(/[:：]/).length === 2) {
-            lookahead.push(lq)
-            q++
-          } else if (!lq) {
-            break
-          } else {
-            break
-          }
-        }
-        if (lookahead.length >= 3) break
-      }
-      paraBuf.push(next)
-      p++
-    }
-    blocks.push({ type: 'paragraph', content: paraBuf.join(' ') })
-    i = p
-  }
-
-  return blocks
-}
-
-function LegacyBlock({ block }: { block: DocBlock }) {
-  switch (block.type) {
-    case 'heading': {
-      const level = block.level || 2
-      if (level >= 3) {
-        return (
-          <h5 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-5 mb-2">
-            {block.content}
-          </h5>
-        )
-      }
-      return (
-        <h4 className="text-base font-semibold text-slate-900 dark:text-white mt-6 mb-3 pb-1 border-b border-slate-200 dark:border-slate-700">
-          {block.content}
-        </h4>
-      )
-    }
-
-    case 'paragraph':
-      return (
-        <p className="text-[15px] text-slate-700 dark:text-slate-300 leading-[1.75] my-3">
-          {block.content}
-        </p>
-      )
-
-    case 'list':
-      return (
-        <ul className="my-3 space-y-1.5 ml-1">
-          {block.items?.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2.5 text-[15px] text-slate-700 dark:text-slate-300 leading-[1.75]">
-              <span className="mt-2 shrink-0 w-1.5 h-1.5 bg-slate-400 rounded-full" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      )
-
-    case 'table':
-      if (!block.rows || block.rows.length === 0) return null
-      if (block.rows.length === 1 && (!block.headers || block.headers.length <= 1)) {
-        const r = block.rows[0]
-        return (
-          <div className="flex gap-3 text-[15px] my-2 py-1">
-            <span className="font-medium text-slate-700 dark:text-slate-300 shrink-0 min-w-[120px]">{r.key}：</span>
-            <span className="text-slate-600 dark:text-slate-400">{r.value}</span>
-          </div>
-        )
-      }
-      return (
-        <div className="my-4 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {(block.headers || ['项目', '说明']).map((h, idx) => (
-                  <TableHead key={idx} className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {h}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {block.rows.map((row, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="text-sm font-medium text-slate-700 dark:text-slate-300">{row.key}</TableCell>
-                  <TableCell className="text-sm text-slate-600 dark:text-slate-400">{row.value}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )
-
-    case 'note':
-      return (
-        <div className="my-4 pl-3 border-l-2 border-amber-400 dark:border-amber-600">
-          <p className="text-sm text-amber-700 dark:text-amber-400 leading-relaxed">
-            {block.content}
-          </p>
-        </div>
-      )
-
-    default:
-      return null
-  }
-}
-
-function LegacyMarkdownContent({ content }: { content: string }) {
-  const blocks = parseContent(content)
-  return (
-    <>
-      {blocks.map((block, idx) => (
-        <LegacyBlock key={idx} block={block} />
-      ))}
-    </>
-  )
-}
-
-/* ────────────────────────────────────────────────────────────────
- *  Main Component
- * ──────────────────────────────────────────────────────────────── */
-
 export default function LeafContent({ leaf }: LeafContentProps) {
-  const contentIsXml = isXmlContent(leaf.content)
-
   return (
     <article className="py-2">
       <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-4 pb-2 border-b border-slate-300 dark:border-slate-600">
         {leaf.topic}
       </h3>
-      {contentIsXml ? (
-        <XmlContent xml={leaf.content} />
-      ) : (
-        <LegacyMarkdownContent content={leaf.content} />
-      )}
+      <XmlContent xml={leaf.content} />
     </article>
   )
 }
