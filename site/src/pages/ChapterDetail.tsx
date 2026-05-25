@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useLocation, useNavigate } from 'react-router'
 import { ArrowLeft, FileText, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -67,8 +67,30 @@ const ARCH_FLOWCHART = `flowchart LR
 
 export default function ChapterDetail() {
   const { chapterId } = useParams<{ chapterId: string }>()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [sourceOpen, setSourceOpen] = useState(false)
   const chapter = (growingTree.chapters as any[]).find((ch: any) => ch.id === (chapterId || ''))
+
+  // Scroll to leaf anchor on mount / hash change (HashRouter safe)
+  useEffect(() => {
+    const hash = location.hash
+    if (hash && hash.startsWith('#leaf_')) {
+      const id = hash.slice(1)
+      const el = document.getElementById(id)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  }, [location.hash])
+
+  const scrollToLeaf = (id: string) => {
+    navigate(`/chapter/${chapterId}#${id}`, { replace: true })
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   if (!chapter) {
     return (
@@ -87,7 +109,9 @@ export default function ChapterDetail() {
   const cache = (growingTree as any).cache?.entries || {}
   const leaves = (growingTree as any).leaves?.entries || []
   const chCacheKeys = Object.keys(cache).filter((k) => k.startsWith(chapter.id + '_'))
-  const chLeaves = leaves.filter((l: any) => l.chapter_id === chapter.id)
+  const chLeaves = leaves
+    .filter((l: any) => l.chapter_id === chapter.id)
+    .filter((l: any) => l.status !== 'archived')
   const qaLog = ((growingTree as any).qa_log?.entries || []).filter((q: any) => q.chapter_ids?.includes(chapter.id))
 
   const idx = growingTree.chapters.findIndex((c: any) => c.id === chapter.id)
@@ -243,13 +267,13 @@ export default function ChapterDetail() {
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">本章内容</p>
                   <nav className="space-y-1 border-l border-slate-200 dark:border-slate-700">
                     {chLeaves.map((leaf: any) => (
-                      <a
+                      <button
                         key={leaf.id}
-                        href={`#${leaf.id}`}
-                        className="block pl-3 py-1 text-sm text-slate-500 hover:text-blue-600 hover:border-l-2 hover:border-blue-600 -ml-px transition-colors"
+                        onClick={() => scrollToLeaf(leaf.id)}
+                        className="block w-full text-left pl-3 py-1 text-sm text-slate-500 hover:text-blue-600 hover:border-l-2 hover:border-blue-600 -ml-px transition-colors"
                       >
                         {leaf.topic}
-                      </a>
+                      </button>
                     ))}
                   </nav>
                 </div>
