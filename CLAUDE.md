@@ -31,7 +31,6 @@
 │
 ├── tools/                            ← Layer 1+2: Knowledge engine
 │   ├── knowledge_growth.py           ← ★ PDF reader + knowledge tree manager
-│   └── README.md                     ← Tool usage guide
 │
 ├── CLAUDE.md                         ← This file
 └── README.md                         ← Project overview
@@ -91,7 +90,7 @@ Learned something new?            → persist insight to wiki/leaves
 1. **raw/ is sacred.** Never modify, move, or delete files in `raw/`. They are the immutable source of truth.
 2. **wiki/ is append-only for leaves.** Never delete a knowledge leaf. If it's wrong, add a corrected one with higher confidence.
 3. **Cache is forever.** Once content is read from `raw/` into `wiki/cache/*.txt` (indexed by `cache.json`), it stays. Don't delete cache entries.
-4. **Only read PDF on cache miss.** If `get_or_load_content()` returns cache hit (from `wiki/cache/*.txt`), do not read the PDF again.
+4. **Only read PDF on cache miss.** `ensure_cached()` produces cache files in `wiki/cache/*.txt`; do not read the PDF again if already cached.
 5. **Agent Q&A only uses Layer 1+2.** Do not touch `site/` during Q&A sessions. Layer 3 is for frontend rendering only.
 6. **中文回答，英文术语.** Keep technical terms in English (RGMII, TSO, Descriptor), answer body in Chinese.
 
