@@ -44,6 +44,5 @@ __pycache__/
 site/dist/
 site/public/
 
-# PDF extraction cache (on-demand, not persisted)
-wiki/cache/
-wiki/cache.json
+# PDF extraction cache (versioned)
+# wiki/cache/ and wiki/cache.json are now tracked intentionally
