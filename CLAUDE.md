@@ -88,7 +88,7 @@ Learned something new?            → persist insight to wiki/leaves
 ### Layer Boundaries
 
 1. **raw/ is sacred.** Never modify, move, or delete files in `raw/`. They are the immutable source of truth.
-2. **wiki/ is append-only for leaves.** Never delete a knowledge leaf. If it's wrong, add a corrected one with higher confidence.
+2. **wiki/ leaves are mutable.** Leaves can be added, deleted, and updated via `add_leaf()`, `delete_leaf()`, `update_leaf()`.
 3. **Cache is forever.** Once content is read from `raw/` into `wiki/cache/*.txt` (indexed by `cache.json`), it stays. Don't delete cache entries.
 4. **Only read PDF on cache miss.** `ensure_cached()` produces cache files in `wiki/cache/*.txt`; do not read the PDF again if already cached.
 5. **Agent Q&A only uses Layer 1+2.** Do not touch `site/` during Q&A sessions. Layer 3 is for frontend rendering only.
