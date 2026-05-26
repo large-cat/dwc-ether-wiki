@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-DWC Ethernet QoS — Lazy-Loading Knowledge Growth Engine
+DWC Ethernet QoS — Lazy-Loading Knowledge Growth Engine v3.0
+
+Leaves are stored in per-chapter config files (wiki/config/ch*_leaves.json).
+The knowledge tree (wiki/growing_knowledge_tree.json) only holds chapter metadata
+and a leaves_config pointer for each chapter.
 
 CLI: python tools/knowledge_growth.py --help
 """
@@ -26,6 +30,7 @@ TREE_PATH = WIKI_DIR / "growing_knowledge_tree.json"
 LEAVES_DIR = WIKI_DIR / "leaves"
 CACHE_DIR = WIKI_DIR / "cache"
 CACHE_INDEX_PATH = WIKI_DIR / "cache.json"
+CONFIG_DIR = WIKI_DIR / "config"
 
 # Ensure tools/ is importable when run directly
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -50,6 +55,47 @@ def _save_tree(tree: dict) -> None:
     with open(TREE_PATH, "w", encoding="utf-8") as f:
         json.dump(tree, f, ensure_ascii=False, indent=2)
 
+
+# ── Chapter-level leaf configs ────────────────────────────────────────────────
+
+def _chapter_id_from_leaf_id(leaf_id: str) -> Optional[str]:
+    """Parse chapter_id from leaf_id like 'leaf_ch1_13' -> 'ch1'."""
+    parts = leaf_id.split("_")
+    if len(parts) >= 3 and parts[0] == "leaf":
+        return parts[1]
+    return None
+
+
+def _load_chapter_config(chapter_id: str) -> dict:
+    """Load a chapter's leaf config. Returns empty skeleton if not found."""
+    config_path = CONFIG_DIR / f"{chapter_id}_leaves.json"
+    if config_path.exists():
+        with open(config_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"chapter_id": chapter_id, "chapter_title": "", "leaves": []}
+
+
+def _save_chapter_config(chapter_id: str, data: dict) -> None:
+    """Save a chapter's leaf config."""
+    CONFIG_DIR.mkdir(exist_ok=True)
+    config_path = CONFIG_DIR / f"{chapter_id}_leaves.json"
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def _ensure_chapter_config(chapter: dict) -> dict:
+    """Ensure a chapter has a config file. Creates an empty one if missing."""
+    ch_id = chapter["id"]
+    config = _load_chapter_config(ch_id)
+    # Sync chapter_title if it changed in the tree
+    ch_title = chapter.get("title_cn", chapter.get("title", ""))
+    if config.get("chapter_title") != ch_title:
+        config["chapter_title"] = ch_title
+        _save_chapter_config(ch_id, config)
+    return config
+
+
+# ── Leaf content ──────────────────────────────────────────────────────────────
 
 def _make_slug(topic: str) -> str:
     """Generate a URL-safe slug from a topic string."""
@@ -159,8 +205,9 @@ def add_document(filename: str) -> Dict[str, Any]:
         else:
             page_end = page_count - 1
 
+        ch_id = f"ch{i+1}"
         chapters.append({
-            "id": f"ch{i+1}",
+            "id": ch_id,
             "number": i + 1,
             "title": title,
             "title_cn": "",
@@ -169,14 +216,21 @@ def add_document(filename: str) -> Dict[str, Any]:
             "status": "seeded",
             "reads_count": 0,
             "description": "",
+            "leaves_config": f"config/{ch_id}_leaves.json",
+            "leaf_count": 0,
+        })
+
+        # Create empty leaf config
+        _save_chapter_config(ch_id, {
+            "chapter_id": ch_id,
+            "chapter_title": "",
+            "leaves": []
         })
 
     tree = _load_tree()
     tree["metadata"]["document"] = filename
     tree["metadata"]["total_pages"] = page_count
     tree["chapters"] = chapters
-    if "leaves" not in tree:
-        tree["leaves"] = []
     _save_tree(tree)
     print(f"[NEW DOC] Added '{filename}' ({page_count} pages, {len(chapters)} chapters)")
     return {"filename": filename, "page_count": page_count, "chapters": len(chapters)}
@@ -255,8 +309,8 @@ def ensure_cached(chapter_id: str, page_start: int = None,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def add_leaf(chapter_id: str, topic: str, content: str,
-                        source: str = "QA enrichment", confidence: str = "high") -> str:
-    """Add a persistent knowledge leaf. Content saved to .txt, metadata to tree."""
+             source: str = "QA enrichment", confidence: str = "high") -> str:
+    """Add a persistent knowledge leaf. Content saved to .txt, metadata to chapter config."""
     tree = _load_tree()
 
     chapter = None
@@ -267,45 +321,56 @@ def add_leaf(chapter_id: str, topic: str, content: str,
     if not chapter:
         raise ValueError(f"Chapter {chapter_id} not found")
 
-    if "leaves" not in tree:
-        tree["leaves"] = []
-
-    chapter_leaves = [l for l in tree["leaves"] if l["chapter_id"] == chapter_id]
-    seq = len(chapter_leaves) + 1
+    config = _ensure_chapter_config(chapter)
+    seq = len(config["leaves"]) + 1
     leaf_id = f"leaf_{chapter_id}_{seq}"
 
-    content_path = _leaf_content_path(leaf_id, topic)
-    _save_leaf_content(content_path, content)
+    content_path = [_leaf_content_path(leaf_id, topic)]
+    _save_leaf_content(content_path[0], content)
 
     leaf = {
         "id": leaf_id,
-        "chapter_id": chapter_id,
-        "chapter_title": chapter.get("title_cn", chapter.get("title", "")),
         "topic": topic,
         "content_path": content_path,
         "source": source,
         "confidence": confidence,
         "created_at": datetime.now().isoformat(),
-        "access_count": 0,
         "status": "active",
     }
 
-    tree["leaves"].append(leaf)
+    config["leaves"].append(leaf)
+    _save_chapter_config(chapter_id, config)
+
+    chapter["leaf_count"] = len(config["leaves"])
+    tree["metadata"]["total_knowledge_leaves_created"] = tree["metadata"].get("total_knowledge_leaves_created", 0) + 1
     _save_tree(tree)
     return leaf_id
 
 
 def delete_leaf(leaf_id: str) -> bool:
     """Delete a leaf and its content file."""
-    tree = _load_tree()
-    leaves = tree.get("leaves", [])
+    chapter_id = _chapter_id_from_leaf_id(leaf_id)
+    if not chapter_id:
+        return False
+
+    config = _load_chapter_config(chapter_id)
+    leaves = config.get("leaves", [])
 
     for i, leaf in enumerate(leaves):
         if leaf["id"] == leaf_id:
-            filepath = WIKI_DIR / leaf.get("content_path", "")
-            if filepath.exists():
-                filepath.unlink()
+            for cp in leaf.get("content_path", []):
+                filepath = WIKI_DIR / cp
+                if filepath.exists():
+                    filepath.unlink()
             leaves.pop(i)
+            _save_chapter_config(chapter_id, config)
+
+            # Update tree
+            tree = _load_tree()
+            for ch in tree["chapters"]:
+                if ch["id"] == chapter_id:
+                    ch["leaf_count"] = len(leaves)
+                    break
             _save_tree(tree)
             return True
     return False
@@ -314,25 +379,29 @@ def delete_leaf(leaf_id: str) -> bool:
 def update_leaf(leaf_id: str, topic: str = None, content: str = None,
                 confidence: str = None) -> bool:
     """Update leaf properties. Only provided fields are changed."""
-    tree = _load_tree()
-    leaves = tree.get("leaves", [])
+    chapter_id = _chapter_id_from_leaf_id(leaf_id)
+    if not chapter_id:
+        return False
+
+    config = _load_chapter_config(chapter_id)
+    leaves = config.get("leaves", [])
 
     for leaf in leaves:
         if leaf["id"] == leaf_id:
             if topic is not None:
                 leaf["topic"] = topic
             if content is not None:
-                content_path = leaf.get("content_path", "")
-                if content_path:
-                    _save_leaf_content(content_path, content)
+                content_paths = leaf.get("content_path", [])
+                if content_paths:
+                    _save_leaf_content(content_paths[0], content)
                 else:
                     new_path = _leaf_content_path(leaf_id, topic or leaf["topic"])
                     _save_leaf_content(new_path, content)
-                    leaf["content_path"] = new_path
+                    leaf["content_path"] = [new_path]
             if confidence is not None:
                 leaf["confidence"] = confidence
             leaf["updated_at"] = datetime.now().isoformat()
-            _save_tree(tree)
+            _save_chapter_config(chapter_id, config)
             return True
     return False
 
@@ -359,7 +428,11 @@ def get_stats() -> dict:
             content = _load_cache_file(r["file"])
             cache_chars += len(content)
 
-    all_leaves = tree.get("leaves", [])
+    # Aggregate leaves from per-chapter configs
+    total_leaves = 0
+    for ch in tree["chapters"]:
+        config = _load_chapter_config(ch["id"])
+        total_leaves += len(config.get("leaves", []))
 
     raw_docs = []
     if RAW_DIR.exists():
@@ -375,7 +448,7 @@ def get_stats() -> dict:
         "total_chapters": len(tree["chapters"]),
         "chapters_status": status_counts,
         "total_pdf_reads": m.get("total_reads_from_pdf", 0),
-        "total_leaves": len(all_leaves),
+        "total_leaves": total_leaves,
         "cache_ranges": cache_ranges,
         "cache_chars": cache_chars,
         "raw_documents": raw_docs,
@@ -413,14 +486,15 @@ def print_stats():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    def _print_help():
         print("DWC Ethernet QoS Knowledge Growth Engine v3.0")
         print("")
         print("Usage: python tools/knowledge_growth.py <command> [args]")
         print("")
         print("Commands:")
         print("  stats                          Show growth statistics")
-        print("  read <chapter_id> [pages]      Read PDF (cache first)")
+        print("  read <chapter_id> [pages]      Read PDF (cache first). If pages omitted, reads full chapter.")
+        print("  cache <chapter_id>             Ensure chapter is cached (no output, just cache)")
         print("  add-leaf <ch_id> <topic> <content>  Add a leaf")
         print("  delete-leaf <leaf_id>          Delete a leaf")
         print("  update-leaf <leaf_id> <topic> <content>  Update a leaf")
@@ -428,9 +502,14 @@ if __name__ == "__main__":
         print("")
         print("Examples:")
         print('  python tools/knowledge_growth.py stats')
-        print('  python tools/knowledge_growth.py read ch5')
+        print('  python tools/knowledge_growth.py read ch1        # reads full chapter 1')
+        print('  python tools/knowledge_growth.py read ch5 10     # reads first 10 pages of ch5')
+        print('  python tools/knowledge_growth.py cache ch2       # cache chapter 2 without printing')
         print('  python tools/knowledge_growth.py add-doc DWC_ether_qos_databook.pdf')
         sys.exit(0)
+
+    if len(sys.argv) < 2 or sys.argv[1] in ("--help", "-h"):
+        _print_help()
 
     cmd = sys.argv[1]
 
@@ -438,8 +517,7 @@ if __name__ == "__main__":
         print_stats()
 
     elif cmd == "read":
-        ch_id = sys.argv[2] if len(sys.argv) > 2 else "ch5"
-        pages = int(sys.argv[3]) if len(sys.argv) > 3 else 5
+        ch_id = sys.argv[2] if len(sys.argv) > 2 else "ch1"
 
         tree = _load_tree()
         ch = next((c for c in tree["chapters"] if c["id"] == ch_id), None)
@@ -447,11 +525,32 @@ if __name__ == "__main__":
             print(f"Chapter {ch_id} not found")
             sys.exit(1)
 
-        cache_file = get_or_load_content(ch_id, ch["page_start"],
-                                          min(ch["page_start"] + pages - 1, ch["page_end"]))
+        if len(sys.argv) > 3:
+            pages = int(sys.argv[3])
+            end = min(ch["page_start"] + pages - 1, ch["page_end"])
+        else:
+            end = ch["page_end"]
+
+        cache_file = ensure_cached(ch_id, ch["page_start"], end)
         if cache_file:
             content = _load_cache_file(cache_file)
-            print(content[:2000])
+            print(content)
+
+    elif cmd == "cache":
+        ch_id = sys.argv[2] if len(sys.argv) > 2 else "ch1"
+
+        tree = _load_tree()
+        ch = next((c for c in tree["chapters"] if c["id"] == ch_id), None)
+        if not ch:
+            print(f"Chapter {ch_id} not found")
+            sys.exit(1)
+
+        cache_file = ensure_cached(ch_id, ch["page_start"], ch["page_end"])
+        if cache_file:
+            print(f"Cached: {cache_file}")
+        else:
+            print("Cache failed.")
+            sys.exit(1)
 
     elif cmd == "add-leaf":
         if len(sys.argv) < 5:

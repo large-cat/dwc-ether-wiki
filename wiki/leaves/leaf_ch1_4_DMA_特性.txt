@@ -1,0 +1,16 @@
+<h level="3">DMA 特性</h>
+
+<ul>
+  <li>32/64/128-bit 数据传输，最多 <strong>8 Tx + 8 Rx channel</strong></li>
+  <li>每个 MTL Tx queue 对应独立 DMA Tx channel；Rx 可单/多 channel</li>
+  <li><strong>Dual-buffer (ring) descriptor</strong> 架构，每个 descriptor 最多传输 32KB</li>
+  <li>支持字节对齐寻址，支持 <strong>TSO</strong> (TCP Segmentation Offload) 和 <strong>UFO</strong> (UDP Fragmentation Offload)</li>
+  <li>支持 header (L3/L4) 和 payload 分存到不同 buffer</li>
+  <li>支持时间敏感的条件包获取（基于 Slot Time 或 IEEE 1588 time）</li>
+  <li>Tx/Rx engine 仲裁：<strong>Round-robin</strong> 或 <strong>Fixed-priority</strong></li>
+  <li>Start/Stop 模式控制；Separate CSR access port 和 data interface port</li>
+  <li>可选 TSO/UFO channel 数量可配置</li>
+  <li>多 channel DMA 下基于 DA 或 VLAN Priority 路由接收包</li>
+  <li>Posted writes 优化 throughput</li>
+  <li>Sideband 信号控制 DMA channel 启停</li>
+</ul>

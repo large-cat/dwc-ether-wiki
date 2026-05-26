@@ -1,0 +1,24 @@
+<h level="3">MTL 特性</h>
+
+<p>MTL (Transaction Layer) 作为应用和 MAC 之间的桥梁，支持 32/64/128-bit 数据宽度。</p>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>规格</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tx FIFO</td><td>256B / 512B / 1KB / 2KB / 4KB / 8KB / 16KB / 32KB / 64KB / 128KB</td></tr>
+    <tr><td>Rx FIFO</td><td>256B / 512B / 1KB / 2KB / 4KB / 8KB / 16KB / 32KB / 64KB / 128KB / 256KB</td></tr>
+    <tr><td>Queue</td><td>最多 8 个 Tx queue + 8 个 Rx queue，共享 common memory</td></tr>
+    <tr><td>Tx 模式</td><td>Store-and-Forward 或 Threshold (cut-through)</td></tr>
+    <tr><td>调度算法</td><td>WRR, DWRR, WFQ, Strict Priority, CBS (AVB), EST (TSN), TBS (TSN)</td></tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>Tx：可选丢弃 Tx Status 以提升 throughput</li>
+  <li>Rx：插入 Rx Status vectors（Threshold 模式在 EOP 后，Store-and-Forward 模式在 SOP 前）</li>
+  <li>Rx：Store-and-Forward 模式下过滤所有 error packets</li>
+  <li>Rx：队列仲裁支持 WRR、Weighted Strict Priority (WSP)、Strict Priority (SP)</li>
+  <li>Rx：支持 replicate multicast 到多个 Rx DMA channel</li>
+</ul>

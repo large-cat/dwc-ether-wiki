@@ -1,0 +1,27 @@
+<h level="3">汽车安全特性</h>
+
+<ul>
+  <li>ECC 保护 memories</li>
+  <li>On-chip data path parity 保护</li>
+  <li>FSM parity 和 timeout 保护</li>
+  <li>Application/CSR interface timeout 保护</li>
+</ul>
+
+<h level="3">Monitoring, Testing, and Debugging</h>
+
+<ul>
+  <li>Internal loopback (Tx → Rx on GMII/MII) 用于调试</li>
+  <li>DMA states (Tx/Rx) 作为 status bits</li>
+  <li>Debug status register：FSM 状态和 FIFO fill-level</li>
+  <li>Application Abort status bits</li>
+  <li>MMC (RMON) module</li>
+  <li>Current Tx/Rx Buffer pointer 和 Descriptor pointer 作为 status registers</li>
+  <li>Bandwidth consumption 统计（AV/DCB 模式下每个 Tx channel）</li>
+  <li>Tx/Rx Queue memory 可通过 Slave port 访问用于 debug</li>
+  <li>SECDED ECC（Single Error Correction, Double Error Detection）用于 memory 内容保护</li>
+  <li>错误注入测试（ECC/Parity/FSM/Interface timeout）</li>
+</ul>
+
+<info>
+  <p>SECDED ECC 仅适用于 <strong>DWC ASP Ethernet QOS (C118-0)</strong> 产品</p>
+</info>

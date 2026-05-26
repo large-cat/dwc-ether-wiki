@@ -53,9 +53,24 @@
 
 ## Session Startup
 
+常用命令速查：
+
 ```bash
-python tools/knowledge_growth.py --help
+# 知识树状态
+python tools/knowledge_growth.py stats
+
+# 读取 PDF 章节（先查缓存，命中则直接返回；否则从 PDF 读取并自动缓存）
+python tools/knowledge_growth.py read ch1        # 不传 pages 读完整章节
+python tools/knowledge_growth.py read ch5 10     # 读前 10 页
+python tools/knowledge_growth.py cache ch2       # 只缓存不输出内容
+
+# 管理知识叶子
+python tools/knowledge_growth.py add-leaf ch1 "topic" "content"
+python tools/knowledge_growth.py update-leaf leaf_ch1_1 "topic" "content"
+python tools/knowledge_growth.py delete-leaf leaf_ch1_1
 ```
+
+更多命令：`python tools/knowledge_growth.py --help`
 
 ---
 
@@ -66,7 +81,7 @@ Agent handles Q&A by **actively reading** Layer 1 & 2. The engine does NOT auto-
 ```
 User Question
     ↓
-Search wiki/                      → titles, cache, leaves (no PDF read)
+Search wiki/                      → grep leaves/*.txt, cache/*.txt (no PDF read)
     ↓
 Check knowledge leaves            → have relevant leaves?
     ├─ YES → synthesize answer from leaves (fastest)
@@ -76,22 +91,29 @@ Check wiki cache                  → cached from previous reads?
     ├─ YES → read cached content, synthesize answer
     └─ NO  → continue...
     ↓
-Read raw/ PDF on-demand           → cache to wiki/, then answer
+Read raw/ PDF via tools           → python tools/knowledge_growth.py read chN
+    │                                 (auto-caches to wiki/cache/)
     ↓
-Learned something new?            → persist insight to wiki/leaves
+Learned something new?            → python tools/knowledge_growth.py add-leaf ...
 ```
 
 ---
 
 ## Hard Rules
 
-### Layer Boundaries
+### PDF 读取入口
 
-1. **raw/ is sacred.** Never modify, move, or delete files in `raw/`. They are the immutable source of truth.
-2. **wiki/ leaves are mutable.** Leaves can be added, deleted, and updated via `add_leaf()`, `delete_leaf()`, `update_leaf()`.
-3. **Cache is forever.** Once content is read from `raw/` into `wiki/cache/*.txt` (indexed by `cache.json`), it stays. Don't delete cache entries.
-4. **Only read PDF on cache miss.** `ensure_cached()` produces cache files in `wiki/cache/*.txt`; do not read the PDF again if already cached.
-5. **Agent Q&A only uses Layer 1+2.** Do not touch `site/` during Q&A sessions. Layer 3 is for frontend rendering only.
-6. **中文回答，英文术语.** Keep technical terms in English (RGMII, TSO, Descriptor), answer body in Chinese.
+所有 PDF 读取通过 `tools/knowledge_growth.py` 进行：
+- `python tools/knowledge_growth.py read chN` — 读取章节 N，先查 `wiki/cache/`，命中则返回缓存内容；未命中则从 `raw/` PDF 提取并自动缓存到 `wiki/cache/*.txt`
+- `python tools/knowledge_growth.py cache chN` — 同上，只缓存不输出内容
+- 不传 `[pages]` 时读完整章节；传 `[pages]` 时读指定页数
+- `ensure_cached()` 是底层缓存 API，命令行入口是 `read` 和 `cache`
+
+### Layer 约定
+
+1. **`raw/` 是只读源层。** 内容通过 `read`/`cache` 命令提取到 `wiki/cache/`，缓存持久保存。
+2. **`wiki/` 是可读写知识层。** 叶子通过 `add-leaf` / `update-leaf` / `delete-leaf` 管理；缓存通过 `read` / `cache` 自动管理。
+3. **`site/` 不参与 Q&A。** 只在前端构建时读写，Agent 只操作 `wiki/` 和 `raw/`。
+4. **中文回答，英文术语.** Keep technical terms in English (RGMII, TSO, Descriptor), answer body in Chinese.
 
 *Knowledge tree grows one question at a time. Every read from raw/ is an investment in wiki/.*

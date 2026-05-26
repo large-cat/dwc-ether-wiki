@@ -1,0 +1,39 @@
+<h level="3">MAC 特性</h>
+
+<h level="4">核心能力</h>
+
+<p>MAC 支持 <strong>10/100/1000 Mbps</strong>，PHY 接口包括 GMII/MII(默认)、TBI、RTBI、RGMII、SGMII、SMII、RMII、RevMII。全双工支持 <strong>IEEE 802.3x Pause</strong> 和 <strong>Priority Flow Control</strong>。半双工支持 <strong>CSMA/CD</strong> 和 backpressure flow control。支持 <strong>IEEE 1588 PTP</strong> 时间戳（64-bit），Tx 方向支持 <strong>one-step</strong> 和 <strong>two-step timestamping</strong>。支持 <strong>PPS</strong> 输出控制和 media clock generation/recovery。支持 <strong>MDIO Clause 22/45</strong> 主接口。数据宽度可选 32/64/128-bit。可选 <strong>RMON/MIB Counters</strong> (RFC2819/RFC2665)。支持最多 <strong>16 个通用 GPIO</strong>。</p>
+
+<h level="4">Tx 特性</h>
+
+<ul>
+  <li>Preamble 和 SFD 自动插入</li>
+  <li>每包独立的 32-bit 状态</li>
+  <li>可编程包长（Standard/Jumbo up to 16KB）</li>
+  <li>可编程 Inter Packet Gap（40-96 bit times，步进8）</li>
+  <li>自动 CRC 和 pad 生成（可按包控制）</li>
+  <li>Source Address 插入/替换</li>
+  <li>VLAN 插入/替换/删除（最多2个 tag，支持 queue/channel-based）</li>
+  <li>支持 reduced preamble size（全双工）</li>
+  <li>全双工下自动发送 zero-quanta Pause packet（flow control 信号变化时）</li>
+  <li>Frame Preemption</li>
+  <li>half-duplex 下自动重传碰撞包；丢弃 late collision / excessive collisions / excessive deferral / under-run 包</li>
+  <li>可选 IPv4 header / TCP/UDP/ICMP checksum 插入</li>
+</ul>
+
+<h level="4">Rx 特性</h>
+
+<ul>
+  <li>自动 Pad/CRC stripping；可选禁用 CRC checking</li>
+  <li>Preamble/SFD 删除；112-bit 或 128-bit 接收状态</li>
+  <li>可编程 watchdog timeout</li>
+  <li>灵活地址过滤：最多31个 perfect DA filters（带 byte mask），最多96个 additional perfect DA filters，最多31个 SA comparison filters，32/64/128/256-bit Hash filter（multicast/unicast），promiscuous mode</li>
+  <li>VLAN tag-based 过滤（perfect/hash-based，支持 outer/inner tag），支持 Extended VLAN tag filtering（4/8/16/32 filter selection）</li>
+  <li>L3/L4-based 过滤（TCP/UDP over IPv4/IPv6）；可选 L3/L4 checksum offload</li>
+  <li>远程唤醒包和 AMD magic packet 检测</li>
+  <li>可选转发接收到的 Pause packet 到 application（全双工）</li>
+  <li>支持 stripping 最多两个 VLAN tag 并在状态中提供</li>
+  <li>Rx Frame Preemption</li>
+  <li>支持转发 undersized good packets</li>
+  <li>可编程 lookup table based flexible Parser 用于过滤和 steering</li>
+</ul>

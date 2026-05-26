@@ -8,18 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { Leaf } from '@/types/wiki'
 
 interface LeafContentProps {
-  leaf: {
-    id: string
-    topic: string
-    content_path: string
-    confidence: string
-    source: string
-    created_at: string
-    access_count: number
-    chapter_title?: string
-  }
+  leaf: Leaf
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -297,23 +289,26 @@ export default function LeafContent({ leaf }: LeafContentProps) {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`${import.meta.env.BASE_URL}${leaf.content_path}`)
-      .then(r => r.text())
-      .then(text => {
-        setContent(text)
+    const paths = leaf.content_path || []
+    Promise.all(
+      paths.map(p =>
+        fetch(`${import.meta.env.BASE_URL}${p}`)
+          .then(r => r.text())
+          .catch(() => '')
+      )
+    )
+      .then(texts => {
+        setContent(texts.join('\n'))
         setLoading(false)
       })
       .catch(() => {
         setContent('')
         setLoading(false)
       })
-  }, [leaf.content_path])
+  }, [leaf.id])
 
   return (
     <article className="py-2">
-      <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-4 pb-2 border-b border-slate-300 dark:border-slate-600">
-        {leaf.topic}
-      </h3>
       {loading ? (
         <div className="text-sm text-slate-400">Loading content...</div>
       ) : (

@@ -1,7 +1,7 @@
 {
   "_schema": {
-    "version": "2.0",
-    "description": "Lazy-loading knowledge tree. Content is read from PDF ON-DEMAND only when asked. content_extract starts empty and gets filled after first read.",
+    "version": "3.0",
+    "description": "Lazy-loading knowledge tree. Leaves split into per-chapter configs.",
     "principle": "NEVER bulk-extract PDF. Only read specific pages when a question requires it. Persist what was learned."
   },
   "metadata": {
@@ -11,11 +11,11 @@
     "date": "December 2017",
     "company": "Synopsys, Inc.",
     "total_pages": 1418,
-    "knowledge_tree_version": "2.0",
+    "knowledge_tree_version": "3.0",
     "created_at": "2025-01-15T00:00:00Z",
-    "last_updated": "2026-05-25T17:00:00Z",
-    "total_reads_from_pdf": 20,
-    "total_knowledge_leaves_created": 49
+    "last_updated": "2026-05-26T16:50:23.854202",
+    "total_reads_from_pdf": 38,
+    "total_knowledge_leaves_created": 51
   },
   "chapters": [
     {
@@ -26,9 +26,11 @@
       "page_start": 23,
       "page_end": 40,
       "status": "mature",
-      "reads_count": 6,
+      "reads_count": 24,
       "description": "DWC_ether_qos产品介绍、主要特性、配置选项和交付物",
-      "last_read": "2026-05-23T01:48:24.104125"
+      "last_read": "2026-05-26T15:05:01.573213",
+      "leaves_config": "config/ch1_leaves.json",
+      "leaf_count": 8
     },
     {
       "id": "ch2",
@@ -40,7 +42,9 @@
       "status": "mature",
       "reads_count": 12,
       "description": "内部架构：CSR从接口、应用主接口、DMA控制器、MAC事务层、MAC层、中断机制",
-      "last_read": "2026-05-25T07:24:16.608454"
+      "last_read": "2026-05-25T07:24:16.608454",
+      "leaves_config": "config/ch2_leaves.json",
+      "leaf_count": 29
     },
     {
       "id": "ch3",
@@ -51,7 +55,9 @@
       "page_end": 158,
       "status": "seeded",
       "reads_count": 0,
-      "description": "VLAN标签的插入、删除、替换和路由功能"
+      "description": "VLAN标签的插入、删除、替换和路由功能",
+      "leaves_config": "config/ch3_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch4",
@@ -62,7 +68,9 @@
       "page_end": 166,
       "status": "seeded",
       "reads_count": 0,
-      "description": "发送和接收FIFO、TCP/IP头部缓冲区、SPRAM、从设备/调试模式内存访问"
+      "description": "发送和接收FIFO、TCP/IP头部缓冲区、SPRAM、从设备/调试模式内存访问",
+      "leaves_config": "config/ch4_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch5",
@@ -74,7 +82,9 @@
       "status": "growing",
       "reads_count": 1,
       "description": "各种PHY接口的配置和使用：MII、GMII、RGMII、RMII、SMII、SGMII、RevMII、RTBI",
-      "last_read": "2026-05-21T11:19:43.849103"
+      "last_read": "2026-05-21T11:19:43.849103",
+      "leaves_config": "config/ch5_leaves.json",
+      "leaf_count": 3
     },
     {
       "id": "ch6",
@@ -85,7 +95,9 @@
       "page_end": 242,
       "status": "seeded",
       "reads_count": 0,
-      "description": "接收数据包过滤：地址过滤、VLAN过滤、L3/L4过滤、灵活接收解析器"
+      "description": "接收数据包过滤：地址过滤、VLAN过滤、L3/L4过滤、灵活接收解析器",
+      "leaves_config": "config/ch6_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch7",
@@ -97,7 +109,9 @@
       "status": "explored",
       "reads_count": 1,
       "description": "精确时间协议(PTP)：硬件时间戳、一步法/两步法、PPS输出、媒体时钟恢复、PTP卸载",
-      "last_read": "2026-05-21T11:19:57.608528"
+      "last_read": "2026-05-21T11:19:57.608528",
+      "leaves_config": "config/ch7_leaves.json",
+      "leaf_count": 2
     },
     {
       "id": "ch8",
@@ -108,7 +122,9 @@
       "page_end": 338,
       "status": "seeded",
       "reads_count": 0,
-      "description": "多通道DMA和队列管理、TSN特性(EST时间感知调度、帧抢占)、队列优先级"
+      "description": "多通道DMA和队列管理、TSN特性(EST时间感知调度、帧抢占)、队列优先级",
+      "leaves_config": "config/ch8_leaves.json",
+      "leaf_count": 2
     },
     {
       "id": "ch9",
@@ -119,7 +135,9 @@
       "page_end": 372,
       "status": "seeded",
       "reads_count": 0,
-      "description": "TCP/IP协议卸载：校验和卸载、TSO、UFO、头部-负载分离、ARP卸载"
+      "description": "TCP/IP协议卸载：校验和卸载、TSO、UFO、头部-负载分离、ARP卸载",
+      "leaves_config": "config/ch9_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch10",
@@ -130,7 +148,9 @@
       "page_end": 418,
       "status": "seeded",
       "reads_count": 0,
-      "description": "节能以太网(EEE)、魔法包唤醒、Wake-on-LAN、AXI低功耗接口、时钟门控"
+      "description": "节能以太网(EEE)、魔法包唤醒、Wake-on-LAN、AXI低功耗接口、时钟门控",
+      "leaves_config": "config/ch10_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch11",
@@ -141,7 +161,9 @@
       "page_end": 478,
       "status": "seeded",
       "reads_count": 0,
-      "description": "DMA描述符格式：发送普通描述符、发送上下文描述符、接收描述符、描述符处理"
+      "description": "DMA描述符格式：发送普通描述符、发送上下文描述符、接收描述符、描述符处理",
+      "leaves_config": "config/ch11_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch12",
@@ -152,7 +174,9 @@
       "page_end": 1018,
       "status": "seeded",
       "reads_count": 0,
-      "description": "所有寄存器详细说明：MAC寄存器、MTL寄存器、DMA寄存器、CSR寄存器"
+      "description": "所有寄存器详细说明：MAC寄存器、MTL寄存器、DMA寄存器、CSR寄存器",
+      "leaves_config": "config/ch12_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch13",
@@ -163,7 +187,9 @@
       "page_end": 1100,
       "status": "seeded",
       "reads_count": 0,
-      "description": "所有接口信号的详细描述和时序"
+      "description": "所有接口信号的详细描述和时序",
+      "leaves_config": "config/ch13_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch14",
@@ -174,7 +200,9 @@
       "page_end": 1132,
       "status": "seeded",
       "reads_count": 0,
-      "description": "时钟域、复位信号、频率要求、时钟门控"
+      "description": "时钟域、复位信号、频率要求、时钟门控",
+      "leaves_config": "config/ch14_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch15",
@@ -185,7 +213,9 @@
       "page_end": 1172,
       "status": "seeded",
       "reads_count": 0,
-      "description": "可配置参数及其功能描述"
+      "description": "可配置参数及其功能描述",
+      "leaves_config": "config/ch15_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch16",
@@ -196,7 +226,9 @@
       "page_end": 1200,
       "status": "seeded",
       "reads_count": 0,
-      "description": "内部使用的参数和常量"
+      "description": "内部使用的参数和常量",
+      "leaves_config": "config/ch16_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch17",
@@ -207,7 +239,9 @@
       "page_end": 1218,
       "status": "seeded",
       "reads_count": 0,
-      "description": "单端口RAM接口时序和配置"
+      "description": "单端口RAM接口时序和配置",
+      "leaves_config": "config/ch17_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch18",
@@ -218,7 +252,9 @@
       "page_end": 1248,
       "status": "seeded",
       "reads_count": 0,
-      "description": "调试接口、测试模式、诊断功能"
+      "description": "调试接口、测试模式、诊断功能",
+      "leaves_config": "config/ch18_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch19",
@@ -229,7 +265,9 @@
       "page_end": 1300,
       "status": "seeded",
       "reads_count": 0,
-      "description": "ECC保护、奇偶校验、FSM安全、ISO 26262汽车功能安全"
+      "description": "ECC保护、奇偶校验、FSM安全、ISO 26262汽车功能安全",
+      "leaves_config": "config/ch19_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "ch20",
@@ -240,7 +278,9 @@
       "page_end": 1386,
       "status": "seeded",
       "reads_count": 0,
-      "description": "软件编程指南和初始化序列：初始化、发送编程、接收编程、描述符编程"
+      "description": "软件编程指南和初始化序列：初始化、发送编程、接收编程、描述符编程",
+      "leaves_config": "config/ch20_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "appa",
@@ -250,7 +290,9 @@
       "page_end": 1396,
       "status": "seeded",
       "reads_count": 0,
-      "description": "不同配置下的面积和功耗数据"
+      "description": "不同配置下的面积和功耗数据",
+      "leaves_config": "config/appa_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "appb",
@@ -260,7 +302,9 @@
       "page_end": 1412,
       "status": "seeded",
       "reads_count": 0,
-      "description": "大小端模式支持详情"
+      "description": "大小端模式支持详情",
+      "leaves_config": "config/appb_leaves.json",
+      "leaf_count": 0
     },
     {
       "id": "appd",
@@ -270,633 +314,9 @@
       "page_end": 1418,
       "status": "seeded",
       "reads_count": 0,
-      "description": "ISO 26262汽车功能安全支持"
-    }
-  ],
-  "leaves": [
-    {
-      "id": "leaf_ch1_1",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DWC_ether_qos 产品概述",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:30.821180",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_1_DWC_ether_qos_产品概述.txt"
-    },
-    {
-      "id": "leaf_ch1_2",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DWC_ether_qos 标准合规性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:30.826113",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_2_DWC_ether_qos_标准合规性.txt"
-    },
-    {
-      "id": "leaf_ch1_3",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "MAC Tx/Rx 核心特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:30.830295",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_3_MAC_TxRx_核心特性.txt"
-    },
-    {
-      "id": "leaf_ch1_4",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "MAC Tx 特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:59.922895",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_4_MAC_Tx_特性.txt"
-    },
-    {
-      "id": "leaf_ch1_5",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "MAC Rx 特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:59.927054",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_5_MAC_Rx_特性.txt"
-    },
-    {
-      "id": "leaf_ch1_6",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "MTL 特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:48:59.933413",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_6_MTL_特性.txt"
-    },
-    {
-      "id": "leaf_ch1_7",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DMA 特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:34.398566",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_7_DMA_特性.txt"
-    },
-    {
-      "id": "leaf_ch1_8",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "AMBA 接口特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:34.403942",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_8_AMBA_接口特性.txt"
-    },
-    {
-      "id": "leaf_ch1_9",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "AV、DCB、TSN 特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:34.408609",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_9_AVDCBTSN_特性.txt"
-    },
-    {
-      "id": "leaf_ch1_10",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "汽车安全特性",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:59.067282",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_10_汽车安全特性.txt"
-    },
-    {
-      "id": "leaf_ch1_11",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DWC_ether_qos 架构配置",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:59.071955",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_11_DWC_ether_qos_架构配置.txt"
-    },
-    {
-      "id": "leaf_ch1_12",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DWC_ether_qos 交付物",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T10:49:59.077458",
-      "access_count": 0,
-      "status": "archived",
-      "archived_at": "2026-05-25T06:10:20.870999",
-      "archived_reason": "merged",
-      "replaced_by": "leaf_ch1_13",
-      "content_path": "leaves/leaf_ch1_12_DWC_ether_qos_交付物.txt"
-    },
-    {
-      "id": "leaf_ch1_13",
-      "chapter_id": "ch1",
-      "chapter_title": "产品概述",
-      "topic": "DWC_ether_qos 产品概述",
-      "source": "compilation",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:10:20.870999",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch1_13_DWC_ether_qos_产品概述.txt"
-    },
-    {
-      "id": "leaf_ch2_1",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "CSR Slave Interface Overview",
-      "source": "ch2 p41-48 Architecture",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:29:04.865343",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_1_CSR_Slave_Interface_Overview.txt"
-    },
-    {
-      "id": "leaf_ch2_2",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "AHB Master Interface Burst Modes",
-      "source": "ch2 p49-53 Architecture",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:29:24.819677",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_2_AHB_Master_Interface_Burst_Modes.txt"
-    },
-    {
-      "id": "leaf_ch2_3",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "AXI Master Interface Architecture",
-      "source": "ch2 p54-60 Architecture",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:29:50.296667",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_3_AXI_Master_Interface_Architecture.txt"
-    },
-    {
-      "id": "leaf_ch2_4",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "AXI4 Master Interface 与 Low-Power 扩展",
-      "source": "ch2 p60 Architecture",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:30:03.665227",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_4_AXI4_Master_Interface_与_Low-Power_扩展.txt"
-    },
-    {
-      "id": "leaf_ch2_5",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "AHB Master Interface 关键操作与时序",
-      "source": "ch2 p51-53 Architecture",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:30:20.239117",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_5_AHB_Master_Interface_关键操作与时序.txt"
-    },
-    {
-      "id": "leaf_ch2_6",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Controller Overview",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:30:50.547125",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_6_DMA_Controller_Overview.txt"
-    },
-    {
-      "id": "leaf_ch2_7",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Application Bus Burst Access",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:30:58.372338",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_7_DMA_Application_Bus_Burst_Access.txt"
-    },
-    {
-      "id": "leaf_ch2_8",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Buffer Alignment and Size Calculations",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:06.045221",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_8_DMA_Buffer_Alignment_and_Size_Calculations.txt"
-    },
-    {
-      "id": "leaf_ch2_9",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Arbiter and Start/Stop Control",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:13.994080",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_9_DMA_Arbiter_and_StartStop_Control.txt"
-    },
-    {
-      "id": "leaf_ch2_10",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "Tx DMA Operation - Default Mode",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:23.431571",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_10_Tx_DMA_Operation_-_Default_Mode.txt"
-    },
-    {
-      "id": "leaf_ch2_11",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "Tx DMA Operation - OSP Mode",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:33.277391",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_11_Tx_DMA_Operation_-_OSP_Mode.txt"
-    },
-    {
-      "id": "leaf_ch2_12",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "Tx DMA Packet Processing and Suspension",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:41.648051",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_12_Tx_DMA_Packet_Processing_and_Suspension.txt"
-    },
-    {
-      "id": "leaf_ch2_13",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Transmit Channel Arbitration",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:31:49.815165",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_13_DMA_Transmit_Channel_Arbitration.txt"
-    },
-    {
-      "id": "leaf_ch2_14",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "Rx DMA Operation",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:32:00.746210",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_14_Rx_DMA_Operation.txt"
-    },
-    {
-      "id": "leaf_ch2_15",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "Rx DMA Descriptor Acquisition and Packet Processing",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:32:11.331320",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_15_Rx_DMA_Descriptor_Acquisition_and_Packet_Processing.txt"
-    },
-    {
-      "id": "leaf_ch2_16",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Error Response Handling",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:32:19.322336",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_16_DMA_Error_Response_Handling.txt"
-    },
-    {
-      "id": "leaf_ch2_17",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DMA Native Interface (EQOS-DMA)",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:32:28.879318",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_17_DMA_Native_Interface_EQOS-DMA.txt"
-    },
-    {
-      "id": "leaf_ch2_18",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "AXI Low-Power Interface",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:32:38.819877",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_18_AXI_Low-Power_Interface.txt"
-    },
-    {
-      "id": "leaf_ch2_19",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Layer Overview and Data Path",
-      "source": "ch2 p83",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:25.283002",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_19_MTL_Layer_Overview_and_Data_Path.txt"
-    },
-    {
-      "id": "leaf_ch2_20",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Transmit Control Word Format",
-      "source": "ch2 p83-88",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:25.301889",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_20_MTL_Transmit_Control_Word_Format.txt"
-    },
-    {
-      "id": "leaf_ch2_21",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Transmit Operation and DMA Data Flow",
-      "source": "ch2 p88-95",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:25.321208",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_21_MTL_Transmit_Operation_and_DMA_Data_Flow.txt"
-    },
-    {
-      "id": "leaf_ch2_22",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Transmit Status Word and Timing",
-      "source": "ch2 p95-96",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:25.340341",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_22_MTL_Transmit_Status_Word_and_Timing.txt"
-    },
-    {
-      "id": "leaf_ch2_23",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Receive Path Operation",
-      "source": "ch2 p96-100",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:25.360256",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_23_MTL_Receive_Path_Operation.txt"
-    },
-    {
-      "id": "leaf_ch2_24",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL Receive Status Word Format",
-      "source": "ch2 p101-110",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.682947",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_24_MTL_Receive_Status_Word_Format.txt"
-    },
-    {
-      "id": "leaf_ch2_25",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MTL External Memory Interface",
-      "source": "ch2 p111-120",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.701603",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_25_MTL_External_Memory_Interface.txt"
-    },
-    {
-      "id": "leaf_ch2_26",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MAC Transmit Protocol Engine",
-      "source": "ch2 p121-130",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.720906",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_26_MAC_Transmit_Protocol_Engine.txt"
-    },
-    {
-      "id": "leaf_ch2_27",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MAC Receive Path Architecture",
-      "source": "ch2 p131-140",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.739898",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_27_MAC_Receive_Path_Architecture.txt"
-    },
-    {
-      "id": "leaf_ch2_28",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "MAC Address Filtering and Packet Filtering",
-      "source": "ch2 p131-140",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.759978",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_28_MAC_Address_Filtering_and_Packet_Filtering.txt"
-    },
-    {
-      "id": "leaf_ch2_29",
-      "chapter_id": "ch2",
-      "chapter_title": "架构",
-      "topic": "DWC Ethernet QoS Interrupt Architecture",
-      "source": "ch2 p141-150",
-      "confidence": "high",
-      "created_at": "2026-05-25T06:59:57.776993",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch2_29_DWC_Ethernet_QoS_Interrupt_Architecture.txt"
-    },
-    {
-      "id": "leaf_ch5_1",
-      "chapter_id": "ch5",
-      "chapter_title": "PHY接口使用",
-      "topic": "RGMII接口特点",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:20:20.391225",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch5_1_RGMII接口特点.txt"
-    },
-    {
-      "id": "leaf_ch5_2",
-      "chapter_id": "ch5",
-      "chapter_title": "PHY接口使用",
-      "topic": "SGMII接口架构",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:20:20.393428",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch5_2_SGMII接口架构.txt"
-    },
-    {
-      "id": "leaf_ch5_3",
-      "chapter_id": "ch5",
-      "chapter_title": "PHY接口使用",
-      "topic": "MII/GMII基础对比",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:20:20.395574",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch5_3_MIIGMII基础对比.txt"
-    },
-    {
-      "id": "leaf_ch7_1",
-      "chapter_id": "ch7",
-      "chapter_title": "IEEE 1588时间戳支持",
-      "topic": "PTP一步法vs两步法时间戳",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:21:16.449691",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch7_1_PTP一步法vs两步法时间戳.txt"
-    },
-    {
-      "id": "leaf_ch7_2",
-      "chapter_id": "ch7",
-      "chapter_title": "IEEE 1588时间戳支持",
-      "topic": "IEEE 1588系统时间格式",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:21:16.452141",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch7_2_IEEE_1588系统时间格式.txt"
-    },
-    {
-      "id": "leaf_ch8_1",
-      "chapter_id": "ch8",
-      "chapter_title": "多通道和队列",
-      "topic": "EST时间感知调度器",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:21:16.454488",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch8_1_EST时间感知调度器.txt"
-    },
-    {
-      "id": "leaf_ch8_2",
-      "chapter_id": "ch8",
-      "chapter_title": "多通道和队列",
-      "topic": "帧抢占机制",
-      "source": "QA enrichment",
-      "confidence": "high",
-      "created_at": "2026-05-21T11:21:16.456714",
-      "access_count": 0,
-      "status": "active",
-      "content_path": "leaves/leaf_ch8_2_帧抢占机制.txt"
+      "description": "ISO 26262汽车功能安全支持",
+      "leaves_config": "config/appd_leaves.json",
+      "leaf_count": 0
     }
   ]
 }

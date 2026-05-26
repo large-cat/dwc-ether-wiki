@@ -1,0 +1,94 @@
+{
+  "chapter_id": "ch1",
+  "chapter_title": "产品概述",
+  "leaves": [
+    {
+      "id": "leaf_ch1_1",
+      "topic": "产品概述与标准合规性",
+      "content_path": [
+        "leaves/leaf_ch1_1_产品概述与标准合规性.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_2",
+      "topic": "MAC 特性",
+      "content_path": [
+        "leaves/leaf_ch1_2_MAC_特性.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_3",
+      "topic": "MTL 特性",
+      "content_path": [
+        "leaves/leaf_ch1_3_MTL_特性.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_4",
+      "topic": "DMA 特性",
+      "content_path": [
+        "leaves/leaf_ch1_4_DMA_特性.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_5",
+      "topic": "AMBA 接口",
+      "content_path": [
+        "leaves/leaf_ch1_5_AMBA_接口.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_6",
+      "topic": "AV / DCB / TSN",
+      "content_path": [
+        "leaves/leaf_ch1_6_AV___DCB___TSN.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_7",
+      "topic": "汽车安全与监控调试",
+      "content_path": [
+        "leaves/leaf_ch1_7_汽车安全与监控调试.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    },
+    {
+      "id": "leaf_ch1_8",
+      "topic": "架构配置与交付物",
+      "content_path": [
+        "leaves/leaf_ch1_8_架构配置与交付物.txt"
+      ],
+      "source": "compilation",
+      "confidence": "high",
+      "created_at": "2026-05-26T16:57:14.117687",
+      "status": "active"
+    }
+  ]
+}

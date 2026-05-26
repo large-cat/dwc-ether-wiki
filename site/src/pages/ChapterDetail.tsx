@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import LeafContent from '@/components/LeafContent'
 import FlowChart from '@/components/FlowChart'
+import type { Chapter, ChapterLeavesConfig, Leaf } from '@/types/wiki'
 
 const statusLabel: Record<string, string> = {
   seeded: '目录',
@@ -67,20 +68,40 @@ export default function ChapterDetail() {
   const { chapterId } = useParams<{ chapterId: string }>()
   const location = useLocation()
   const navigate = useNavigate()
-  const [tree, setTree] = useState<any>(null)
+  const [tree, setTree] = useState<{ chapters: Chapter[] } | null>(null)
+  const [chLeaves, setChLeaves] = useState<Leaf[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Stage 1: Load tree
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}growing_knowledge_tree.json`)
       .then(r => r.json())
       .then(data => {
         setTree(data)
-        setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
-  const chapter = tree?.chapters?.find((ch: any) => ch.id === (chapterId || ''))
+  // Stage 2: Load chapter leaf config
+  useEffect(() => {
+    if (!tree || !chapterId) return
+
+    const chapter = tree.chapters.find((c: Chapter) => c.id === chapterId)
+    if (!chapter) {
+      setLoading(false)
+      return
+    }
+
+    fetch(`${import.meta.env.BASE_URL}${chapter.leaves_config}`)
+      .then(r => r.json())
+      .then((config: ChapterLeavesConfig) => {
+        setChLeaves(config.leaves || [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [tree, chapterId])
+
+  const chapter = tree?.chapters?.find((ch: Chapter) => ch.id === (chapterId || ''))
 
   // Scroll to leaf anchor on mount / hash change (HashRouter safe)
   useEffect(() => {
@@ -124,14 +145,9 @@ export default function ChapterDetail() {
     )
   }
 
-  const leaves = tree?.leaves || []
-  const chLeaves = leaves
-    .filter((l: any) => l.chapter_id === chapter.id)
-    .filter((l: any) => l.status !== 'archived')
-
-  const idx = tree?.chapters?.findIndex((c: any) => c.id === chapter.id) ?? -1
-  const prev = idx > 0 ? tree.chapters[idx - 1] : null
-  const next = idx < (tree?.chapters?.length ?? 0) - 1 ? tree.chapters[idx + 1] : null
+  const idx = tree?.chapters?.findIndex((c: Chapter) => c.id === chapter.id) ?? -1
+  const prev = idx > 0 ? tree?.chapters?.[idx - 1] ?? null : null
+  const next = idx < (tree?.chapters?.length ?? 0) - 1 ? tree?.chapters?.[idx + 1] ?? null : null
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -202,7 +218,7 @@ export default function ChapterDetail() {
             {/* Chapter Content — leaves rendered as document sections */}
             {chLeaves.length > 0 && (
               <div className="mb-10">
-                {chLeaves.map((leaf: any, idx: number) => (
+                {chLeaves.map((leaf: Leaf, idx: number) => (
                   <section key={leaf.id} id={leaf.id} className="mb-8 scroll-mt-24">
                     {idx === 0 && (
                       <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
@@ -249,7 +265,7 @@ export default function ChapterDetail() {
                 <div>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">本章内容</p>
                   <nav className="space-y-1 border-l border-slate-200 dark:border-slate-700">
-                    {chLeaves.map((leaf: any) => (
+                    {chLeaves.map((leaf: Leaf) => (
                       <button
                         key={leaf.id}
                         onClick={() => scrollToLeaf(leaf.id)}

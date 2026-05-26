@@ -1,0 +1,14 @@
+<h level="3">AMBA 接口</h>
+
+<table>
+  <thead>
+    <tr><th>接口</th><th>数据宽度</th><th>关键特性</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>AHB Master</td><td>32/64/128-bit</td><td>Split/Retry/Error 响应，1K boundary burst splitting</td></tr>
+    <tr><td>AHB Slave (CSR)</td><td>32/64/128-bit</td><td>仅支持 &lt;=32-bit 访问，所有 burst types</td></tr>
+    <tr><td>AXI Master</td><td>AXI3/AXI4</td><td>32/40/48-bit 地址，最多32个 outstanding R/W，posted writes，支持 extended length fixed bursts (32/64/128/256)，4KB boundary burst splitting</td></tr>
+    <tr><td>AXI Slave (CSR)</td><td>AXI3/AXI4-Lite</td><td>32-bit 地址，Narrow burst，FIXED/INCR</td></tr>
+    <tr><td>APB Slave</td><td>32-bit</td><td>APB3 (pready), APB4 (pstrb, pprot)</td></tr>
+  </tbody>
+</table>

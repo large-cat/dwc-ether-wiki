@@ -21,4 +21,10 @@ const leavesDst = join(publicDir, 'leaves')
 try { rmSync(leavesDst, { recursive: true }) } catch {}
 cpSync(leavesSrc, leavesDst, { recursive: true })
 
+// Copy config (per-chapter leaf configs)
+const configSrc = join(wikiDir, 'config')
+const configDst = join(publicDir, 'config')
+try { rmSync(configDst, { recursive: true }) } catch {}
+cpSync(configSrc, configDst, { recursive: true })
+
 console.log('Wiki assets copied to public/')

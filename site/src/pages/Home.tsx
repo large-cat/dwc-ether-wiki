@@ -4,6 +4,7 @@ import { BookOpen, Search, ChevronRight, Layers, Cpu, Zap, Shield } from 'lucide
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import type { Chapter, ChapterLeavesConfig, Leaf } from '@/types/wiki'
 
 const iconMap: Record<string, React.ReactNode> = {
   ch1: <Cpu className="w-5 h-5" />, ch2: <Layers className="w-5 h-5" />, ch3: <Zap className="w-5 h-5" />,
@@ -29,8 +30,10 @@ const statusLabel: Record<string, string> = {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
-  const [tree, setTree] = useState<any>(null)
+  const [tree, setTree] = useState<{ chapters: Chapter[]; metadata: any } | null>(null)
+  const [allLeaves, setAllLeaves] = useState<Leaf[]>([])
 
+  // Stage 1: Load tree (chapters metadata only)
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}growing_knowledge_tree.json`)
       .then(r => r.json())
@@ -40,18 +43,40 @@ export default function Home() {
       .catch(() => {})
   }, [])
 
+  // Stage 2: Load all chapter leaf configs in parallel
+  useEffect(() => {
+    if (!tree) return
+
+    const configs = tree.chapters
+      .map((ch: Chapter) => ch.leaves_config)
+      .filter(Boolean)
+
+    Promise.all(
+      configs.map((configPath: string) =>
+        fetch(`${import.meta.env.BASE_URL}${configPath}`)
+          .then(r => r.json())
+          .then((config: ChapterLeavesConfig) => config.leaves || [])
+          .catch(() => [])
+      )
+    )
+      .then((results: Leaf[][]) => {
+        const merged = results.flat()
+        setAllLeaves(merged)
+      })
+      .catch(() => {})
+  }, [tree])
+
   const chapters = tree?.chapters || []
-  const leaves = tree?.leaves || []
   const meta = tree?.metadata || {}
 
   const filteredChapters = searchQuery
-    ? chapters.filter((ch: any) => {
+    ? chapters.filter((ch: Chapter) => {
         const q = searchQuery.toLowerCase()
         if (ch.title_cn?.toLowerCase().includes(q)) return true
         if (ch.title?.toLowerCase().includes(q)) return true
         if (ch.description?.toLowerCase().includes(q)) return true
-        const chLeaves = leaves.filter((l: any) => l.chapter_id === ch.id)
-        if (chLeaves.some((l: any) => l.topic?.toLowerCase().includes(q))) return true
+        const chLeaves = allLeaves.filter((l: Leaf) => l.id.startsWith(`leaf_${ch.id}_`))
+        if (chLeaves.some((l: Leaf) => l.topic?.toLowerCase().includes(q))) return true
         return false
       })
     : chapters
@@ -90,7 +115,7 @@ export default function Home() {
         {/* Stats */}
         <div className="flex gap-6 mb-8 text-sm text-slate-500 dark:text-slate-400">
           <span>{chapters.length} 个章节</span>
-          <span>{leaves.length} 个知识点</span>
+          <span>{allLeaves.length} 个知识点</span>
           <span className="ml-auto">v{meta.knowledge_tree_version}</span>
         </div>
 
@@ -112,9 +137,9 @@ export default function Home() {
             章节索引
           </h2>
 
-          {filteredChapters.map((ch: any) => {
+          {filteredChapters.map((ch: Chapter) => {
             const isExpanded = expandedChapters.has(ch.id)
-            const chLeaves = leaves.filter((l: any) => l.chapter_id === ch.id)
+            const chLeaves = allLeaves.filter((l: Leaf) => l.id.startsWith(`leaf_${ch.id}_`))
 
             return (
               <Card key={ch.id} className="overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -140,7 +165,7 @@ export default function Home() {
                       <div className="mb-3">
                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">包含知识点</p>
                         <div className="flex flex-wrap gap-2">
-                          {chLeaves.map((leaf: any) => (
+                          {chLeaves.map((leaf: Leaf) => (
                             <span key={leaf.id} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs text-slate-600 dark:text-slate-400">
                               {leaf.topic}
                             </span>

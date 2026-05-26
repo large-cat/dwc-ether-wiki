@@ -1,5 +1,37 @@
 // Type declarations for wiki/ and tools/ JSON imports
 
+export interface Leaf {
+  id: string;
+  topic: string;
+  content_path: string[];
+  source: string;
+  confidence: string;
+  created_at: string;
+  updated_at?: string;
+  status: string;
+}
+
+export interface Chapter {
+  id: string;
+  number?: number;
+  title: string;
+  title_cn: string;
+  page_start: number;
+  page_end: number;
+  status: string;
+  reads_count?: number;
+  last_read?: string;
+  description: string;
+  leaves_config: string;
+  leaf_count: number;
+}
+
+export interface ChapterLeavesConfig {
+  chapter_id: string;
+  chapter_title: string;
+  leaves: Leaf[];
+}
+
 declare module '@wiki/growing_knowledge_tree.json' {
   const value: {
     _schema: {
@@ -19,7 +51,7 @@ declare module '@wiki/growing_knowledge_tree.json' {
       last_updated: string;
       total_reads_from_pdf: number;
       total_knowledge_leaves_created: number;
-      total_questions_answered: number;
+      total_questions_answered?: number;
       documents?: Array<{
         filename: string;
         title: string;
@@ -29,34 +61,7 @@ declare module '@wiki/growing_knowledge_tree.json' {
         status: string;
       }>;
     };
-    chapters: Array<{
-      id: string;
-      number?: number;
-      title: string;
-      title_cn: string;
-      page_start: number;
-      page_end: number;
-      status: string;
-      reads_count?: number;
-      last_read?: string;
-      description: string;
-    }>;
-    leaves: {
-      _description: string;
-      _format: string;
-      entries: Array<{
-        id: string;
-        chapter_id: string;
-        chapter_title: string;
-        topic: string;
-        content: string;
-        source: string;
-        confidence: string;
-        created_at: string;
-        access_count: number;
-      }>;
-    };
+    chapters: Chapter[];
   };
   export default value;
 }
-

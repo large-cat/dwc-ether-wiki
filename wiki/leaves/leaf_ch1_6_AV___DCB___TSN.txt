@@ -1,0 +1,12 @@
+<h level="3">AV / DCB / TSN</h>
+
+<table>
+  <thead>
+    <tr><th>特性</th><th>规格</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>AV (Audio Video)</td><td>100/1000 Mbps，最多8 Rx / 7 Tx queue，IEEE 802.1-Qav CBS，Slot Interval 1-4096 us</td></tr>
+    <tr><td>DCB</td><td>100/1000 Mbps，最多8 Tx/Rx queue，common memory，WRR/DWRR/WFQ/SP 调度，PFC，可编程 VLAN tagged packets 路由到 channel/queue</td></tr>
+    <tr><td>TSN</td><td>IEEE 802.1Qbv (EST), IEEE 802.1Qbu/802.3br (Frame Preemption)</td></tr>
+  </tbody>
+</table>

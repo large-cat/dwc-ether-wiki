@@ -1,4 +1,13 @@
 {
   "version": "2.0",
-  "segments": []
+  "segments": [],
+  "chapters": {
+    "ch1": [
+      {
+        "start": 23,
+        "end": 40,
+        "file": "cache/ch1_p23-40.txt"
+      }
+    ]
+  }
 }
