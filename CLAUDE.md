@@ -17,7 +17,7 @@
 │   ├── _context.md                   ← This wiki's purpose & rules
 │   ├── growing_knowledge_tree.json   ← ★ Core knowledge tree — metadata index (chapters + leaf metadata)
 │   ├── cache.json                    ← Cache index (key → path)
-│   ├── cache/                        ← PDF cache content (.txt files)
+│   ├── cache/                        ← PDF cache content (.md files)
 │   ├── leaves/                       ← Knowledge leaf content (.txt files, XML/HTML semantic tags)
 │   └── leaf_schema.md                ← Leaf XML/HTML tag reference
 │
@@ -47,7 +47,7 @@
 **Boundary rules:**
 - Agent Q&A only touches **Layer 1** (PDF read on cache miss) and **Layer 2** (search/cache/leaves).
 - **Layer 3** is only modified when updating frontend rendering rules or rebuilding the UI.
-- `tools/knowledge_growth.py` spans Layer 1+2. Leaf content is saved directly to `wiki/leaves/*.txt`; cache content to `wiki/cache/*.txt`.
+- `tools/knowledge_growth.py` spans Layer 1+2. Leaf content is saved directly to `wiki/leaves/*.txt`; cache content to `wiki/cache/*.md`.
 
 ---
 
@@ -81,7 +81,7 @@ Agent handles Q&A by **actively reading** Layer 1 & 2. The engine does NOT auto-
 ```
 User Question
     ↓
-Search wiki/                      → grep leaves/*.txt, cache/*.txt (no PDF read)
+Search wiki/                      → grep leaves/*.txt, cache/*.md (no PDF read)
     ↓
 Check knowledge leaves            → have relevant leaves?
     ├─ YES → synthesize answer from leaves (fastest)
@@ -104,7 +104,7 @@ Learned something new?            → python tools/knowledge_growth.py add-leaf 
 ### PDF 读取入口
 
 所有 PDF 读取通过 `tools/knowledge_growth.py` 进行：
-- `python tools/knowledge_growth.py read chN` — 读取章节 N，先查 `wiki/cache/`，命中则返回缓存内容；未命中则从 `raw/` PDF 提取并自动缓存到 `wiki/cache/*.txt`
+- `python tools/knowledge_growth.py read chN` — 读取章节 N，先查 `wiki/cache/`，命中则返回缓存内容；未命中则从 `raw/` PDF 提取并自动缓存到 `wiki/cache/*.md`
 - `python tools/knowledge_growth.py cache chN` — 同上，只缓存不输出内容
 - 不传 `[pages]` 时读完整章节；传 `[pages]` 时读指定页数
 - `ensure_cached()` 是底层缓存 API，命令行入口是 `read` 和 `cache`

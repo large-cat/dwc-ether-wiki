@@ -171,7 +171,7 @@ def _load_cache_file(rel_path: str) -> str:
 def _save_cache(chapter_id: str, start: int, end: int, content: str) -> dict:
     """Save content to cache file and return range metadata."""
     CACHE_DIR.mkdir(exist_ok=True)
-    rel_path = f"cache/{chapter_id}_p{start}-{end}.txt"
+    rel_path = f"cache/{chapter_id}_p{start}-{end}.md"
     filepath = WIKI_DIR / rel_path
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)

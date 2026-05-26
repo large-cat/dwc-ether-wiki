@@ -11,7 +11,7 @@ tools/   → Knowledge growth engine (Python)
 
 ## Lazy-Loading Principle
 
-**NEVER bulk-extract the PDF.** Content is read from `raw/DWC_ether_qos_databook.pdf` ON-DEMAND only when a question requires knowledge not already in the tree. Everything read is cached as `.txt` files in `wiki/cache/` (indexed by `cache.json`) and persisted as knowledge leaves in `wiki/leaves/*.txt` (metadata in `growing_knowledge_tree.json`).
+**NEVER bulk-extract the PDF.** Content is read from `raw/DWC_ether_qos_databook.pdf` ON-DEMAND only when a question requires knowledge not already in the tree. Everything read is cached as `.md` files in `wiki/cache/` (indexed by `cache.json`) and persisted as knowledge leaves in `wiki/leaves/*.txt` (metadata in `growing_knowledge_tree.json`).
 
 ## Directory Layout
 
@@ -19,8 +19,8 @@ tools/   → Knowledge growth engine (Python)
 |------------------|---------|
 | `_context.md` | This file — describes the wiki structure |
 | `growing_knowledge_tree.json` | Core knowledge tree — metadata index only (chapters + leaf metadata with `content_path`) |
-| `cache.json` | Cache index — maps cache keys to `cache/*.txt` file paths |
-| `cache/` | PDF cache content — one `.txt` file per cache entry |
+| `cache.json` | Cache index — maps cache keys to `cache/*.md` file paths |
+| `cache/` | PDF cache content — one `.md` file per cache entry |
 | `leaves/` | Knowledge leaf content — one `.txt` file per leaf (XML/HTML semantic tags) |
 | `leaf_schema.md` | Knowledge leaf XML/HTML tag reference |
 
