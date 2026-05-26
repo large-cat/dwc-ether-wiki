@@ -85,45 +85,10 @@ npm run copy-assets   # 复制 wiki/ 资源到 public/
 npm run build         # 构建到 site/dist/
 ```
 
-### Claude Code 集成（Layer 1+2，知识生长）
+### 知识引擎（Layer 1+2）
 
 ```bash
-# 在 Claude Code 中
-/load CLAUDE.md
-
-# 启动引擎
-exec(open("tools/knowledge_growth.py").read())
-
-# 扫描 raw/ 是否有新文档
-scan_raw_for_new_docs()
-
-# 查看状态
-print_stats()
-
-# Agent 自主搜索和读取
-results = search_knowledge("RGMII接口")
-content = get_or_load_content("ch5", 167, 171)
-
-# 保存新洞察（内容使用 XML/HTML 语义标签）
-add_knowledge_leaf("ch5", "RGMII时钟频率",
-    "<h level=\"2\">RGMII时钟频率</h>\n"
-    "<p>RGMII在千兆模式下使用<kbd>125MHz</kbd>参考时钟。</p>")
-```
-
-### CLI 工具
-
-```bash
-# 扫描 raw/
-python tools/knowledge_growth.py scan
-
-# 搜索知识树
-python tools/knowledge_growth.py search "RGMII"
-
-# 读取PDF（懒加载）
-python tools/knowledge_growth.py read ch5
-
-# 统计
-python tools/knowledge_growth.py stats
+python tools/knowledge_growth.py --help
 ```
 
 ---

@@ -54,8 +54,8 @@
 
 ## Session Startup
 
-```python
-exec(open("tools/knowledge_growth.py").read())
+```bash
+python tools/knowledge_growth.py --help
 ```
 
 ---
@@ -67,41 +67,20 @@ Agent handles Q&A by **actively reading** Layer 1 & 2. The engine does NOT auto-
 ```
 User Question
     ↓
-[1. scan_raw_for_new_docs()]    → Check if raw/ has new PDFs
+Search wiki/                      → titles, cache, leaves (no PDF read)
     ↓
-[2. search_knowledge()]          → Search wiki/ (titles, cache, leaves) — NO PDF READ
+Check knowledge leaves            → have relevant leaves?
+    ├─ YES → synthesize answer from leaves (fastest)
+    └─ NO  → continue...
     ↓
-[3. find_leaves()]               → Check for existing knowledge leaves
+Check wiki cache                  → cached from previous reads?
+    ├─ YES → read cached content, synthesize answer
+    └─ NO  → continue...
     ↓
-◆ Have relevant leaves?
-    ├─ YES → Agent synthesizes answer from leaves (fastest, no PDF read)
-    └─ NO  → Continue...
+Read raw/ PDF on-demand           → cache to wiki/, then answer
     ↓
-[4. Check wiki cache]            → Is content cached from previous reads?
-    ↓
-◆ Cache hit?
-    ├─ YES → Agent reads cached content, synthesizes answer
-    └─ NO  → Continue...
-    ↓
-[5. get_or_load_content()]       → ★ Read raw/ PDF ON-DEMAND, cache to wiki/
-    ↓
-[6. Agent synthesizes answer]    → Agent combines context, responds to user
-    ↓
-◆ Learned something new?
-    ├─ YES → add_knowledge_leaf() → Persist insight to wiki/leaves.entries
-    └─ NO  → Skip
+Learned something new?            → persist insight to wiki/leaves
 ```
-
----
-
-## API Quick Reference
-
-Only two operations require the Python engine. Everything else can be done by reading `wiki/growing_knowledge_tree.json` directly.
-
-| Function | Purpose |
-|----------|---------|
-| `get_or_load_content(chapter_id, start, end)` | **Read PDF on cache miss** — the only way to access `raw/`; caches to `wiki/cache/*.txt` |
-| `add_knowledge_leaf(chapter_id, topic, content, ...)` | **Persist insight** — saves content to `wiki/leaves/*.txt`, metadata to tree |
 
 ---
 
