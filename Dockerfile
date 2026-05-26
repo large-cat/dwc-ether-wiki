@@ -4,7 +4,7 @@ WORKDIR /app
 
 # 安装 python3 和 pip，用于运行 knowledge_growth.py 工具
 RUN apk add --no-cache python3 py3-pip && \
-    pip3 install --break-system-packages PyPDF2
+    pip3 install --break-system-packages PyPDF2 pymupdf Pillow
 
 # 先复制 site/ 依赖文件，利用 Docker 缓存层
 COPY site/package.json site/package-lock.json ./site/

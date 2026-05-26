@@ -41,11 +41,6 @@ declare module '@wiki/growing_knowledge_tree.json' {
       last_read?: string;
       description: string;
     }>;
-    cache: {
-      _description: string;
-      entries: Record<string, string>;
-      total_chars_cached: number;
-    };
     leaves: {
       _description: string;
       _format: string;

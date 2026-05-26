@@ -15,8 +15,13 @@ question requires knowledge not already in the tree. Cache everything.
 Content storage:
     - growing_knowledge_tree.json → chapters + leaf metadata (no content)
     - wiki/leaves/*.txt           → leaf XML content
-    - wiki/cache/*.txt            → PDF cache content
-    - wiki/cache.json             → cache index (key → path)
+    - wiki/cache/*.txt            → PDF cache content (Markdown, per segment)
+    - wiki/cache.json             → cache segment index
+
+Cache rules:
+    - Segments are contiguous page ranges (max 10 pages each).
+    - Overlapping reads are merged into one larger segment.
+    - Segments exceeding 10 pages are truncated to the next 10-page boundary.
 
 Usage:
     # CLI
@@ -33,9 +38,22 @@ Usage:
 import json
 import re
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATHS — All relative to project root
+# ═══════════════════════════════════════════════════════════════════════════════
+
+PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+
+# Ensure tools/ is importable when run directly
+sys.path.insert(0, str(PROJECT_ROOT))
+
+# PDF engine with structure-aware extraction
+from tools.pdf_cache import resolve_pdf, read_pdf_pages
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PATHS — All relative to project root
@@ -50,82 +68,9 @@ DEFAULT_PDF = RAW_DIR / "DWC_ether_qos_databook.pdf"
 TREE_PATH = WIKI_DIR / "growing_knowledge_tree.json"
 LEAVES_DIR = WIKI_DIR / "leaves"
 CACHE_DIR = WIKI_DIR / "cache"
-CACHE_PATH = WIKI_DIR / "cache.json"
+CACHE_INDEX_PATH = WIKI_DIR / "cache.json"
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PDF READER (raw/ layer — immutable, read-only)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def _resolve_pdf(pdf_name: str = None) -> Path:
-    """Resolve PDF path from raw/ directory."""
-    if pdf_name:
-        p = RAW_DIR / pdf_name
-        if p.exists():
-            return p
-        if not pdf_name.endswith(".pdf"):
-            p = RAW_DIR / (pdf_name + ".pdf")
-            if p.exists():
-                return p
-        raise FileNotFoundError(f"PDF not found in raw/: {pdf_name}")
-
-    if DEFAULT_PDF.exists():
-        return DEFAULT_PDF
-
-    pdfs = list(RAW_DIR.glob("*.pdf"))
-    if pdfs:
-        return pdfs[0]
-
-    raise FileNotFoundError(f"No PDF found in {RAW_DIR}")
-
-
-def _read_pdf_raw(page_start: int, page_end: int, pdf_path: Path = None) -> str:
-    """Read PDF pages from raw/ directory. The ONLY function that touches raw/."""
-    pdf_file = pdf_path or _resolve_pdf()
-
-    try:
-        import PyPDF2
-    except ImportError:
-        return "[ERROR] PyPDF2 not installed. Run: pip install PyPDF2"
-
-    skip_patterns = [
-        "Synopsys, Inc.", "SolvNet", "DesignWare.com",
-        "Ethernet Quality-of-Service Databook",
-        "Destination Control Statement", "Disclaimer",
-        "Trademarks", "Third-Party Links", "www.synopsys.com",
-        "December 2017", "5.10a", "Copyright Notice",
-        "Continued on next page", "Version 5.10a",
-        "Open-source-documentation-tutorial",
-    ]
-
-    texts = []
-    try:
-        with open(pdf_file, "rb") as f:
-            reader = PyPDF2.PdfReader(f)
-            total_pdf_pages = len(reader.pages)
-
-            for i in range(page_start - 1, min(page_end, total_pdf_pages)):
-                page = reader.pages[i]
-                text = page.extract_text()
-                if not text:
-                    continue
-
-                lines = text.split("\n")
-                cleaned = []
-                for line in lines:
-                    stripped = line.strip()
-                    if any(stripped.startswith(p) for p in skip_patterns):
-                        continue
-                    if stripped and len(stripped) > 3:
-                        cleaned.append(stripped)
-
-                page_text = "\n".join(cleaned)
-                if len(page_text) > 50:
-                    texts.append(f"--- Page {i+1} ---\n{page_text}")
-    except Exception as e:
-        return f"[ERROR] Failed to read PDF pages {page_start}-{page_end}: {e}"
-
-    return "\n\n".join(texts)
+MAX_CACHE_SEGMENT_PAGES = 10
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -177,44 +122,133 @@ def _load_leaf_content(content_path: str) -> str:
         return f.read()
 
 
-def _cache_content_path(cache_key: str) -> str:
-    """Generate the relative content path for a cache entry."""
-    return f"cache/cache_{cache_key}.txt"
+# ═══════════════════════════════════════════════════════════════════════════════
+# CACHE SEGMENT INDEX (cache.json — segment-oriented)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _load_cache_index() -> dict:
+    """Load cache index. Supports both legacy 'entries' and new 'segments' formats."""
+    if not CACHE_INDEX_PATH.exists():
+        return {"version": "2.0", "segments": []}
+    try:
+        with open(CACHE_INDEX_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return {"version": "2.0", "segments": []}
+
+    # Migrate legacy format (entries dict) to new segment list
+    if "entries" in data and isinstance(data["entries"], dict):
+        segments = []
+        for key, path in data["entries"].items():
+            m = re.match(r"^(ch\d+|app[a-z])_p(\d+)-(\d+)$", key)
+            if m:
+                segments.append({
+                    "key": key,
+                    "chapter_id": m.group(1),
+                    "page_start": int(m.group(2)),
+                    "page_end": int(m.group(3)),
+                    "file": path,
+                    "created_at": datetime.now().isoformat(),
+                    "last_accessed": datetime.now().isoformat(),
+                })
+        data = {"version": "2.0", "segments": segments}
+        _save_cache_index(data)
+    return data
 
 
-def _save_cache_content(content_path: str, content: str) -> None:
-    """Save cache content to wiki/cache/*.txt."""
+def _save_cache_index(data: dict) -> None:
+    """Save cache index to wiki/cache.json."""
+    with open(CACHE_INDEX_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def _find_covering_segment(chapter_id: str, start: int, end: int) -> Optional[dict]:
+    """Find a single cache segment that fully covers [start, end]."""
+    data = _load_cache_index()
+    for seg in data.get("segments", []):
+        if seg.get("chapter_id") == chapter_id:
+            if seg.get("page_start", 0) <= start and seg.get("page_end", 0) >= end:
+                return seg
+    return None
+
+
+def _find_overlapping_segments(chapter_id: str, start: int, end: int) -> List[dict]:
+    """Find all cache segments overlapping [start, end]."""
+    data = _load_cache_index()
+    overlapping = []
+    for seg in data.get("segments", []):
+        if seg.get("chapter_id") != chapter_id:
+            continue
+        s = seg.get("page_start", 0)
+        e = seg.get("page_end", 0)
+        if s <= end and e >= start:
+            overlapping.append(seg)
+    return overlapping
+
+
+def _delete_segment_files(segments: List[dict]) -> None:
+    """Delete cache segment files from disk."""
+    for seg in segments:
+        filepath = WIKI_DIR / seg.get("file", "")
+        if filepath.exists():
+            filepath.unlink()
+
+
+def _save_segment(chapter_id: str, start: int, end: int, content: str) -> dict:
+    """Save a cache segment to disk and return its metadata."""
     CACHE_DIR.mkdir(exist_ok=True)
-    filepath = WIKI_DIR / content_path
-    filepath.parent.mkdir(parents=True, exist_ok=True)
+    key = f"{chapter_id}_p{start}-{end}"
+    rel_path = f"cache/cache_{key}.txt"
+    filepath = WIKI_DIR / rel_path
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
+    return {
+        "key": key,
+        "chapter_id": chapter_id,
+        "page_start": start,
+        "page_end": end,
+        "file": rel_path,
+        "created_at": datetime.now().isoformat(),
+        "last_accessed": datetime.now().isoformat(),
+    }
 
 
-def _load_cache_content(content_path: str) -> str:
-    """Load cache content from wiki/cache/*.txt."""
-    filepath = WIKI_DIR / content_path
+def _load_segment_content(seg: dict) -> str:
+    """Load content from a cache segment file."""
+    filepath = WIKI_DIR / seg.get("file", "")
     if not filepath.exists():
         return ""
     with open(filepath, "r", encoding="utf-8") as f:
         return f.read()
 
 
-def _load_cache() -> Dict[str, Any]:
-    """Load cache index from wiki/cache.json."""
-    if not CACHE_PATH.exists():
-        return {"entries": {}, "total_chars_cached": 0}
-    try:
-        with open(CACHE_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, IOError):
-        return {"entries": {}, "total_chars_cached": 0}
+def _update_segment_access(key: str) -> None:
+    """Update last_accessed timestamp for a cache segment."""
+    data = _load_cache_index()
+    for seg in data.get("segments", []):
+        if seg.get("key") == key:
+            seg["last_accessed"] = datetime.now().isoformat()
+            break
+    _save_cache_index(data)
 
 
-def _save_cache(cache: Dict[str, Any]) -> None:
-    """Save cache index to wiki/cache.json."""
-    with open(CACHE_PATH, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False, indent=2)
+def _extract_page_range(content: str, start: int, end: int) -> str:
+    """Extract pages [start, end] from cached Markdown content using ## Page N headers."""
+    lines = content.split("\n")
+    result = []
+    in_range = False
+    current_page = None
+
+    for line in lines:
+        m = re.match(r"^## Page (\d+)$", line.strip())
+        if m:
+            current_page = int(m.group(1))
+            in_range = start <= current_page <= end
+
+        if in_range:
+            result.append(line)
+
+    return "\n".join(result)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -261,11 +295,11 @@ def add_document(filename: str, title: str, page_count: int = None,
 
     if page_count is None:
         try:
-            import PyPDF2
-            with open(pdf_path, "rb") as f:
-                reader = PyPDF2.PdfReader(f)
-                page_count = len(reader.pages)
-        except:
+            import fitz
+            doc = fitz.open(pdf_path)
+            page_count = len(doc)
+            doc.close()
+        except Exception:
             page_count = 0
 
     tree = _load_tree()
@@ -287,17 +321,18 @@ def add_document(filename: str, title: str, page_count: int = None,
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CORE: Lazy Content Loading (cache-first)
+# CORE: Lazy Content Loading with Segment Cache
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def get_or_load_content(chapter_id: str, page_start: int = None,
                         page_end: int = None, pdf_name: str = None) -> str:
     """
-    Cache-first lazy loader. THE KEY FUNCTION of the knowledge engine.
+    Cache-first lazy loader with segment-level caching.
 
-    Flow:
-        1. Check wiki cache → if hit, return cached content (from .txt file)
-        2. If miss → read from raw/ PDF → cache to .txt → return
+    Rules:
+        - Cache segments are contiguous page ranges (max 10 pages).
+        - Overlapping reads merge into a larger segment (up to 10 pages).
+        - Segments are stored in wiki/cache/*.txt and indexed in cache.json.
     """
     tree = _load_tree()
 
@@ -311,48 +346,114 @@ def get_or_load_content(chapter_id: str, page_start: int = None,
         return f"[ERROR] Chapter {chapter_id} not found."
 
     try:
-        pdf_path = _resolve_pdf(pdf_name) if pdf_name else _resolve_pdf()
+        pdf_path = resolve_pdf(pdf_name) if pdf_name else resolve_pdf()
     except FileNotFoundError as e:
         return f"[ERROR] {e}"
 
-    start = page_start or chapter["page_start"]
-    end = page_end or min(chapter["page_end"], start + 10)
-    cache_key = f"{chapter_id}_p{start}-{end}"
+    # Determine request range, clamped to chapter bounds
+    req_start = page_start or chapter["page_start"]
+    req_end = page_end or min(chapter["page_end"], req_start + 9)
+    req_start = max(req_start, chapter["page_start"])
+    req_end = min(req_end, chapter["page_end"])
 
-    # STEP 1: Check wiki cache FIRST
-    cache_data = _load_cache()
-    if cache_key in cache_data["entries"]:
-        content_path = cache_data["entries"][cache_key]
-        content = _load_cache_content(content_path)
-        print(f"  [CACHE HIT] {cache_key} ({len(content)} chars)")
-        return content
+    if req_start > req_end:
+        return f"[ERROR] Invalid page range: {req_start}-{req_end}"
 
-    # STEP 2: CACHE MISS → Read from raw/
-    print(f"  [CACHE MISS] {cache_key} → reading raw/ PDF p.{start}-{end}...")
-    content = _read_pdf_raw(start, end, pdf_path)
+    all_parts = []
+    total_pages_read = 0
+    current_start = req_start
 
-    if content.startswith("[ERROR]"):
-        return content
+    while current_start <= req_end:
+        # Work in at-most-10-page chunks
+        chunk_end = min(current_start + 9, req_end, chapter["page_end"])
 
-    # Save to wiki cache (.txt file)
-    content_path = _cache_content_path(cache_key)
-    _save_cache_content(content_path, content)
-    cache_data["entries"][cache_key] = content_path
-    cache_data["total_chars_cached"] = cache_data.get("total_chars_cached", 0) + len(content)
-    _save_cache(cache_data)
+        # 1. Check if a cache segment fully covers this chunk
+        covering = _find_covering_segment(chapter_id, current_start, chunk_end)
+        if covering:
+            _update_segment_access(covering["key"])
+            content = _load_segment_content(covering)
+            part = _extract_page_range(content, current_start, chunk_end)
+            all_parts.append(part)
+            current_start = chunk_end + 1
+            continue
 
-    # Update chapter stats
-    chapter["reads_count"] = chapter.get("reads_count", 0) + 1
-    chapter["last_read"] = datetime.now().isoformat()
-    tree["metadata"]["total_reads_from_pdf"] = tree["metadata"].get("total_reads_from_pdf", 0) + 1
+        # 2. Find overlapping cache segments for this chunk
+        overlapping = _find_overlapping_segments(chapter_id, current_start, chunk_end)
 
-    if chapter["status"] == "seeded":
-        chapter["status"] = "explored"
-        print(f"  [GROWTH] {chapter_id}: seeded → explored")
+        # 3. Compute merged range
+        merged_start = current_start
+        merged_end = chunk_end
+        for seg in overlapping:
+            merged_start = min(merged_start, seg.get("page_start", merged_start))
+            merged_end = max(merged_end, seg.get("page_end", merged_end))
 
-    _save_tree(tree)
-    print(f"  [SAVED] {cache_key}: {len(content)} chars cached to wiki/cache/")
-    return content
+        merged_start = max(merged_start, chapter["page_start"])
+        merged_end = min(merged_end, chapter["page_end"])
+
+        # 4. Cap at MAX_CACHE_SEGMENT_PAGES; anchor so merged_start <= current_start
+        if merged_end - merged_start + 1 > MAX_CACHE_SEGMENT_PAGES:
+            # Try anchoring at current_start first
+            candidate_end = current_start + MAX_CACHE_SEGMENT_PAGES - 1
+            if candidate_end >= merged_end:
+                # Anchoring at current_start covers everything
+                merged_start = current_start
+                merged_end = candidate_end
+            else:
+                # Still too big: truncate from merged_start
+                merged_end = merged_start + MAX_CACHE_SEGMENT_PAGES - 1
+
+        merged_end = min(merged_end, chapter["page_end"])
+
+        # Ensure we don't go backwards
+        if merged_end < current_start:
+            merged_start = current_start
+            merged_end = min(current_start + MAX_CACHE_SEGMENT_PAGES - 1, chapter["page_end"])
+
+        # 5. Read from PDF
+        pages_read = merged_end - merged_start + 1
+        total_pages_read += pages_read
+        print(f"  [PDF READ] {chapter_id} p.{merged_start}-{merged_end}...")
+
+        content = read_pdf_pages(merged_start, merged_end, pdf_path, images_dir=None)
+        if content.startswith("[ERROR]"):
+            return content
+
+        # 6. Delete old overlapping cache files + index entries
+        if overlapping:
+            overlapping_keys = {seg["key"] for seg in overlapping}
+            _delete_segment_files(overlapping)
+            data = _load_cache_index()
+            data["segments"] = [s for s in data.get("segments", []) if s["key"] not in overlapping_keys]
+            _save_cache_index(data)
+
+        # 7. Save new segment
+        new_seg = _save_segment(chapter_id, merged_start, merged_end, content)
+        data = _load_cache_index()
+        data["segments"].append(new_seg)
+        _save_cache_index(data)
+
+        # 8. Extract requested portion from this chunk
+        return_start = max(current_start, merged_start)
+        return_end = min(chunk_end, merged_end)
+        part = _extract_page_range(content, return_start, return_end)
+        all_parts.append(part)
+
+        current_start = return_end + 1
+
+    # Update chapter stats (once, after all chunks)
+    if total_pages_read > 0:
+        chapter["reads_count"] = chapter.get("reads_count", 0) + total_pages_read
+        chapter["last_read"] = datetime.now().isoformat()
+        tree["metadata"]["total_reads_from_pdf"] = tree["metadata"].get("total_reads_from_pdf", 0) + total_pages_read
+
+        if chapter["status"] == "seeded":
+            chapter["status"] = "explored"
+            print(f"  [GROWTH] {chapter_id}: seeded → explored")
+
+        _save_tree(tree)
+        print(f"  [DONE] {total_pages_read} page(s) read from raw/ for {chapter_id}")
+
+    return "\n\n".join(all_parts)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -365,7 +466,7 @@ def search_knowledge(query: str, max_results: int = 5) -> list:
     query_lower = query.lower()
     query_terms = [t for t in re.split(r'[\s,，。]+', query_lower) if len(t) > 1]
 
-    cache_data = _load_cache()
+    cache_data = _load_cache_index()
     results = []
     for ch in tree["chapters"]:
         searchable = " ".join(filter(None, [
@@ -375,12 +476,20 @@ def search_knowledge(query: str, max_results: int = 5) -> list:
 
         # Search cached content (read from .txt files)
         cached_content = ""
-        for cache_key, content_path in cache_data["entries"].items():
-            if cache_key.startswith(ch["id"] + "_"):
-                content = _load_cache_content(content_path)
+        for seg in cache_data.get("segments", []):
+            if seg.get("chapter_id") == ch["id"]:
+                content = _load_segment_content(seg)
                 cached_content += " " + content.lower()
 
-        full_text = searchable + " " + cached_content
+        # Search knowledge leaves for this chapter
+        leaves_text = ""
+        for leaf in tree.get("leaves", []):
+            if leaf["chapter_id"] == ch["id"]:
+                leaves_text += " " + leaf["topic"].lower()
+                content = _load_leaf_content(leaf.get("content_path", ""))
+                leaves_text += " " + content.lower()
+
+        full_text = searchable + " " + cached_content + " " + leaves_text
 
         score = 0
         if query_lower in full_text:
@@ -393,17 +502,18 @@ def search_knowledge(query: str, max_results: int = 5) -> list:
 
         if score > 0:
             has_cache = any(
-                k.startswith(ch["id"] + "_")
-                for k in cache_data["entries"].keys()
+                seg.get("chapter_id") == ch["id"]
+                for seg in cache_data.get("segments", [])
             )
+            cache_keys = [
+                seg["key"] for seg in cache_data.get("segments", [])
+                if seg.get("chapter_id") == ch["id"]
+            ]
             results.append({
                 "chapter": ch,
                 "relevance": score,
                 "has_cached_content": has_cache,
-                "cache_keys": [
-                    k for k in cache_data["entries"].keys()
-                    if k.startswith(ch["id"] + "_")
-                ]
+                "cache_keys": cache_keys,
             })
 
     results.sort(key=lambda x: x["relevance"], reverse=True)
@@ -612,13 +722,11 @@ def get_stats() -> dict:
     for ch in tree["chapters"]:
         status_counts[ch.get("status", "seeded")] += 1
 
-    cache_data = _load_cache()
-    cache_entries = len(cache_data["entries"])
-
-    # Calculate total cache chars from files
+    cache_data = _load_cache_index()
+    cache_segments = len(cache_data.get("segments", []))
     cache_chars = 0
-    for key, path in cache_data["entries"].items():
-        content = _load_cache_content(path)
+    for seg in cache_data.get("segments", []):
+        content = _load_segment_content(seg)
         cache_chars += len(content)
 
     all_leaves = tree.get("leaves", [])
@@ -638,7 +746,7 @@ def get_stats() -> dict:
         "chapters_status": status_counts,
         "total_pdf_reads": m.get("total_reads_from_pdf", 0),
         "total_leaves": len(all_leaves),
-        "cache_entries": cache_entries,
+        "cache_segments": cache_segments,
         "cache_chars": cache_chars,
         "raw_documents": raw_docs,
         "last_updated": m.get("last_updated", "N/A")
@@ -661,7 +769,7 @@ def print_stats():
     print(f"  Mature:       {s['mature']}")
     print(f"PDF Reads:      {stats['total_pdf_reads']}")
     print(f"Leaves:         {stats['total_leaves']}")
-    print(f"Cache Entries:  {stats['cache_entries']}")
+    print(f"Cache Segments: {stats['cache_segments']}")
     print(f"Cache Size:     {stats['cache_chars']:,} chars")
     print(f"raw/ Documents: {len(stats['raw_documents'])}")
     for doc in stats['raw_documents']:
@@ -678,7 +786,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("DWC Ethernet QoS Knowledge Growth Engine v2.2")
+        print("DWC Ethernet QoS Knowledge Growth Engine v3.0")
         print("")
         print("Commands:")
         print("  stats                          Show growth statistics")

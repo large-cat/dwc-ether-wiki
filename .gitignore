@@ -37,6 +37,13 @@ coverage
 __pycache__/
 *.pyc
 
+# Python virtual environment
+.venv/
+
 # Build artifacts
 site/dist/
 site/public/
+
+# PDF extraction cache (on-demand, not persisted)
+wiki/cache/
+wiki/cache.json
