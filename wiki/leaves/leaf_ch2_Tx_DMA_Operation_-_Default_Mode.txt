@@ -27,9 +27,3 @@
   <li>若 Last Descriptor 中设置了 IOC（<kbd>TDES2[31]</kbd>），对应 channel Status Register 的 Bit 0 在包传输完成后置位。DMA 引擎返回步骤 3。</li>
   <li>Suspend 状态下，DMA 尝试重新获取 descriptor（返回步骤 3）。收到 Transmit Poll demand（写入 <kbd>DMA_CH0_TxDesc_Tail_Pointer</kbd>）且 Underflow Interrupt Status bit 被清除后触发 poll demand。若应用通过清除对应 DMA channel Transmit Control Register 的 Bit 0 停止 DMA，则 DMA 进入 Stop 状态。</li>
 </ol>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

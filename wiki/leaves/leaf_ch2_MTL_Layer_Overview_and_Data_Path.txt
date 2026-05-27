@@ -32,9 +32,3 @@
   <li><kbd>MTL_TxQ0_Operation_Mode</kbd>：Tx Queue 操作模式（含 TTC 阈值、TQS 队列大小）</li>
   <li><kbd>MTL_RxQ0_Operation_Mode</kbd>：Rx Queue 操作模式（含 RTC 阈值、RQS 队列大小）</li>
 </ul>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

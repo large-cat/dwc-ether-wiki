@@ -20,9 +20,3 @@
 <tip>
   <p>即使 Rx buffer 起始地址未按系统总线数据宽度对齐，软件仍应按总线宽度对齐的大小分配 buffer。例如分配 1,024 字节 buffer 起始于 <code>0x1000</code>，但 descriptor 中可写 <code>0x1002</code>。DMA 会在前两个地址写入 dummy data，实际有效空间为 1,022 字节。</p>
 </tip>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

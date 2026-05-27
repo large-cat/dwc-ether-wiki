@@ -46,9 +46,3 @@
   <p>对于 AXI 系统发起的退出（<kbd>csysreq_i</kbd> 置位），时钟控制器应在置位 <kbd>csysreq_i</kbd> 的同时立即启用时钟。<kbd>cactive_o</kbd> 和 <kbd>csysack_o</kbd> 的置位与该时钟同步。</p>
   <p>对于 MAC 发起的 low-power 退出，时钟控制器必须在 <kbd>cactive_o</kbd> 置高后立即恢复 AXI 时钟；否则可能影响 CSR 寄存器操作，尤其是连续写操作时的 CDC 同步电路行为异常。</p>
 </warning>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

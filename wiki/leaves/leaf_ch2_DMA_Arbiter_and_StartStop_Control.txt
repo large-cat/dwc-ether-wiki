@@ -56,9 +56,3 @@
     <td>1 → 0</td><td>0 → 1</td><td>x</td><td>0</td><td>同周期 Sideband 停止、软件启动 → 停止</td>
   </tr>
 </table>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

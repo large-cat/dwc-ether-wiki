@@ -14,9 +14,3 @@
 <warning>
   <p>仅发生错误事务的特定 DMA channel 会受到影响并进入 STOP 状态，其他 channel 的流量不受影响。</p>
 </warning>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

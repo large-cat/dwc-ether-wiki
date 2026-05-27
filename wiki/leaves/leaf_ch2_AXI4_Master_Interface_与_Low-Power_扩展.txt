@@ -37,9 +37,3 @@
 <h level="3">参考图</h>
 
 <img src="leaves/assets/ch2/figure_60_2_19.png" alt="Figure 2-19" />
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

@@ -38,9 +38,3 @@
 </ul>
 
 <p>所有挂起条件下，Transmit List 中的位置都会被保留，该位置为 DMA 关闭的 Last Descriptor 之后的下一个 descriptor。驱动必须在排除挂起原因后显式发出 Transmit Poll Demand 命令。</p>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

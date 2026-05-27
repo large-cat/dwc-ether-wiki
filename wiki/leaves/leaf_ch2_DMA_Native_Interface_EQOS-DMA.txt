@@ -50,9 +50,3 @@
 
 <h level="3">Data Transfer With Error</h>
 <p>对于 DMA 发起的任何写或读传输，若应用无法完成事务，可置位 <kbd>mdc_error_i</kbd>。应用还必须在不同的时钟周期置位 <kbd>mdc_xfer_done_i</kbd> 完成传输。若两个信号同时置位，DMA 可能会重新启动对同一地址的传输，此时 DMA 行为不可预测。</p>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

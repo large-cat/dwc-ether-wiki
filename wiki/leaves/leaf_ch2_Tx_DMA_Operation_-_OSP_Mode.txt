@@ -22,9 +22,3 @@
 <important>
   <p>由于 DMA 在关闭当前 descriptor 之前就会获取下一个 descriptor，descriptor ring 长度必须大于 2。Synopsys 建议 descriptor 长度至少为 4。</p>
 </important>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

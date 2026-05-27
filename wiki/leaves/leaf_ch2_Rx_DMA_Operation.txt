@@ -21,9 +21,3 @@
   <li>若 Rx DMA Descriptor Ring 中还有更多 descriptor，返回步骤 3；否则进入 Suspend 状态（步骤 11）。</li>
   <li>Receive DMA 在收到 Receive Poll demand 且应用推进了对应 channel 的 Receive Tail Pointer register 后退出 Suspend 状态。引擎返回步骤 2 并重新获取下一个 descriptor。</li>
 </ol>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

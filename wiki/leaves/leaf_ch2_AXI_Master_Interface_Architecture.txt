@@ -64,9 +64,3 @@
 <img src="leaves/assets/ch2/figure_58_2_16.png" alt="Figure 2-16" />
 
 <img src="leaves/assets/ch2/figure_59_2_17.png" alt="Figure 2-17" />
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

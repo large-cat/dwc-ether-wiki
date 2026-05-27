@@ -11,9 +11,3 @@
   <li>GTECH library 支持 gate-level DUT</li>
   <li>软件驱动需联系 Synopsys Support</li>
 </ul>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch1]] — Parent chapter</li>
-</ul>

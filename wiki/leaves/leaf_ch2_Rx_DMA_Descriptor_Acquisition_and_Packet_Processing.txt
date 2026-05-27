@@ -26,9 +26,3 @@
 </ol>
 
 <p>上述过程持续重复，直到 DMA 遇到归属应用的 descriptor 或 ring 中没有更多 descriptor。当 DMA 发现 descriptor 归属应用且对应 DMA channel Interrupt Enable Register 的 Bit 7 被置位时，Receive Process 设置对应 channel Status register 的 Bit 7，然后进入 Suspend 状态。Receive List 中的位置会被保留。</p>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

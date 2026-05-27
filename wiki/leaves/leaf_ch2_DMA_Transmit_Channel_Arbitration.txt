@@ -15,9 +15,3 @@
 </ol>
 
 <p>在 WSP 或 WRR 仲裁中，channel weight 对应 DMA arbiter 授予该 channel 总线的 DMA burst 传输次数。某 channel 完成所有分配的 burst 传输后，arbiter 将总线授予下一个 channel。</p>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

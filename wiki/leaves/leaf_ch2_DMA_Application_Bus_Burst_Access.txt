@@ -21,9 +21,3 @@
 </ol>
 
 <p>当 AHB/AXI 配置为 address-aligned beats 时，DMA 确保第一个 burst 传输长度不超过配置的 PBL，从而使后续 beat 的起始地址对齐到 PBL。对于 AHB 接口，DMA 仅支持最大 INCR16，因此 PBL > 16 时最多对齐到 16 beat；对于 AXI 接口，最多支持 BLEN 256，因此 PBL > 256 时最多对齐到 256 beat。</p>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>

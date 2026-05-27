@@ -140,9 +140,3 @@ flowchart LR
     style MDIO fill:#fff7ed,stroke:#f97316,color:#7c2d12
     style PHY fill:#e0e7ff,stroke:#6366f1,color:#312e81
 ]]></diagram>
-
-<h level="3">Connections</h>
-
-<ul>
-  <li>[[ch2]] — Parent chapter</li>
-</ul>
