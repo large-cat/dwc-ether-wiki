@@ -53,8 +53,10 @@ flowchart LR
     MUX --> PORT
     PORT --> PHY
     PHY <--"Media"--> NET
-    DMA & MTL & MAC -.-">Events/INT"--> SB
-    MAC <-.-"PTP / Sync"-.-> SB
+    DMA -.->|"Events/INT"| SB
+    MTL -.->|"Events/INT"| SB
+    MAC -.->|"Events/INT"| SB
+    MAC <-.->|"PTP / Sync"| SB
 
     style MEM fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
     style CPU fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
