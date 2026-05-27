@@ -78,15 +78,15 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
       const level = parseInt(el.getAttribute('level') || '2')
       if (level >= 3) {
         return (
-          <h5 key={key} className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-5 mb-2">
+          <h4 key={key} className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-5 mb-2">
             {children}
-          </h5>
+          </h4>
         )
       }
       return (
-        <h4 key={key} className="text-base font-semibold text-slate-900 dark:text-white mt-6 mb-3 pb-1 border-b border-slate-200 dark:border-slate-700">
+        <h3 key={key} className="text-base font-semibold text-slate-900 dark:text-white mt-6 mb-3 pb-1 border-b border-slate-200 dark:border-slate-700">
           {children}
-        </h4>
+        </h3>
       )
     }
 

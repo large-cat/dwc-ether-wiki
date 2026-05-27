@@ -151,20 +151,15 @@ export default function ChapterDetail() {
                 <span className="text-slate-400 text-xs">{statusLabel[chapter.status as keyof typeof statusLabel] || chapter.status}</span>
               </div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{chapter.title_cn}</h1>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{chapter.description}</p>
+              <p className="text-sm text-slate-500 leading-relaxed">{chapter.description}</p>
             </div>
 
 
             {/* Chapter Content — leaves rendered as document sections */}
             {chLeaves.length > 0 && (
               <div className="mb-10">
-                {chLeaves.map((leaf: Leaf, idx: number) => (
+                {chLeaves.map((leaf: Leaf) => (
                   <section key={leaf.id} id={leaf.id} className="mb-8 scroll-mt-24">
-                    {idx === 0 && (
-                      <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
-                        章节内容
-                      </h2>
-                    )}
                     <LeafContent leaf={leaf} />
                   </section>
                 ))}
