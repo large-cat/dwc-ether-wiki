@@ -45,7 +45,7 @@
 ### 语义提示（Callout / 表情标签）
 
 | 标签 | 颜色语义 | 使用场景 |
-|------|----------|----------|
+|------|----------|--------|
 | `<info>` | 蓝色 | 补充信息、背景知识 |
 | `<warning>` | 琥珀色 | 注意事项、潜在风险 |
 | `<tip>` | 绿色 | 技巧、最佳实践 |
@@ -62,6 +62,8 @@
 | `<field>` | `name`, `bits`, `access` (R/W/RW/RC/WO) | 寄存器字段 |
 | `<signal>` | `name`, `direction?` (in/out/inout) | 信号线描述 |
 | `<bitfield>` | `width` | 位域可视化容器 |
+| `<diagram>` | `type` (mermaid) | 流程图/架构图（Mermaid 语法） |
+| `<img>` | `src`, `alt?` | 图片引用（PNG/SVG），`src` 为相对于站点根的路径 |
 
 ### 引用与连接
 
@@ -101,6 +103,8 @@
   <field name="TE" bits="1" access="RW">发送使能</field>
 </register>
 
+<img src="leaves/assets/ch5/rgmii_pinout.png" alt="RGMII 引脚排列" />
+
 <ref target="ch5">返回第 5 章 PHY 接口</ref>
 ```
 
@@ -122,6 +126,7 @@ register  → 寄存器卡片（等宽字体 + 地址高亮）
 field     → 位域行（bits 标签 + access badge）
 kbd       → <code> 带背景色
 ref       → 内部链接 <a>
+img       → <img> 图片组件
 ```
 
 ## 约束规则

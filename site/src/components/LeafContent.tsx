@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import FlowChart from '@/components/FlowChart'
 import type { Leaf } from '@/types/wiki'
 
 interface LeafContentProps {
@@ -275,6 +276,30 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
           )}
           <span className="text-sm text-slate-600 dark:text-slate-400">{children}</span>
         </div>
+      )
+    }
+
+    case 'diagram': {
+      const type = el.getAttribute('type') || 'mermaid'
+      const chart = el.textContent || ''
+      if (type === 'mermaid' && chart.trim()) {
+        return <FlowChart key={key} chart={chart.trim()} className="my-4" />
+      }
+      return null
+    }
+
+    case 'img': {
+      const src = el.getAttribute('src') || ''
+      const alt = el.getAttribute('alt') || ''
+      if (!src) return null
+      return (
+        <img
+          key={key}
+          src={`${import.meta.env.BASE_URL}${src}`}
+          alt={alt}
+          className="my-4 max-w-full rounded-lg border border-slate-200 dark:border-slate-700"
+          loading="lazy"
+        />
       )
     }
 

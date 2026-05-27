@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import LeafContent from '@/components/LeafContent'
-import FlowChart from '@/components/FlowChart'
 import type { Chapter, ChapterLeavesConfig, Leaf } from '@/types/wiki'
 
 const statusLabel: Record<string, string> = {
@@ -15,54 +14,6 @@ const statusLabel: Record<string, string> = {
   mature: '完整',
 }
 
-/* ── Auto-generate architecture flowchart for ch1 ── */
-const ARCH_FLOWCHART = `flowchart LR
-  subgraph Host["Host / SoC"]
-    MEM["System Memory"]
-    CPU["CPU"]
-  end
-
-  subgraph Bus["AMBA Bus"]
-    AXI["AXI Master\n(数据)"]
-    AHB["AHB Master\n(数据)"]
-    SLAVE["AHB/AXI/APB Slave\n(CSR寄存器)"]
-  end
-
-  subgraph EQOS["DWC_ether_qos Core"]
-    DMA["DMA Block\n(最多8Tx+8Rx通道)"]
-    MTL["MTL Transaction Layer\n(Tx/Rx FIFO + 队列)"]
-    MAC["MAC Core\n(帧处理 + 过滤)"]
-  end
-
-  subgraph PHY_IF["PHY Interface"]
-    MUX["Interface MUX"]
-    GMII["GMII/MII"]
-    RGMII["RGMII"]
-    SGMII["SGMII"]
-    RMII["RMII\n(10/100 only)"]
-  end
-
-  subgraph EXT["External"]
-    PHY_CHIP["External PHY"]
-    NET["Ethernet Network"]
-  end
-
-  MEM <--> AXI & AHB
-  CPU --> SLAVE
-  AXI & AHB <--> DMA
-  SLAVE --> MAC & DMA & MTL
-  DMA <--> MTL
-  MTL <--> MAC
-  MAC --> MUX
-  MUX --> GMII & RGMII & SGMII & RMII
-  GMII & RGMII & SGMII & RMII --> PHY_CHIP
-  PHY_CHIP <--> NET
-
-  style Host fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-  style Bus fill:#fef3c7,stroke:#d97706,color:#78350f
-  style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
-  style PHY_IF fill:#fce7f3,stroke:#db2777,color:#831843
-  style EXT fill:#e0e7ff,stroke:#6366f1,color:#312e81`
 
 export default function ChapterDetail() {
   const { chapterId } = useParams<{ chapterId: string }>()
@@ -203,17 +154,6 @@ export default function ChapterDetail() {
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{chapter.description}</p>
             </div>
 
-            {/* Flowchart */}
-            {(chapter.id === 'ch1' || chapter.status === 'mature') && (
-              <div className="mb-10">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">系统架构</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                  DWC_ether_qos 在 SoC 中的位置和数据流向。数据通过 AXI/AHB 总线在 Host Memory 和 MAC 之间传输，
-                  中间经过 DMA、MTL 队列层和 MAC 核心处理，最终通过 PHY 接口发送到外部网络。
-                </p>
-                <FlowChart chart={ARCH_FLOWCHART} />
-              </div>
-            )}
 
             {/* Chapter Content — leaves rendered as document sections */}
             {chLeaves.length > 0 && (

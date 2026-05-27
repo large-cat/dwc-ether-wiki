@@ -9,6 +9,7 @@ with heading inference, table detection, and optional image extraction.
 No agent involvement in cache content generation. Pure tool.
 """
 
+import re
 from pathlib import Path
 from typing import Optional, List, Tuple
 
@@ -82,7 +83,11 @@ def _extract_page_images(doc, page, page_num: int, images_dir: Path) -> List[Tup
 
         try:
             pix = fitz.Pixmap(doc, xref)
-            if pix.n > 4:
+            # Convert unsupported colorspaces (CMYK, Separation, DeviceN) to RGB
+            # before saving as PNG. pix.n > 4 catches other exotic formats.
+            if pix.colorspace is not None and pix.colorspace.name not in ("DeviceGray", "DeviceRGB"):
+                pix = fitz.Pixmap(fitz.csRGB, pix)
+            elif pix.n > 4:
                 pix = fitz.Pixmap(fitz.csRGB, pix)
             if pix.width < 30 or pix.height < 30:
                 pix = None
@@ -100,6 +105,100 @@ def _extract_page_images(doc, page, page_num: int, images_dir: Path) -> List[Tup
             continue
 
     return refs
+
+
+def _extract_figure_screenshots(page, page_num: int, images_dir: Optional[Path]) -> dict:
+    """
+    Detect vector figures (block diagrams, timing diagrams) on a page and
+    screenshot them. Figures are identified by 'Figure X-Y' captions.
+
+    Returns:
+        dict mapping normalized caption text -> (y_pos, markdown_ref, caption_bbox)
+    """
+    if images_dir is None:
+        return {}
+
+    import fitz
+
+    blocks = page.get_text("dict")["blocks"]
+    figures = []
+
+    for block in blocks:
+        if block["type"] != 0:
+            continue
+        text = "".join(
+            span["text"] for line in block.get("lines", [])
+            for span in line.get("spans", [])
+        ).strip()
+        if not text:
+            continue
+
+        # Match "Figure X-Y" or "Figure X" at start of block
+        m = re.match(r"(Figure\s+(\d+)(?:[\.-](\d+))?[\s:\n]*)", text, re.IGNORECASE)
+        if m:
+            fig_num = f"{m.group(2)}-{m.group(3)}" if m.group(3) else m.group(2)
+            bbox = fitz.Rect(block["bbox"])
+            norm = re.sub(r'\s+', ' ', text.lower().strip())
+            figures.append((bbox.y0, text, norm, bbox, fig_num))
+
+    if not figures:
+        return {}
+
+    figures.sort(key=lambda x: x[0])
+    drawings = page.get_drawings()
+    results = {}
+    chapter_id = images_dir.name
+
+    for i, (cy, caption, norm, cbbox, fig_num) in enumerate(figures):
+        # Vertical range: look up to 400pt above caption, down to next figure
+        y_start = max(0, cy - 400)
+        y_end = figures[i + 1][0] - 10 if i + 1 < len(figures) else page.rect.y1 - 15
+
+        fig_rects = []
+        for d in drawings:
+            d_rect = d["rect"]
+            center_y = (d_rect.y0 + d_rect.y1) / 2
+            if y_start <= center_y <= y_end:
+                # Filter out page-wide decorative lines
+                if d_rect.width < page.rect.width * 0.92:
+                    fig_rects.append(d_rect)
+                elif d_rect.height > 8:
+                    fig_rects.append(d_rect)
+
+        fig_rects.append(cbbox)
+
+        if not fig_rects:
+            continue
+
+        union = fig_rects[0]
+        for r in fig_rects[1:]:
+            union |= r
+
+        margin = 12
+        clip = fitz.Rect(
+            max(0, union.x0 - margin),
+            max(0, union.y0 - margin),
+            min(page.rect.x1, union.x1 + margin),
+            min(page.rect.y1, union.y1 + margin)
+        )
+
+        if clip.width < 60 or clip.height < 30:
+            continue
+
+        img_name = f"figure_{page_num}_{fig_num.replace('-', '_')}.png"
+        img_path = images_dir / img_name
+
+        try:
+            pix = page.get_pixmap(clip=clip, dpi=150)
+            pix.save(str(img_path))
+            rel = f"images/{chapter_id}/{img_name}"
+            md_ref = f"\n![{caption}]({rel})\n"
+            results[norm] = (cy, md_ref, cbbox)
+            print(f"  [FIGURE] {img_name} ({int(clip.width)}x{int(clip.height)})")
+        except Exception as e:
+            print(f"  [WARN] Figure screenshot failed {fig_num} p.{page_num}: {e}")
+
+    return results
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -227,7 +326,10 @@ def _render_page(page, page_num: int, doc, images_dir: Optional[Path]) -> List[s
     tables = _extract_tables(page)
     table_bboxes = [t[0] for t in tables]
 
-    # 2. Collect text blocks (skip those inside tables)
+    # Extract figure screenshots (vector diagrams)
+    figure_screenshots = _extract_figure_screenshots(page, page_num, images_dir)
+
+    # 2. Collect text blocks (skip those inside tables, skip figure captions)
     blocks = page.get_text("dict")["blocks"]
     for block in blocks:
         if block["type"] != 0:
@@ -236,6 +338,24 @@ def _render_page(page, page_num: int, doc, images_dir: Optional[Path]) -> List[s
         inside_table = any(_bbox_overlap_ratio(block_bbox, tb) > 0.7 for tb in table_bboxes)
         if inside_table:
             continue
+
+        # Check if this block is a figure caption with a screenshot
+        block_text = "".join(
+            span["text"] for line in block.get("lines", [])
+            for span in line.get("spans", [])
+        ).strip()
+        is_caption = False
+        if len(block_text) < 300 and re.search(r"^Figure\s+\d+(?:[\.-]\d+)?", block_text, re.IGNORECASE):
+            norm = re.sub(r'\s+', ' ', block_text.lower().strip())
+            for caption_norm, (y_pos, md_ref, cbbox) in figure_screenshots.items():
+                if norm == caption_norm or caption_norm in norm or norm in caption_norm:
+                    if abs(block_bbox[1] - cbbox.y0) < 15:
+                        elements.append((y_pos, "image", md_ref))
+                        is_caption = True
+                        break
+        if is_caption:
+            continue  # Skip caption text, screenshot replaces it
+
         block_y = block_bbox[1]
         elements.append((block_y, "text", block))
 

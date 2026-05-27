@@ -280,7 +280,8 @@ def ensure_cached(chapter_id: str, page_start: int = None,
     # Read from PDF and save cache
     pages_read = req_end - req_start + 1
     print(f"[PDF READ] {chapter_id} p.{req_start}-{req_end}...")
-    content = read_pdf_pages(req_start, req_end, pdf_path, images_dir=None)
+    content = read_pdf_pages(req_start, req_end, pdf_path,
+                             images_dir=WIKI_DIR / "cache" / "images" / chapter_id)
     if content.startswith("[ERROR]"):
         print(content)
         return ""
