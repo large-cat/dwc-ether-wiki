@@ -14,60 +14,57 @@
 
 <h level="3">系统级框图</h>
 
-<p>Figure 1-1 展示了 DWC_ether_qos 的系统级框图（System-Level Block Diagram）。数据通路自左向右：System Memory 通过 Host DMA Interface（AHB/AXI Master）与 DMA Controller 交互；DMA Arbiter 仲裁所有通道的收发路径；MTL（MAC Transaction Layer）的 Tx/Rx Queues 桥接 DMA 与 MAC Core；MAC 的 Transmit/Receive Protocol Engine 完成帧处理后，经 PHY Interface MUX 发往外部 PHY。CSR Slave Interface 为 Host CPU 提供 Control &amp; Status 访问；Interrupt Controller、Timestamp Module 和 MDIO/SMA 为辅助模块。</p>
+<p>Figure 1-1 展示了 DWC_ether_qos 的系统级框图（System-Level Block Diagram）。数据通路自左向右：System Memory 通过 AXI/AHB Master 与 DMA Controller 交互；DMA Arbiter 仲裁所有通道的收发路径；MTL（MAC Transaction Layer）的 Tx/Rx Queues 桥接 DMA 与 MAC Core；MAC 的 Transmit/Receive Protocol Engine 完成帧处理后，经 PHY Interface MUX 发往外部 PHY。CSR Slave Interface 为 Host CPU 提供 Control &amp; Status 访问；Interrupt Controller、Timestamp Module 和 MDIO/SMA 为辅助模块。</p>
 
 <diagram type="mermaid"><![CDATA[
 flowchart LR
     MEM["System Memory"]
+    CPU["Host CPU"]
 
-    subgraph EQOS["DWC_ether_qos"]
+    subgraph BUS["AMBA Bus"]
+        MASTER["AXI/AHB Master"]
+        SLAVE["CSR Slave\n(AHB/AXI/APB)"]
+    end
+
+    subgraph EQOS["DWC_ether_qos Core"]
         direction LR
+        DMA["DMA Controller\n(DMA Arbiter\nup to 8 Tx/Rx Channels)"]
+        MTL["MTL\n(Tx Queues / Rx Queues)"]
+        MAC["MAC Core\n(Tx Protocol Engine\nRx Protocol Engine)"]
+    end
 
-        HOST_DMA["Host DMA Interface\n(AHB/AXI Master)"]
-        CSR["CSR Slave Interface\n(AHB/AXI/APB/native)"]
-
-        subgraph DMA["DMA Controller"]
-            ARB["DMA Arbiter"]
-            CH["DMA Channels\n(up to 8 Tx + 8 Rx)"]
-        end
-
-        subgraph MTL["MTL (MAC Transaction Layer)"]
-            TXQ["Tx Queues"]
-            RXQ["Rx Queues"]
-        end
-
-        subgraph MAC["MAC Core"]
-            TXE["Transmit\nProtocol Engine"]
-            RXE["Receive\nProtocol Engine"]
-        end
-
-        PHY_MUX["PHY Interface MUX"]
-
-        INT["Interrupt Controller"]
-        TS["Timestamp Module"]
-        MDIO["MDIO / SMA"]
+    subgraph PHY_IF["PHY Interface"]
+        MUX["Interface MUX"]
+        PORT["MII / GMII / RGMII\nSGMII / RMII / SMII"]
     end
 
     PHY["External PHY"]
     NET["Ethernet Network"]
 
-    MEM <-- "Data & Status" --> HOST_DMA
-    HOST_DMA <--> DMA
-    CSR -- "Control & Status" --> DMA & MTL & MAC & INT & TS
+    SB["Sideband Modules\nInterrupt Controller / Timestamp / MDIO / SMA"]
+
+    MEM <--"Data"--> MASTER
+    CPU --"Control & Status"--> SLAVE
+    MASTER <--"Data"--> DMA
+    SLAVE --"CSR"--> DMA & MTL & MAC
     DMA <--> MTL
     MTL <--> MAC
-    MAC --> PHY_MUX
-    PHY_MUX --> PHY
-    PHY <--> NET
-    DMA & MTL & MAC -- "Interrupts" --> INT
-    MAC <--> TS
-    MDIO <--> PHY
+    MAC --> MUX
+    MUX --> PORT
+    PORT --> PHY
+    PHY <--"Media"--> NET
+    DMA & MTL & MAC -.-">Events/INT"--> SB
+    MAC <-.-"PTP / Sync"-.-> SB
 
     style MEM fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style CPU fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style BUS fill:#fef3c7,stroke:#d97706,color:#78350f
     style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
-    style DMA fill:#fce7f3,stroke:#db2777,color:#831843
-    style MTL fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
-    style MAC fill:#faf5ff,stroke:#a855f7,color:#6b21a8
+    style DMA fill:#dcfce7,stroke:#22c55e,color:#14532d
+    style MTL fill:#dcfce7,stroke:#22c55e,color:#14532d
+    style MAC fill:#dcfce7,stroke:#22c55e,color:#14532d
+    style SB fill:#f0fdf4,stroke:#16a34a,stroke-dasharray: 5 5,color:#14532d
+    style PHY_IF fill:#fce7f3,stroke:#db2777,color:#831843
     style PHY fill:#e0e7ff,stroke:#6366f1,color:#312e81
     style NET fill:#e0e7ff,stroke:#6366f1,color:#312e81
 ]]></diagram>
