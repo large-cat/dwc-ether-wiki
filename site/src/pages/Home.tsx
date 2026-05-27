@@ -149,11 +149,14 @@ export default function Home() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{ch.description}</p>
                     {chLeaves.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {chLeaves.map((leaf: Leaf) => (
+                        {chLeaves.slice(0, 6).map((leaf: Leaf) => (
                           <span key={leaf.id} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[11px] text-slate-600 dark:text-slate-400">
                             {leaf.topic}
                           </span>
                         ))}
+                        {chLeaves.length > 6 && (
+                          <span className="px-1.5 py-0.5 text-[11px] text-slate-400">+{chLeaves.length - 6}</span>
+                        )}
                       </div>
                     )}
                   </div>
