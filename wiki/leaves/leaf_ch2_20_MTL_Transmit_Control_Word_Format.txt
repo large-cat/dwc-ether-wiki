@@ -1,12 +1,61 @@
 <h level="2">MTL Transmit Control Word Format</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p83-88</code></p>
+  <p>Source: <code>ch2 p83-89</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MTL发送控制字从DMA传输到MTL，包含包长度、VLAN标签控制、校验和插入控制等字段。</p>
-<p>支持单次发送和多次发送操作。</p>
+<p>MTL 发送控制字（Transmit Control Word）通过 ATI 接口从应用或 DMA 传输到 MTL，包含每个数据包的控制信息。控制字数量取决于配置和使能的选项。</p>
+
+<h level="3">控制字组成</h>
+<ul>
+  <li><strong>Control Word 0</strong>：始终存在，包含 Packet Control 和 Packet Length</li>
+  <li><strong>Control Word 1</strong>：条件存在，包含 VLAN Tag 或 Timestamp Low</li>
+  <li><strong>Control Word 2</strong>：条件存在，包含 Timestamp Low 或 Timestamp High</li>
+  <li><strong>Control Word 3</strong>：仅在特定配置下存在，包含 Timestamp High</li>
+</ul>
+
+<p>控制字编号通过 <code>ati_ctrl_type_i</code> 信号指示。不同数据宽度（32/64/128-bit）下控制字结构不同：</p>
+<ul>
+  <li>32-bit：Control Word 0/1/2/3 顺序排列</li>
+  <li>64-bit：Control Word 0 包含 Packet Control + Packet Length + VLAN Tags；Control Word 1 包含 Timestamp</li>
+  <li>128-bit：单个 Control Word 包含所有字段</li>
+</ul>
+
+<h level="3">Control Word 0 — Packet Control 字段</h>
+<table>
+  <tr><th>Bit</th><th>字段</th><th>说明</th></tr>
+  <tr><td>31</td><td>RSVD</td><td>保留</td></tr>
+  <tr><td>30</td><td>IVTV</td><td>Inner VLAN Tag Valid：指示 Inner VLAN Tag 存在于 Control Word 1 [31:16]。仅在 Enable SA and VLAN Insertion on Tx 和 Enable Double VLAN Processing 同时选中时有效</td></tr>
+  <tr><td>29</td><td>VTV</td><td>VLAN Tag Valid：指示 Outer VLAN Tag 存在于 Control Word 1 [15:0] 或 VLT1[15:0]。仅在 Enable SA and VLAN Insertion on Tx 选中时有效</td></tr>
+  <tr><td>28:27</td><td>VTIR</td><td>VLAN Tag Insert or Replace：2'b00=不添加；2'b01=移除 VLAN tag；2'b10=插入 VLAN tag；2'b11=替换 VLAN tag。仅在 Enable SA and VLAN Insertion on Tx 时有效</td></tr>
+  <tr><td>26:24</td><td>SAIC</td><td>SA Insertion Control：Bit[26] 指定 MAC Address Register（0 或 1）；Bit[25:24] 2'b00=不包含 SA；2'b01=插入 SA；2'b10=替换 SA；2'b11=保留。也可通过 <kbd>MAC_Configuration</kbd> 的 SARC 位控制</td></tr>
+  <tr><td>23:22</td><td>IVTIR</td><td>Inner VLAN Tag Insert or Replace：2'b00=不添加；2'b01=移除 inner VLAN tag；2'b10=插入 inner VLAN tag；2'b11=替换 inner VLAN tag。仅在 Double VLAN 和 SA-VLAN Insertion 选项选中时有效</td></tr>
+  <tr><td>21:20</td><td>CIC</td><td>Checksum Insertion Control：2'b00=禁用；2'b01=仅 IP header checksum；2'b10=IP header + payload checksum（不计算 pseudo-header）；2'b11=IP header + payload + pseudo-header checksum。仅在 Enable Transmit TCP/IP Checksum Offload 时有效</td></tr>
+  <tr><td>19</td><td>OSTC</td><td>One-Step Timestamp Correction：置位时 MAC 执行单步时间戳校正。仅在 Enable One-Step Timestamp Feature 时有效</td></tr>
+  <tr><td>18</td><td>TTSE</td><td>Transmit Timestamp Enable：置位时为此发送帧启用 IEEE 1588 硬件时间戳。仅在 Enable IEEE 1588 Timestamp Support 时有效</td></tr>
+  <tr><td>17:16</td><td>CPC</td><td>CRC Pad Control：2'b00=CRC 和 Pad 插入；2'b01=仅 CRC 插入（禁用 Pad）；2'b10=禁用 CRC 插入；2'b11=CRC 替换</td></tr>
+  <tr><td>15</td><td>OST_AVAIL</td><td>One-step Timestamp Available：OSTC 和此位均置位时，表示参考时间戳存在于 TTSH 和 TTSL 字段。仅在 Enable One-Step Timestamp for PTP over UDP/IP 时有效</td></tr>
+  <tr><td>14:0</td><td>PL</td><td>Transmit Packet Length：待发送包长度（字节）。仅在 DCB 使能且 WFQ 调度算法选中时需要</td></tr>
+</table>
+
+<h level="3">Control Word 1/2/3 内容条件</h>
+<ul>
+  <li>VLAN Tags：当 VTV 或 IVTV 置位时存在，包含 Outer VLAN Tag（VLT1[15:0]）和 Inner VLAN Tag（VLT2[31:16]）</li>
+  <li>Timestamp Low（TSSL）：单步时间戳低 32 位，OSTC 置位时有效</li>
+  <li>Timestamp High（TSSH）：单步时间戳高 32 位，OSTC 置位时有效</li>
+</ul>
+
+<important>
+  <p>当 CIC、SAIC 或 OSTC 功能使能时，应用必须提供适当的 CRC Pad Control 值。</p>
+</important>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_85_2_32.png" alt="Figure 2-32" />
+
+<img src="leaves/assets/ch2/figure_86_2_33.png" alt="Figure 2-33" />
 
 <h level="3">Connections</h>
 

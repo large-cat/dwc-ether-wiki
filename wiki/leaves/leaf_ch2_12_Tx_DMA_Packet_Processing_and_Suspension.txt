@@ -5,7 +5,45 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The Tx DMA expects data buffers to contain complete Ethernet packets excluding preamble, pad bytes, and FCS fields. DA, SA, and Type/Length fields must contain valid data. If CRC or PAD insertion is disabled, buffer must include CRC bytes. Packets can be data-chained across several buffers, delimited by First Descriptor (TDES3[29]) and Last Descriptor (TDES3[28]). After last buffer transmission, DMA writes final status to TDES3 of the descriptor with Last Descriptor bit set. If IOC (TDES2[31]) is set, interrupt is triggered. Transmission begins when MTL Tx Queue reaches programmable threshold or full packet is in FIFO. Store-and-forward mode (Bit 1 of MTL Tx Operation Mode) releases descriptors when DMA finishes transferring packet. Suspension causes: descriptor owned by application, underflow error, or Tail Pointer equals Current descriptor.</p>
+<h level="3">Transmit Packet Processing</h>
+<p>Tx DMA 要求数据 buffer 中包含完整的 Ethernet 包（不含 preamble、pad 字节和 FCS 字段）。<em>DA</em>、<em>SA</em> 以及 <em>Type/Length</em> 字段必须包含有效数据。若 Tx Descriptor 指示 MAC 禁用 CRC 或 PAD 插入，则 buffer 必须包含完整的 Ethernet 包（不含 preamble），包括 CRC 字节。</p>
+
+<ul>
+  <li>包可以跨多个 buffer 进行数据链（data-chained），通过 <kbd>First Descriptor</kbd>（<kbd>TDES3[29]</kbd>）和 <kbd>Last Descriptor</kbd>（<kbd>TDES3[28]</kbd>）界定。</li>
+  <li>传输开始时，First Descriptor 必须置位 <kbd>TDES3[29]</kbd>，包数据从应用 buffer 传输到 MTL Tx Queue。</li>
+  <li>若当前包的 Last Descriptor（<kbd>TDES3[28]</kbd>）为 0，Tx 进程尝试获取 Next Descriptor，并期望该 descriptor 的 <kbd>TDES3[29]</kbd> 为 0（中间 buffer）。</li>
+  <li>若 <kbd>TDES3[28]</kbd> 为 1，表示该 buffer 是包的最后一个 buffer。</li>
+</ul>
+
+<p>最后一个 buffer 传输完成后，DMA 将最终状态信息写回 Last Descriptor Bit 置位的 Transmit Descriptor 3（<kbd>TDES3</kbd>）。若此时 IOC（<kbd>TDES2[31]</kbd>）置位，对应 DMA channel Status Register 的 Bit 0 被置位，随后获取 Next Descriptor 并重复流程。</p>
+
+<p>实际包传输在以下任一条件满足时开始：</p>
+<ul>
+  <li>MTL Tx Queue 达到可编程的 Transmit threshold（对应 MTL Transmit Queue 的 Transmit Operation Mode register Bits[6:4]）；</li>
+  <li>FIFO 中已包含完整包。</li>
+</ul>
+
+<p>Store-and-forward 模式（对应 queue 的 MTL Transmit Operation Mode Register Bit 1）下，DMA 完成包传输后即释放 descriptor（清除 Own bit <kbd>TDES0[31]</kbd>）。</p>
+
+<tip>
+  <p>为确保当前包及下一个包正确传输，Last Descriptor（<kbd>TDES3[28]</kbd>）置位的 Transmit descriptor 必须指定非零 buffer size。</p>
+</tip>
+
+<h level="3">Transmit Polling Suspended</h>
+<p>Transmit polling 可因以下任一条件被挂起：</p>
+
+<ul>
+  <li>DMA 检测到 descriptor 归属应用（<kbd>TDES3[31]</kbd> = 0）。恢复方式：驱动将 descriptor 所有权交给 DMA，然后通过写 Tail Pointer register 发出 Poll Demand 命令。若因此进入 SUSPEND 状态，对应 DMA channel Status Register 的 Bit 15 和 Bit 2 被置位。</li>
+  <li>因 underflow 检测到 Transmit 错误，包传输中止。对应 Transmit Descriptor 3（<kbd>TDES3</kbd>）的相应 bit 被置位，同时以下 bit 被置位并将信息写入 Transmit Descriptor 0，导致挂起：
+    <ul>
+      <li>对应 DMA channel Status Register 的 Bit 14</li>
+      <li>对应 queue 在 <kbd>MTL_Interrupt_Status</kbd> 中的 Transmit Underflow bit</li>
+    </ul>
+  </li>
+  <li>DMA 检测到 Tail Pointer 等于 DMA 已关闭的 Current descriptor。恢复方式：软件驱动修改 Tail Pointer register。</li>
+</ul>
+
+<p>所有挂起条件下，Transmit List 中的位置都会被保留，该位置为 DMA 关闭的 Last Descriptor 之后的下一个 descriptor。驱动必须在排除挂起原因后显式发出 Transmit Poll Demand 命令。</p>
 
 <h level="3">Connections</h>
 

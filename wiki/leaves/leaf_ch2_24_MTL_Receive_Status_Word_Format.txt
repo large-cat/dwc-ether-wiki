@@ -1,17 +1,107 @@
 <h level="2">MTL Receive Status Word Format</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p101-110</code></p>
+  <p>Source: <code>ch2 p101-107</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MTL接收状态字格式描述Rx包状态信息排列：</p>
-<p>- Normal Status Word始终存在，指示后续状态字数量</p>
-<p>- VLAN Status Word：Bit[25]/Bit[26]为1时存在</p>
-<p>- Extended Status Word：Bit[27]为1时存在</p>
-<p>- MAC Filter Status Word：Bit[29]为1时存在</p>
-<p>- Timestamp Low/High：时间戳使能时附加</p>
-<p>支持32/64/128-bit数据宽度配置。</p>
+<p>MTL 接收状态字（Receive Status Word）在 Threshold 模式下于包数据之后发送，在 Store-and-Forward 模式下于包数据之前发送。不同数据宽度（32/64/128-bit）下状态字排列顺序不同。</p>
+
+<h level="3">状态字排列顺序</h>
+
+<h level="4">32-bit Datawidth Configuration</h>
+<ol>
+  <li>Normal Status</li>
+  <li>VLAN Status</li>
+  <li>Extended Status</li>
+  <li>MAC Filter Status</li>
+  <li>Timestamp Low</li>
+  <li>Timestamp High</li>
+</ol>
+
+<h level="4">64-bit Datawidth Configuration</h>
+<ul>
+  <li>Word 0: Normal Status | VLAN Status</li>
+  <li>Word 1: Extended Status | MAC Filter Status</li>
+  <li>Word 2: Timestamp Low | Timestamp High</li>
+</ul>
+
+<h level="4">128-bit Datawidth Configuration</h>
+<ul>
+  <li>Word 0: Normal Status | VLAN Status | Extended Status | MAC Filter Status | Timestamp Low | Timestamp High</li>
+</ul>
+
+<h level="3">各状态字存在条件</h>
+<ul>
+  <li><strong>Normal Status Word</strong>：始终存在，内容指示后续状态字数量</li>
+  <li><strong>VLAN Status Word</strong>：仅当 Normal Status 的 Bit[25] 或 Bit[26] 为 1 时存在。即使接收的 VLAN Tag 值为 0，对应位也会置位</li>
+  <li><strong>Extended Status Word</strong>：仅当 Normal Status 的 Bit[27] 为 1 时存在。Bit[27] 仅在 Extended Status Word 非零时置位</li>
+  <li><strong>MAC Filter Status Word</strong>：仅当 Normal Status 的 Bit[29] 为 1 时存在。Bit[29] 仅在 MAC Filter Status Word 非零时置位，即使接收的 DA 匹配 MAC Address 0 register 且 Bit[18] 复位</li>
+  <li><strong>Timestamp Status Low/High</strong>：仅当 Normal Status 的 Bit[30] 为 1 且 Extended Status 的 Bit[15] 为 0 时存在</li>
+</ul>
+
+<h level="3">Normal Status Word Format</h>
+<table>
+  <tr><th>Bit</th><th>字段</th><th>说明</th></tr>
+  <tr><td>31</td><td>Reserved</td><td>保留</td></tr>
+  <tr><td>30</td><td>Timestamp Status Received</td><td>时间戳状态已从 MAC 接收。注意：时间戳状态可能在 MTL Queue 中因空间不足而被丢弃，可用性通过 Extended Status Word 的 Bit[10] 指示</td></tr>
+  <tr><td>29</td><td>MAC Filter Status Available</td><td>置位时指示 MAC Filter Status 存在</td></tr>
+  <tr><td>28</td><td>Reserved</td><td>保留</td></tr>
+  <tr><td>27</td><td>Extended Status Available</td><td>置位时指示 Extended Status 存在</td></tr>
+  <tr><td>26</td><td>Inner VLAN Tag Status Available</td><td>置位时指示 Inner VLAN Tag 存在于 VLAN Status Word[31:16]。此位置位时 VLAN Status Word 必定存在于 Rx Status Word 中</td></tr>
+  <tr><td>25</td><td>Outer VLAN Tag Status Available</td><td>置位时指示 Outer VLAN Tag 存在于 VLAN Status Word[15:0]。此位置位时 VLAN Status Word 必定存在于 Rx Status Word 中</td></tr>
+  <tr><td>24</td><td>CRC Error</td><td>置位时指示接收包发生 CRC 错误</td></tr>
+  <tr><td>23</td><td>Giant Frame</td><td>置位时指示包长度超过最大 Ethernet 规定大小（1518、1522 或 2000 字节；若 jumbo packet 使能则为 9018 或 9022 字节）。Giant frame 仅为长度指示，不会导致包截断</td></tr>
+  <tr><td>22</td><td>Watchdog Timeout</td><td>置位时指示 RPE 模块接收到的包字节数大于 2048（若 Jumbo packet 使能为 10240）字节（DA + SA + LT + DATA + PAD + FCS）。若 watchdog timer 在 <kbd>MAC_Configuration</kbd> 中禁用，此位不置位；但包大于 32 KB 时此位仍置位</td></tr>
+  <tr><td>21</td><td>Overflow Error</td><td>置位时指示接收帧因 Rx Queue 缓冲区溢出而损坏。此位仅在 MTL 向应用传输部分帧时置位（Threshold 模式）。Store-and-forward 模式下所有遇到溢出的部分帧被完全丢弃</td></tr>
+  <tr><td>20</td><td>GMII Error</td><td>置位时指示接收此包期间 <code>gmii_rxer_i</code> 被断言。包括 GMII 和半双工模式下的 carrier extension 错误</td></tr>
+  <tr><td>19</td><td>Dribbling Bit</td><td>置位时指示包包含非 8 的整数倍的比特数（仅在 MII 模式下有效）。若发生碰撞或 runt packet 位置位，此位无效。若此位置位且 CRC error 复位，则包有效</td></tr>
+  <tr><td>18:16</td><td>Length/Type Field</td><td>指示接收包是 length packet 还是 type packet：3'b000=length packet；3'b001=type packet；3'b100=带 VLAN Tag 的 type packet；3'b101=带 Double VLAN Tag 的 type packet；3'b110=MAC Control packet type；3'b111=OAM packet type；3'b010-3'b011=保留</td></tr>
+  <tr><td>15</td><td>Error Summary</td><td>CRC Error、Dribble Error、Receive Error、Watchdog Timeout、Overflow Error、Giant Packet 的逻辑或</td></tr>
+  <tr><td>14:0</td><td>Packet Length</td><td>接收包长度（字节），包含 pad（若适用）和 FCS（当 Auto Pad/CRC Strip 位未断言时）。否则为不含 pad 和/或 FCS 的长度。若 IP Checksum 模块存在且通过 <kbd>MAC_Configuration</kbd> 的 IPC 位使能，且接收帧不是 MAC control frame，则包含 FCS 后附加的 2-byte IP Checksum。VLAN Tag stripping 使能时，VLAN tagged 包的长度不含 VLAN Tag</td></tr>
+</table>
+
+<h level="3">VLAN Status Word Format</h>
+<table>
+  <tr><th>Bit</th><th>字段</th><th>说明</th></tr>
+  <tr><td>31:16</td><td>Inner VLAN Tag</td><td>Inner VLAN Tag 值。仅当 Normal Status 的 Bit[26]（Inner VLAN Tag Available）为 1 时有效</td></tr>
+  <tr><td>15:0</td><td>Outer VLAN Tag</td><td>Outer VLAN Tag 值。仅当 Normal Status 的 Bit[25]（Outer VLAN Tag Available）为 1 时有效</td></tr>
+</table>
+
+<h level="3">Extended Status Word Format</h>
+<p>Extended Status Word 与 DMA Write-back Format 的 RDES1 字段相同（见 Table 19-23, page 1341）。</p>
+
+<h level="3">MAC Filter Status Word Format</h>
+<table>
+  <tr><th>Bit</th><th>字段</th><th>说明</th></tr>
+  <tr><td>31:29</td><td>Layer 3 and Layer 4 Filter Number Matched</td><td>指示匹配的 L3/L4 Filter 编号（000=Filter 0, ..., 111=Filter 7）。仅在 Bit[28] 或 Bit[27] 置位时有效。多个 filter 匹配时给出最低编号</td></tr>
+  <tr><td>28</td><td>Layer 4 Filter Match</td><td>置位时指示接收帧匹配一个使能的 L4 Port Number 字段。仅在 L3 字段未使能且所有使能 L4 字段匹配，或所有使能 L3 和 L4 filter 字段匹配时给出</td></tr>
+  <tr><td>27</td><td>Layer 3 Filter Match</td><td>置位时指示接收帧匹配一个使能的 L3 IP Address 字段。仅在所有使能 L3 字段匹配且所有使能 L4 字段 bypass，或所有使能 filter 字段匹配时给出</td></tr>
+  <tr><td>26:19</td><td>MAC Address Match/Hash Value</td><td>Bit[18]（Hash Filter Status）复位时，包含匹配接收包目的地址的 MAC address register 编号。Bit[18] 置位时，包含 MAC 计算的 hash 值</td></tr>
+  <tr><td>18</td><td>Hash Filter Status</td><td>置位时指示包通过 MAC address hash filter。Bits[26:19] 指示 hash 值</td></tr>
+  <tr><td>17</td><td>DA Filter Fail</td><td>置位时指示目的地址过滤失败</td></tr>
+  <tr><td>16</td><td>SA Filter Fail</td><td>置位时指示源地址过滤失败</td></tr>
+  <tr><td>15</td><td>VLAN Filter Status</td><td>置位时指示接收包的 VLAN Tag 通过 VLAN filter。当 DWC_EQOS_ERVFE 未使能时有效。若 DWC_EQOS_ERVFE 使能，此位重定义为 Outer VLAN Tag Filter Status（OTS）</td></tr>
+  <tr><td>14</td><td>Inner VLAN Tag Filter Status</td><td>仅当 DWC_EQOS_ERVFE 使能时有效。详见 RDES2 Normal Descriptor（Write-Back Format）Bit[14]</td></tr>
+  <tr><td>5</td><td>ND Advertisement Not Generated</td><td>置位时指示 MAC 未为接收的 ND Solicitation 包生成 ND Advertisement。仅当 Bit[4]（ND Solicitation Packet Received）置位时有效。当 MAC 接收带 Authentication extension header 或非零 extension headers 的 ND Solicitation 包时置位。未选中 Enable ND Offload 时保留</td></tr>
+  <tr><td>4</td><td>ND Solicitation Packet Received</td><td>置位时指示接收到 ND Solicitation 包。未选中 Enable ND Offload 时保留</td></tr>
+  <tr><td>2</td><td>ARP Reply Not Generated</td><td>置位时指示 MAC 未为接收的 ARP Request 包生成 ARP Reply。当 MAC 正忙于传输先前 ARP request 的 ARP reply 时置位（一次仅处理一个 ARP request）。未选中 Enable ARP Offload 时保留</td></tr>
+  <tr><td>1</td><td>Inner VLAN Tag Type</td><td>置位时指示接收包中 Inner VLAN type 为 S-VLAN；复位时为 C-VLAN。未选中 Enable Double VLAN 时保留</td></tr>
+  <tr><td>0</td><td>Outer VLAN Tag Type</td><td>置位时指示接收包中 Outer VLAN type 为 S-VLAN；复位时为 C-VLAN</td></tr>
+</table>
+
+<h level="3">Timestamp Status Fields</h>
+<ul>
+  <li><strong>Timestamp Status Low</strong>：与 DMA Context Descriptor 的 RDES0 字段相同（Table 19-26, page 1348）</li>
+  <li><strong>Timestamp Status High</strong>：与 DMA Context Descriptor 的 RDES1 字段相同（Table 19-27, page 1348）</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_101_2_42.png" alt="Figure 2-42" />
+
+<img src="leaves/assets/ch2/figure_103_2_43.png" alt="Figure 2-43" />
 
 <h level="3">Connections</h>
 

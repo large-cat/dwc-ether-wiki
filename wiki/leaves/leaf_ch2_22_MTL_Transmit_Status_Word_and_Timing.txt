@@ -1,12 +1,97 @@
 <h level="2">MTL Transmit Status Word and Timing</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p95-96</code></p>
+  <p>Source: <code>ch2 p92-96</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>发送状态字包含发送完成状态、错误标志、时间戳信息。</p>
-<p>ATI时序通过ati_pkt_start_i/ati_pkt_end_i控制包边界。</p>
+<p>当 Ethernet 包传输到 MAC 且 MAC 完成发送后，MTL 通过 <code>ati_txstatus_val_o[]</code> 提供发送状态有效性指示。应用通过 <code>ati_txstatus_ack_i</code> 信号读取状态。</p>
+
+<h level="3">单队列配置</h>
+<ul>
+  <li><code>ati_txstatus_val_o</code> 置位时，<code>ati_txstatus_o</code> 指示队列状态</li>
+  <li>应用通过置位 <code>ati_txstatus_ack_i</code> 读取状态</li>
+</ul>
+
+<h level="3">多队列配置</h>
+<ul>
+  <li><code>ati_txstatus_val_o[]</code> 指示各队列状态可用性</li>
+  <li>应用通过 <code>ati_txsqnum_i[]</code> 驱动队列号，并置位 <code>ati_txstatus_ack_i</code> 读取 <code>ati_txstatus_o[17:0]</code> 上的状态</li>
+</ul>
+
+<h level="3">Transmit Status Word 内容</h>
+<ul>
+  <li>状态详细描述与 TDES3 正常描述符写回格式的 Bits[17:0] 相同（见 Table 21-10）</li>
+  <li>若 IEEE 1588 Timestamp 功能使能，MTL 在 <code>ati_txstatus_o[81:18]</code> 返回 64-bit 时间戳</li>
+  <li>有效时间戳由 <code>ati_txstatus_o[17]</code> 高电平指示</li>
+  <li>若未使能 IEEE 1588 Timestamp Support，<code>ati_txstatus_o[]</code> 宽度为 18</li>
+  <li>若使能 IEEE 1588 Timestamp Support，<code>ati_txstatus_o</code> 宽度为 82，高 64 位为时间戳</li>
+</ul>
+
+<h level="3">Disable Transmit Status 选项</h>
+<ul>
+  <li>配置时选中 Disable Transmit Status in MTL 选项，或置位 <code>MTL_Operation_Mode</code> 的 DTXSTS 位（Bit 1），MTL 不向应用或 DMA 提供发送状态</li>
+  <li>此时应用或 DMA 可向 Tx 队列推送尽可能多的包，无需读取状态字</li>
+  <li>若未选中该选项，可通过 DTXSTS 位禁用应用或 DMA 对状态 FIFO 的依赖</li>
+</ul>
+
+<h level="3">Transmit Path Timing</h>
+
+<h level="4">Application Transmit Interface（ATI）Timing</h>
+<ol>
+  <li>应用启动 burst 传输前，检查 MTL Tx queue 是否有足够空间容纳 burst。将 burst 长度置于对应队列的 <code>ati_q#_pbl_i</code></li>
+  <li>MTL 在一个时钟后通过 <code>ati_txwatermark_o[]</code> 指示是否能容纳该 burst</li>
+  <li>传输过程中，MTL 可通过拉低 <code>ati_rdy_o</code> 要求应用停止传输。拉低条件：队列几乎满；Tx queue 被刷新；或正在写入 checksum（若 Enable Transmit TCP/IP Checksum Offload 选中）</li>
+  <li>应用通过置位 <code>ati_ctrl_val_i</code> 和 <code>ati_ctrl_type_i</code>（写控制字），随后置位 <code>ati_val_i</code> 和 <code>ati_sop_i</code> 启动包传输</li>
+  <li>多队列配置下，<code>ati_qnum_i[]</code> 应与 <code>ati_ctrl_val_i</code> 或 <code>ati_val_i</code> 关联以指示目标队列</li>
+  <li>传输最后字节时，<code>ati_eop_i</code> 与 byte enables（<code>ati_be_i</code>）同时置位，指示有效数据字节数。非 EOP 传输的 byte enables 必须为全 1</li>
+  <li>MAC 完成传输后给出状态（图中未示出）</li>
+  <li>单队列配置：MTL 通过 <code>ati_txstatus_o</code> 给出状态，应用通过 <code>ati_ack_i</code> 接受</li>
+  <li>多队列配置：MTL 置位 <code>ati_txstatus_val_o[]</code> 指示状态可用，应用通过 <code>ati_txsqnum_i[]</code> 和 <code>ati_txstatus_ack_i</code> 读取</li>
+  <li>应用无需等待步骤 6 和 7 即可开始下一个包的传输，可直接回到步骤 2 驱动新的 PBL</li>
+</ol>
+
+<h level="4">Transmit Queue Write Interface</h>
+<ul>
+  <li>MTL Tx Queue 控制器将 ATI 接受的数据传输到外部内存</li>
+  <li>外部存储器必须为同步双端口 RAM（见图 2-53）</li>
+</ul>
+
+<h level="4">Transmit Queue Read Interface</h>
+<ul>
+  <li>Tx Queue Read 控制器从 Tx queue 读取数据并通过 MTI 传输到 MAC</li>
+  <li>当 Tx queue 有数据时，Read Controller 通过 <code>trc_rd_addr_o</code> 和 <code>trc_rd_csn_o</code> 启动读取</li>
+  <li><code>trc_rd_en_o</code> 延迟 1 个时钟周期以满足同步 RAM 时序要求</li>
+  <li>包第一个位置包含 Packet Control 和 Packet Length，用于断言 MAC 的 sideband 信号（如 <code>mti_crc_pad_ctrl_i</code>）</li>
+  <li>多队列配置下，仲裁方案选择非空 Tx queue 进行传输。仲裁前从每个 Tx queue 预取第一个位置（包含包控制和包长度），包长度信息用于 WFQ 和 DWRR 仲裁</li>
+  <li>数据在下一个时钟周期通过 <code>trc_rd_data_i</code> 读取，直接传输到 <code>mti_data</code>，同时 <code>mti_val_i</code> 置位</li>
+  <li>Tx Queue Read Controller 可预取三个位置（异步 RAM 端口为两个），以维持对 MTI 的连续传输</li>
+  <li>若 MAC 接受数据（<code>mti_rdy_o</code> 有效），继续读取；若 MAC 拉低 <code>mti_rdy_o</code>，读取操作在下一时钟周期暂停，<code>trc_rd_csn_o</code> 拉低</li>
+</ul>
+
+<h level="4">Transmit Packet Retransmission</h>
+<ul>
+  <li>MAC 发送端可能因冲突、Tx Queue underflow、载波丢失、jabber timeout、无载波、过度延迟、late collision 而中止传输</li>
+  <li>因冲突中止时，MAC 请求重传：MTL 开始传输包（<code>mti_val_i</code> 和 <code>mti_sop_i</code>），MAC 遇到冲突后暂停传输（<code>mti_rdy_o</code> 拉低）</li>
+  <li>MAC 在 <code>mti_txstatus</code> 上传输状态，并通过 <code>mti_txstatus</code> 的 Bit 31 请求重传</li>
+  <li>MTL 重传包，Tx Queue 读取地址回退到包起始地址 0x000</li>
+</ul>
+
+<h level="4">Transmit Queue Flush Operation</h>
+<ul>
+  <li>应用可通过 <code>MTL_TxQ[n]_Operation_Mode</code> 的 Bit 0 随时刷新 Tx Queue</li>
+  <li>应用向 Tx queue 推送两个包后，写 Transmit Operation mode register 置位 Flush Transmit Queue 位</li>
+  <li>应用回读同一寄存器检查 Flush 状态，bit[0] 在 CSR 读访问期间高电平指示 Flush 进行中</li>
+  <li>若 MTL 已向 MAC 传输（部分）包，则立即终止并清除 Tx Queue，等待部分/完整包传输的状态</li>
+  <li>MTL 通过内部信号 <code>ati_txfifoflush_clr</code> 指示 Flush 完成，清除对应 MTL queue 的 Transmit Operation Mode register 的 Bit 0</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_95_2_38.png" alt="Figure 2-38" />
+
+<img src="leaves/assets/ch2/figure_96_2_39.png" alt="Figure 2-39" />
 
 <h level="3">Connections</h>
 

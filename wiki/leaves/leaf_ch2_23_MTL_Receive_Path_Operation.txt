@@ -1,14 +1,175 @@
 <h level="2">MTL Receive Path Operation</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p96-100</code></p>
+  <p>Source: <code>ch2 p96-111</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MTL接收路径两种模式：</p>
-<p>1. Threshold Mode：FIFO数据量超阈值后传输到DMA</p>
-<p>2. Store-and-Forward Mode：完整包存入后传输，可过滤错误包</p>
-<p>支持Multi-Packet Receive和ari_pkt_flush_i错误刷新。</p>
+<p>MTL Rx 模块从 MAC 接收数据包并推入 Rx Queue。队列状态（fill level）在超过配置的接收阈值（<kbd>MTL_RxQ0_Operation_Mode</kbd> 的 RTC bits[1:0]）或完整包接收后通知应用或 DMA。</p>
+
+<h level="3">Receive Operation 通用流程</h>
+<ol>
+  <li>MAC 接收到数据包后指示接收数据可用</li>
+  <li>MAC 指示 SOP 和 EOP 分隔符</li>
+  <li>MTL 接受数据并推入对应 Rx queue</li>
+  <li>EOP 传输完成后，MAC 驱动状态字，MTL 将其推入对应 Rx queue</li>
+</ol>
+
+<info>
+  <p>Threshold 模式下，状态字存储在包 EOP 之后。Store-and-forward 模式下，在写入 SOP 前预留最大状态字位置，EOP 写入后将状态写入预留位置。</p>
+</info>
+
+<h level="3">Threshold Mode</h>
+<p>默认 Threshold（cut-through）模式下，MTL 在以下情况读取数据并指示可用性：</p>
+<ul>
+  <li>写入 Rx queue 的数据字节数等于阈值（RTC bits[1:0]）</li>
+  <li>完整包数据已接收</li>
+</ul>
+
+<important>
+  <p>当 split header 功能使能或多 Rx DMA 存在时，即使编程为 Threshold 模式，MTL 也工作在 <em>dynamic threshold mode</em>。此模式下，MTL 仅在收到阈值字节数、split-header 长度和 DMA 编号后才开始转发。</p>
+</important>
+
+<h level="4">Single Queue Configuration</h>
+<ol>
+  <li>（可选）应用置位 <code>ari_q#_pbl_i</code> 并等待 <code>ari_rxwatermark_o</code></li>
+  <li>MTL 通过 <code>ari_val_o</code> 指示数据可用，同时输出 <code>ari_data_o</code> 和 <code>ari_be_o</code>。首次传输时 <code>ari_sop_o</code> 置位指示包起始</li>
+  <li>应用或 DMA 通过 <code>ari_ack_i</code> 接受数据，重复直到 EOP（<code>ari_eop_o</code>）</li>
+  <li>完整包数据接收后，MTL 置位 <code>ari_rxstatus_val_o</code> 并在 <code>ari_data_o</code> 输出第一个状态字，指示后续状态字数量</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受状态，重复直到所有状态字发送完毕</li>
+</ol>
+<p>若 Rx timestamp 状态可用，MTL 通过 <code>ari_timestamp_val_o</code> 指示时间戳可用性，传输方式同步骤 4-5。</p>
+
+<h level="4">Multiple Queue Configuration</h>
+<ol>
+  <li>（可选）应用置位 <code>ari_q#_pbl_i</code> 并等待对应队列的 <code>ari_rxwatermark_o</code>。<code>ari_rxwatermark_o</code> 保证 MTL 有 <code>ari_q#_pbl_i</code> 数量的数据就绪</li>
+  <li>应用置位 <code>ari_ready_i</code>（每队列），指示准备接受该队列的 <code>ari_q#_pbl_i</code> 数据</li>
+  <li>MTL 内部仲裁所有 <code>ari_ready_i</code> 置位的非空队列，选择一队列并通过 <code>ari_qnum_o</code> 指示队列号</li>
+  <li>MTL 通过 <code>ari_val_o</code> 指示数据可用，首次传输时 <code>ari_sop_o</code> 置位</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受数据，重复直到 EOP</li>
+</ol>
+
+<h level="3">Store-and-Forward Mode</h>
+<p>当 <kbd>MTL_RxQ0_Operation_Mode</kbd> 的 Bit 5 置 1 时进入 store-and-forward 模式：</p>
+<ul>
+  <li>初始 Rx queue 位置在写入 SOP 前为状态字预留</li>
+  <li>包仅在完整写入 Rx queue 后才被读出</li>
+  <li>所有错误包被丢弃（若通过对应队列 <kbd>MTL_RxQ0_Operation_Mode</kbd> 的 Bit 4 配置）</li>
+</ul>
+
+<h level="4">Single Queue Configuration</h>
+<ol>
+  <li>（可选）应用置位 <code>ari_q#_pbl_i</code> 并等待 <code>ari_rxwatermark_o</code></li>
+  <li>MTL 通过 <code>ari_rxstatus_val_o</code> 指示状态可用，<code>ari_data_o</code> 输出状态。第一个状态字指示后续状态字数量</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受状态字</li>
+  <li>重复直到 EOP（<code>ari_eop_o</code>）</li>
+  <li>所有状态字传输后，MTL 通过 <code>ari_val_o</code> 指示数据可用，首次传输时 <code>ari_sop_o</code> 置位</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受数据</li>
+  <li>重复直到所有数据发送完毕</li>
+</ol>
+
+<h level="4">Multiple Queue Configuration</h>
+<ol>
+  <li>（可选）应用置位 <code>ari_q#_pbl_i</code> 并等待 <code>ari_rxwatermark_o</code></li>
+  <li>应用置位 <code>ari_ready_i</code> 指示准备接受数据</li>
+  <li>MTL 内部仲裁并选择队列，通过 <code>ari_qnum_o</code> 指示</li>
+  <li>MTL 通过 <code>ari_rxstatus_val_o</code> 指示状态可用，<code>ari_data_o</code> 输出状态</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受状态</li>
+  <li>MTL 通过 <code>ari_val_o</code> 指示数据可用，首次传输时 <code>ari_sop_o</code> 置位</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受数据，重复直到请求的 PBL 数据传输完成或 EOP</li>
+</ol>
+
+<info>
+  <p>多队列配置下，状态字传输不属于当前 PBL 请求，而是在 PBL 数据传输前提供的附加信息。</p>
+</info>
+
+<h level="3">Multi-Packet Receive Operation</h>
+<ul>
+  <li>Threshold 模式下，包状态在包数据后立即可用</li>
+  <li>Store-and-forward 模式下，包数据在包状态后可用</li>
+  <li>MTL 可存储任意数量的包，只要队列未满</li>
+  <li>若 MAC 接收包时对应 Rx queue 已满，MTL 忽略该包并在对应队列生成 <code>ari_fifo_ovf_o[]</code> 输出脉冲</li>
+  <li>同时 MTL 递增对应队列 <kbd>MTL_RxQ0_Missed_Packet_Overflow_Cnt</kbd> 的溢出计数器</li>
+</ul>
+
+<h level="3">Error Handling in Receive Operation</h>
+<p>若 MTL Rx queue 在从 MAC 接收 EOP 数据前已满：</p>
+<ol>
+  <li>声明 overflow</li>
+  <li>整个包（包括状态字）被丢弃</li>
+  <li>DMA 溢出计数器（对应 MTL queue 的 Overflow Counter register）递增</li>
+</ol>
+<p>即使 <kbd>MTL_RxQ0_Operation_Mode</kbd> 的 FEP 位（Bit 4）置位也适用此规则。</p>
+
+<p>若该包的起始地址已传输到 Read Controller，剩余包被丢弃，dummy EOP 与 overflow 状态一起写入队列。状态指示因 overflow 导致的部分包，Packet Length 字段无效。</p>
+
+<p>若 MTL Receive Queue 配置为 store-and-forward 模式且接收包长度超过队列大小，发生 overflow 且所有此类包被丢弃。</p>
+
+<p>MTL Rx Control logic 可通过 <kbd>MTL_RxQ0_Operation_Mode</kbd> 的 FEP 和 FUP 位过滤错误和 undersized 包。若包的起始地址已传输到 Rx Queue Read Controller，则该包不会被过滤。起始地址在包跨越接收阈值后才传输到 Read Controller。</p>
+
+<p>Store-and-forward 模式下，所有错误包可被过滤和丢弃。应用或 DMA 可通过置位 <code>ari_pkt_flush_i</code> 刷新正在读取的错误包，MTL 停止向应用传输数据，内部读取并丢弃剩余包，然后传输下一个包。</p>
+
+<h level="3">Receive Path Timing Diagrams</h>
+
+<h level="4">Receive FIFO Write Interface</h>
+<ul>
+  <li>MAC 通过 MRI 接口将接收到的包传输到 MTL</li>
+  <li>MAC 置位 <code>mri_val_o</code> 和 <code>mri_sop_o</code> 并输出 128-bit <code>mri_data_o</code></li>
+  <li>数据在下一个时钟周期直接传输到 Rx queue，<code>rwc_csn_o</code> 和 <code>rwc_wr_en_o</code> 置位，MSB 5 位对应 <code>mri_eop_o</code> 和 <code>mri_be_o</code></li>
+  <li>Store-and-forward 模式下，MTL 在写入第一个包数据前预留状态字位置；Threshold 模式下不预留</li>
+  <li>MAC 通过 <code>mri_eop_o</code> 完成包传输，<code>mri_rxstatus_val_o</code> 同时有效</li>
+  <li>EOP 数据写入后，Rx Queue Write logic 在下一个时钟周期将接收状态传输到外部 RAM</li>
+</ul>
+
+<h level="4">Application Receive Interface（ARI）</h>
+<ol>
+  <li>应用可通过 <code>ari_qnum_pbl_i</code> 检查 Rx Queue 是否有足够数据支持所需 burst 长度</li>
+  <li>MTL 在下一个时钟周期更新 <code>ari_watermark_o</code>，指示有足够数据维持 <code>ari_pbl_i</code> 长度的 burst 传输</li>
+  <li>多队列配置下，应用可驱动 <code>ari_ready_i[]</code> 指示准备服务的队列</li>
+  <li>多队列配置下，MTL Read controller 仲裁所有非空队列和 <code>ari_ready_i</code> 置位的队列，选择一队列并通过 <code>ari_qnum_o[]</code> 指示。MTL 通过 <code>ari_val_o</code>（Threshold 模式）或 <code>ari_rxstatus_val_o</code>（store-and-forward 模式）指示数据可用</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受数据。MTL 在下一时钟周期更新数据（若继续 burst 传输）。应用可通过拉低 <code>ari_ack_i</code> 暂停传输</li>
+  <li>MTL 通过 <code>ari_val_o</code>、<code>ari_rxstatus_val_o</code> 或 <code>ari_timestamp_val_o</code> 传输剩余数据或状态。最后几个字节传输时 <code>ari_eop_o</code> 与 <code>ari_be_o</code> 同时置位，指示有效字节数</li>
+  <li>Threshold 模式下，接收包状态（<code>ari_rxstatus_val_o</code> 或 <code>ari_timestamp_val_o</code>）在 EOP 数据后传输。包传输仅在状态被 <code>ari_ack_i</code> 确认后才完成</li>
+</ol>
+
+<h level="4">ARI With Timestamp Feature in Threshold Mode</h>
+<ul>
+  <li>IEEE 1588 Timestamp 功能使能时，ARI 输出 EOP 数据后（<code>ari_eop_o</code> 高），在 <code>ari_data_o</code> 上给出时间戳值</li>
+  <li><code>ari_timestamp_val_o</code> 置位验证时间戳</li>
+  <li>32-bit 数据总线模式下，64-bit 时间戳分两个周期输出</li>
+  <li>应用通过两个时钟的 <code>ari_ack_i</code> 接受时间戳后，Rx 状态在数据总线上给出并由 <code>ari_rxstatus_val_o</code> 验证</li>
+</ul>
+
+<h level="4">ARI With Timestamp Feature in Store-and-Forward Mode</h>
+<ul>
+  <li>Store-and-forward 模式下，MTL 通过 <code>ari_rxstatus_val_o</code> 和 <code>ari_data_o</code> 启动包传输（状态内容）</li>
+  <li>应用通过 <code>ari_ack_i</code> 接受状态字后，MTL 置位 <code>ari_timestamp_val_o</code> 指示 <code>ari_data_o</code> 上的时间戳可用</li>
+  <li>32-bit 数据总线模式下，64-bit 时间戳分两个周期输出</li>
+  <li>应用接受时间戳后，MTL 通过 <code>ari_val_o</code>、<code>ari_sop_o</code> 和 <code>ari_data_o</code> 开始驱动包数据</li>
+</ul>
+
+<h level="4">Receive Queue Read Interface</h>
+<ul>
+  <li>MTL Rx Queue Read Controller 在发现 Rx queue 非空且应用准备服务队列时（多队列配置）预取数据（<code>rrc_rd_*</code> 信号）</li>
+  <li>同步 RAM 接口最多预取三个位置，以维持 ARI 接口的连续 burst 传输</li>
+  <li>预取数据寄存后通过 <code>ari_*</code> 信号输出。应用通过 <code>ari_ack_i</code> 确认后，进一步数据从队列读取</li>
+  <li><code>rrc_rd_*</code> 信号时序与 <code>trc_rd_*</code> 信号类似</li>
+</ul>
+
+<h level="4">Receive Packet Flush</h>
+<ul>
+  <li>应用可在包传输开始、中间或结束时（<code>ari_val_o</code>、<code>ari_rxstatus_val_o</code> 或 <code>ari_timestamp_val_o</code> 置位）置位 <code>ari_packetflush_i</code> 一个时钟周期以丢弃 Rx Queue 顶部的包</li>
+  <li>MTL 检测到当前活动队列的 <code>ari_packetflush_i[]</code> 有效脉冲时，拉低 <code>ari_val_o</code>、<code>ari_rxstatus_val_o</code>、<code>ari_timestamp_val_o</code> 和 <code>ari_rxwatermark_o</code></li>
+  <li>MTL 继续从 Rx queue 读取但不传输到 ARI，刷新整个包（包括状态），然后准备传输下一个包</li>
+  <li>若 <code>ari_packetflush_i[]</code> 对当前非活动队列置位，MTL 内部刷新该队列顶部的包</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_96_2_39.png" alt="Figure 2-39" />
+
+<img src="leaves/assets/ch2/figure_96_2_40.png" alt="Figure 2-40" />
 
 <h level="3">Connections</h>
 

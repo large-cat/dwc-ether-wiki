@@ -8,6 +8,13 @@
         "end": 40,
         "file": "cache/ch1_p23-40.md"
       }
+    ],
+    "ch2": [
+      {
+        "start": 41,
+        "end": 150,
+        "file": "cache/ch2_p41-150.md"
+      }
     ]
   }
 }

@@ -5,7 +5,57 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The subsystem can be configured (EQOS-DMA) to have DMA with a native FIFO-like interface on the application side and an MCI (Optionally APB) interface for CSR port. All DMA functions and features remain the same. On the native interface, the DMA uses a simple hardware protocol to initiate data or descriptor transfers. DMA starts transaction with proper values on address bus, transfer size, burst length, and transfer type. For read transfers, application provides valid data by asserting mdc_rdata_val_i. For write transfers, DMA provides valid data by asserting mdc_wdata_val_i. Application can pause transfers by de-asserting mdc_rdata_val_i or mdc_wdata_rdy_i. After transferring all requested data, application must terminate with mdc_xfer_done_i signal. Application can indicate error by activating mdc_error_i. The DMA can prematurely end burst transfer if EOP is being transferred, marking EOP data on mdc_wdata_o with mdc_eop_o assertion.</p>
+<p>子系统可配置为 EQOS-DMA 模式，使 DMA 在应用侧使用原生 FIFO-like 接口，CSR 端口使用 MCI（可选 APB）接口。DMA 的所有功能和特性与前面章节描述的一致。</p>
+
+<p>在原生接口上，DMA 使用简单的硬件协议发起数据或 descriptor 传输。DMA 始终以下列正确值启动事务：地址总线、传输大小、burst 长度以及传输类型（读或写）。</p>
+
+<ul>
+  <li>对于读传输，应用通过置位 <kbd>mdc_rdata_val_i</kbd> 信号提供有效数据。</li>
+  <li>对于写传输，DMA 通过置位 <kbd>mdc_wdata_val_i</kbd> 信号提供有效数据。</li>
+  <li>应用可通过拉低 <kbd>mdc_rdata_val_i</kbd> 或 <kbd>mdc_wdata_rdy_i</kbd> 信号暂停传输。</li>
+</ul>
+
+<important>
+  <p>地址总线、burst 长度和传输大小在收到 <kbd>mdc_rdata_val_i</kbd> 或 <kbd>mdc_wdata_rdy_i</kbd> 信号后不会立即更新，这些值仅在传输开始时有效。某些访问类型中，burst 长度在传输期间甚至可能不变。</p>
+</important>
+
+<p>在传输完所有请求的数据后，应用必须通过置位 <kbd>mdc_xfer_done_i</kbd> 信号终止 DMA 事务。应用可通过激活 <kbd>mdc_error_i</kbd> 信号指示错误；随后对应的 DMA（Rx 或 Tx）进入 Fatal Error 状态，所有操作停止，应用必须提供 soft reset 以重启 DMA。</p>
+
+<h level="3">Write Data Transfer</h>
+<p>DMA 通过以下序列将数据 buffer 写入系统内存：</p>
+
+<ol>
+  <li>子系统置位 <kbd>mdc_start_xfer_o</kbd>（脉冲）启动事务，同时驱动：
+    <ul>
+      <li>系统内存地址（<kbd>mdc_addr_o</kbd>）</li>
+      <li>读/写控制信号（<kbd>mdc_rd_wrn_o</kbd> = 0）</li>
+      <li>beat 数量（<kbd>mdc_burst_count_o</kbd>）</li>
+      <li>传输大小（<kbd>mdc_xfer_size_o</kbd>）</li>
+      <li>第一个数据 beat 驱动到 <kbd>mdc_wdata_o</kbd> 总线，同时置位 <kbd>mdc_wdata_val_o</kbd></li>
+    </ul>
+  </li>
+  <li>应用置位 <kbd>mdc_wdata_rdy_i</kbd> 接收数据。</li>
+  <li>若应用未准备好，可拉低 <kbd>mdc_wdata_rdy_i</kbd> 延迟数据传输；DMA 在 "rdy" 控制信号拉低期间保持数据总线值不变。</li>
+  <li>所有数据按 <kbd>mdc_burst_count_o</kbd> 传输完毕后，应用必须置位 <kbd>mdc_xfer_done_i</kbd>（脉冲）结束 DMA 传输。</li>
+  <li>若 EOP 正在传输到应用，DMA 可提前结束 burst 传输。DMA 通过置位 <kbd>mdc_eop_o</kbd> 在 <kbd>mdc_wdata_o</kbd> 上标记 EOP 数据。应用必须在接收 EOP 数据后通过置位 <kbd>mdc_xfer_done_i</kbd> 完成事务，即使初始 burst 长度尚未完成。</li>
+</ol>
+
+<tip>
+  <p>应用应在 <kbd>mdc_wdata_rdy_i</kbd> 为高时采样 <kbd>mdc_eop_o</kbd>。<kbd>mdc_eop_o</kbd> 可在 <kbd>mdc_wdata_o</kbd> 更新为 EOP 数据后、下一次 <kbd>mdc_start_xfer_o</kbd> 之前变高，无需在应用接收 EOP 数据后立即拉低。若 EOP 数据与请求 burst 的最后一个 beat 重合，<kbd>mdc_eop_o</kbd> 也可能在该 beat 变高。</p>
+</tip>
+
+<h level="3">Read Data Transfer</h>
+<p>从系统内存读取数据 buffer 的序列：</p>
+
+<ol>
+  <li>子系统置位 <kbd>mdc_start_xfer_o</kbd>（脉冲）启动事务，同时驱动系统内存地址（<kbd>mdc_addr_o</kbd>）、读/写控制信号（<kbd>mdc_rd_wrn_o</kbd> = 1）、beat 数量（<kbd>mdc_burst_count_o</kbd>）和传输大小（<kbd>mdc_xfer_size_o</kbd>）。</li>
+  <li>DMA 在应用置位 <kbd>mdc_rdata_val_i</kbd> 时通过置位 <kbd>mdc_rdata_rdy_o</kbd> 接收 <kbd>mdc_rdata_i</kbd> 总线上的数据。</li>
+  <li>若应用未准备好数据，可拉低 <kbd>mdc_rdata_val_i</kbd> 延迟传输。</li>
+  <li>所有数据按 <kbd>mdc_burst_count_o</kbd> 传输完毕后，应用必须置位 <kbd>mdc_xfer_done_i</kbd>（脉冲）结束 DMA 传输。</li>
+</ol>
+
+<h level="3">Data Transfer With Error</h>
+<p>对于 DMA 发起的任何写或读传输，若应用无法完成事务，可置位 <kbd>mdc_error_i</kbd>。应用还必须在不同的时钟周期置位 <kbd>mdc_xfer_done_i</kbd> 完成传输。若两个信号同时置位，DMA 可能会重新启动对同一地址的传输，此时 DMA 行为不可预测。</p>
 
 <h level="3">Connections</h>
 

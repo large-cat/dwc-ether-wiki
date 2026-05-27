@@ -5,14 +5,47 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>TPE处理MAC发送路径：</p>
-<p>1. Preamble和SFD生成</p>
-<p>2. JAM模式：半双工冲突时发送Jam序列</p>
-<p>3. Carrier Extension：千兆半双工载波扩展</p>
-<p>4. Packet Bursting：包突发模式提高半双工效率</p>
-<p>5. STX调度器管理多队列调度</p>
-<p>6. CRC生成器自动计算FCS</p>
-<p>7. FTX处理Pause帧流控</p>
+<p>MAC 发送路径由六个模块组成：<kbd>TBU</kbd>（Transmit Bus Interface）、<kbd>TPC</kbd>（Transmit Packet Controller）、<kbd>TPE</kbd>（Transmit Protocol Engine）、<kbd>STX</kbd>（Transmit Scheduler）、<kbd>CTX</kbd>（Transmit CRC Generator）、<kbd>FTX</kbd>（Transmit Flow Control）。</p>
+
+<p><kbd>TPE</kbd> 是核心协议引擎，包含发送状态机，负责生成 <em>Preamble</em>、<em>SFD</em>、处理半双工冲突、载波扩展和包突发。其工作流程如下：</p>
+<ol>
+  <li>当 <kbd>TPC</kbd> 请求发送新包时，状态机先输出 7 字节 Preamble（<code>0xAA</code>）和 1 字节 SFD（<code>0xAB</code>）。</li>
+  <li>随后将 <kbd>TPC</kbd> 传来的数据发送到 <em>GMII</em> 或 <em>MII</em>。</li>
+  <li>半双工模式下，若冲突窗口内检测到冲突，发送 32-bit Jam 序列（<code>0x55555555</code>）；若冲突发生在 Preamble 阶段，先完成 Preamble+SFD 再发 Jam。</li>
+  <li>GMII 半双工中，若冲突发生在扩展字段期间，Jam 序列为 <code>0x1F1F1F1F</code>。</li>
+  <li>若冲突发生在冲突窗口之后、FCS 字段之前，则标记为 <em>late collision</em>。</li>
+  <li>全双工模式下忽略 <code>phy_col_i</code> 信号。</li>
+</ol>
+
+<p><kbd>STX</kbd> 调度器负责维护 <em>IPG</em>（inter-packet gap）并实现截断二进制指数退避算法。半双工模式下，IPG 配置为 96 bit times 时遵循 IEEE 802.3 的 deferral 规则：若在 IPG 前 2/3 检测到载波则重置计数器，若在最终 1/3 检测到则继续计数并在 IPG 结束后使能发送。</p>
+
+<p><kbd>CTX</kbd> CRC 生成器使用多项式 <code>G(x) = x^32 + x^26 + x^23 + x^22 + x^16 + x^12 + x^11 + x^10 + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1</code> 计算 32-bit FCS。在 GMII 模式下 Data Valid 信号对每个时钟有效；MII 模式下每隔一个时钟有效。</p>
+
+<p><kbd>TPC</kbd> 在数据不足 60 字节（DA+SA+LT+DATA）时自动补零至 46 字节数据字段，以满足 IEEE 802.3 最小帧长要求。可通过 <code>mti_crc_pad_ctrl_i</code> 控制是否附加 CRC 和 padding。例外：当 MAC 被编程为对小于 60 字节的包补 pad 时，<kbd>TPC</kbd> 会在补 pad 后的包末尾附加 CRC，不受 <code>mti_crc_pad_ctrl_i</code> 控制。</p>
+
+<p><kbd>FTX</kbd> 在全双工模式下生成并发送 Pause 帧以实现流控，Pause 包经 <kbd>TPC</kbd> 附加 CRC 后送入 <kbd>TPE</kbd>。</p>
+
+<p><kbd>TPE</kbd> 还维护 <em>jabber timer</em>：默认 2,048 字节超时，Jumbo 包使能时延长至 10,240 字节。若 <kbd>TPC</kbd> 传输数据超过阈值，<kbd>TPE</kbd> 中止发送。</p>
+
+<important>
+  <p>发送状态信号 <code>mti_txstatus_o</code> 包含以下关键位：</p>
+  <ul>
+    <li>Bit 31 — Packet Retry Requested：请求应用重传整个包</li>
+    <li>Bit 30 — Timestamp Status：IEEE 1588 时间戳已捕获</li>
+    <li>Bit 7 — Underflow：数据下溢导致发送中止</li>
+    <li>Bit 6 — Excessive Collisions：16 次连续冲突后中止</li>
+    <li>Bit 5 — Late Collision：冲突窗口后检测到冲突</li>
+    <li>Bit 1 — Jabber Timeout：jabber 超时</li>
+    <li>Bit 0 — Packet Aborted：当前包因错误被中止</li>
+  </ul>
+</important>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_127_2_58.png" alt="Figure 2-58" />
+
+<img src="leaves/assets/ch2/figure_128_2_59.png" alt="Figure 2-59" />
 
 <h level="3">Connections</h>
 

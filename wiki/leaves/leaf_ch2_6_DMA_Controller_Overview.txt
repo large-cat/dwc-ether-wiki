@@ -5,7 +5,22 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The DMA has independent Transmit (Tx) and Receive (Rx) engines, and a CSR space. The Tx engine transfers data from system memory to the device port (MTL), whereas the Rx engine transfers data from the device port to system memory. The DMA engine uses descriptors to efficiently move data with minimal application CPU intervention. The DMA supports up to 8 Tx and 8 Rx Descriptor lists (or DMA channels). The descriptor lists are forward-linked rings. Each descriptor can point to a maximum of two buffers in system memory.</p>
+<p>DMA 控制器包含独立的 <em>Transmit (Tx)</em> 引擎、<em>Receive (Rx)</em> 引擎以及 CSR 寄存器空间。Tx 引擎负责将数据从系统内存传输到设备端口（MTL），Rx 引擎则负责将数据从设备端口传输到系统内存。DMA 使用 <em>Descriptor</em> 来高效搬运数据，最大限度减少 CPU 干预。</p>
+
+<ul>
+  <li>支持最多 8 个 Tx 和 8 个 Rx Descriptor list（即 DMA channel）。</li>
+  <li>Descriptor list 为单向链接的环形结构（forward-linked ring），基地址写入对应的 <kbd>Tx Descriptor List Address register</kbd> 和 <kbd>Rx Descriptor List Address register</kbd>。</li>
+  <li>相邻 descriptor 的偏移由 <kbd>DMA_Ch[n]_Control</kbd> 寄存器的 <kbd>DSL</kbd> 字段控制。</li>
+  <li>Descriptor ring 长度通过 <kbd>Tx/Rx Descriptor Ring Length register</kbd> 配置。</li>
+  <li>每个 descriptor 最多可指向系统内存中的两个 buffer，允许使用物理上不连续的 buffer。</li>
+</ul>
+
+<important>
+  <p>当地址宽度大于 32 位时，DMA 认为同一 ring 中的所有 descriptor 位于最大 4GB 的内存页内（高位地址恒定）。但各 buffer 地址的高位可以不同。</p>
+  <p>地址大于 32 位时，Tx Descriptor 只能有一个 buffer 地址；Rx Descriptor 仍可使用两个 buffer 地址。</p>
+</important>
+
+<p>Buffer 位于应用物理内存空间，可存放完整数据包或部分数据包，但不可跨包。数据链（data chaining）指一个包跨越多个 buffer，但单个 descriptor 不能跨越多个包。EOP 检测后 DMA 会跳至下一个包的数据 buffer。</p>
 
 <h level="3">Connections</h>
 

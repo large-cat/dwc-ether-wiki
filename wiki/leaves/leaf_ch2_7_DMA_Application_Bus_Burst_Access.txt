@@ -5,7 +5,28 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The DMA engines attempt to transfer data in bursts of maximum size programmed in the PBL fields of Transmit Control and Receive Control registers. The Rx and Tx descriptors are always accessed in the maximum possible burst length (limited by PBL or 16*8/bus width) for 16 bytes to be read. Burst transfers can be split into multiple bursts per AHB/AXI protocol requirements. Tx DMA initiates transfer only when sufficient space is available in MTL Tx Queue. Rx DMA initiates transfer when sufficient data is available in MTL Rx Queue or EOP is detected. When AHB/AXI is configured for fixed-length burst, it uses best combination of INCR4, INCR8, INCR16 and SINGLE transactions.</p>
+<p>DMA 引擎尝试以 <kbd>PBL</kbd>（Programmable Burst Length）字段配置的最大 burst size 传输数据。Rx 和 Tx descriptor 的读取始终使用最大可能的 burst 长度（受 PBL 或 <code>16 * 8 / bus_width</code> 限制），以在 16 字节读取时达到最高效率。</p>
+
+<ul>
+  <li>Burst 传输可被拆分为多个 burst，具体取决于 AHB/AXI 协议要求以及 <kbd>DMA_SysBus_Mode</kbd> 寄存器的配置。</li>
+  <li>AHB/AXI 配置为 fixed-length burst 时，使用 INCR4、INCR8、INCR16 和 SINGLE 事务的最佳组合完成传输。</li>
+  <li>若 EOP 在 fixed burst 结束前到达，会执行 dummy transfer 以完成固定长度 burst；否则使用 INCR（不定长）和 SINGLE 事务。</li>
+</ul>
+
+<p><strong>Tx DMA 发起数据传输的条件：</strong></p>
+<ol>
+  <li>MTL Tx Queue 有足够空间容纳配置的 burst（<code>PBL * bus_width/8</code>）；</li>
+  <li>Tx Buffer 中剩余字节（不含 EOP）；</li>
+  <li>到 EOP 为止的字节数。</li>
+</ol>
+
+<p><strong>Rx DMA 发起数据传输的条件：</strong></p>
+<ol>
+  <li>MTL Rx Queue 有足够数据容纳配置的 burst；</li>
+  <li>Rx Queue 中检测到 EOP（且小于配置的 burst 长度）。</li>
+</ol>
+
+<p>当 AHB/AXI 配置为 address-aligned beats 时，DMA 确保第一个 burst 传输长度不超过配置的 PBL，从而使后续 beat 的起始地址对齐到 PBL。对于 AHB 接口，DMA 仅支持最大 INCR16，因此 PBL > 16 时最多对齐到 16 beat；对于 AXI 接口，最多支持 BLEN 256，因此 PBL > 256 时最多对齐到 256 beat。</p>
 
 <h level="3">Connections</h>
 

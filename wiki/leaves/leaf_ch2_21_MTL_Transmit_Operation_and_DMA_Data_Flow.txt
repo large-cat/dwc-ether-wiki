@@ -5,11 +5,75 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MTL发送操作模式：</p>
-<p>- Single-Packet：单包发送，DMA将完整数据包推入MTL队列</p>
-<p>- Multiple Packets in Buffer：一个缓冲区包含多个包</p>
-<p>- Retransmission During Collision：半双工冲突后重传</p>
-<p>支持多通道与多队列映射。</p>
+<p>MTL 发送操作支持两种主要模式，由 <kbd>MTL_TxQ0_Operation_Mode</kbd> 的 TTC 位配置：</p>
+
+<h level="3">Threshold Mode（Cut-Through）</h>
+<ul>
+  <li>当队列中的字节数超过配置的阈值（TTC 位），或 EOP 在阈值到达前已写入时，数据即可被弹出并转发到 MAC</li>
+  <li>阈值通过 <kbd>MTL_TxQ0_Operation_Mode</kbd> 的 TTC 位配置</li>
+</ul>
+
+<h level="3">Store-and-Forward Mode</h>
+<ul>
+  <li>仅当以下条件之一满足时，MTL 才将包弹出到 MAC：</li>
+  <li>完整包已存入队列</li>
+  <li>Tx FIFO 几乎满</li>
+  <li>ATI watermark 变低（队列空间不足以容纳请求的 burst 长度）</li>
+  <li>此模式允许发送长度大于 Tx Queue 大小的包</li>
+</ul>
+
+<h level="3">Queue Flush</h>
+<ul>
+  <li>应用可通过置位 <kbd>MTL_TxQ0_Operation_Mode</kbd> 的 FTQ 位（Bit 0）刷新 Tx Queue 的完整内容</li>
+  <li>FTQ 为自清除位，初始化队列指针到默认状态</li>
+  <li>若在包传输过程中置位 FTQ，MTL 停止进一步传输，MAC 发送端将发生 underflow</li>
+</ul>
+
+<h level="3">Single-Packet Transmit Operation（Non-OSP Mode）</h>
+<p>当 <kbd>DMA_CH(#i)_TX_Control</kbd> 的 OSP 位（Bit 4）为 0 时，流程如下：</p>
+<ol>
+  <li>DMA 控制器从系统内存获取数据并开始转发到 MTL。DMA 描述符内存包含包控制信息（驱动 ATI Control Word），DMA 数据缓冲区内存包含包数据</li>
+  <li>MTL 将接收到的数据推入对应队列，直到 EOP 传输完成</li>
+  <li>当阈值被跨越或完整包数据已接收，MTL 读取包数据并驱动到 MAC</li>
+  <li>队列控制器持续传输数据直到完整包传输到 MAC</li>
+  <li>包传输完成后，MTL 从 MAC 接收状态并通知 DMA 控制器</li>
+</ol>
+
+<h level="3">Transmit Operation — Two Packets in Buffer（OSP Mode）</h>
+<ul>
+  <li>当 <kbd>DMA_CH(#i)_TX_Control</kbd> 的 OSP 位（Bit 4）为 1 时，DMA 在等待第一个包状态的同时继续获取第二个包</li>
+  <li>MTL 可在处理第一个包时接收第二个包，提升性能</li>
+</ul>
+
+<h level="3">Multiple Packets in Buffer（EQOS-MTL 配置）</h>
+<ul>
+  <li>Tx FIFO 可配置为一次接受超过两个包</li>
+  <li>Status FIFO 深度默认限制为 2，可配置为 4 或 8</li>
+  <li>当 MTL 队列接受的包数等于 Status FIFO 深度时，停止接受新包，直到状态被应用读取</li>
+</ul>
+
+<h level="3">Retransmission During Collision</h>
+<ul>
+  <li>半双工模式下，MAC 线路接口可能发生冲突</li>
+  <li>MAC 在 EOP 传输完成前即向 MTL 给出 Retry 状态</li>
+  <li>MTL 从队列中重新弹出包进行重传</li>
+  <li>当超过 96 字节（1000-Mbps 模式下为 548 字节）已读出到 MAC 后，队列控制器释放该空间，此时不再支持重传</li>
+  <li>若 underflow 和冲突同时发生，Retry 优先级高于 Abort</li>
+</ul>
+
+<h level="3">Relationship Between Tx DMA Channels and Tx Queues</h>
+<ul>
+  <li>Tx DMA 通道数始终等于配置中选中的 Tx 队列数</li>
+  <li>DMA 以 PBL（Programmable Burst Length）为单位仲裁多个通道</li>
+  <li>Tx 队列是基于包的存储内存，因此 DMA 通道与 Tx 队列需要一对一映射以保持包级一致性</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_91_2_35.png" alt="Figure 2-35" />
+
+<img src="leaves/assets/ch2/figure_93_2_36.png" alt="Figure 2-36" />
 
 <h level="3">Connections</h>
 

@@ -5,7 +5,53 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The AXI Master supports low-power entry when the following conditions are true for a duration equal to AXI_LPI_Entry_Interval register value: (1) MAC transmitter and receiver are in Idle mode; (2) Both DMA engines are in Idle mode; (3) No data in Transmit or Receive data path or queue; (4) Slave interface is idle. If MAC is active at low-power request time, AXI master waits 16 AXI clock cycles. If still active, request is denied. If MAC goes idle within 16 cycles, it monitors inactive state for AXI_LPI_Entry_Timer period before accepting. Two modes: (1) System Initiated - AXI system sets csysreq_i to 0; (2) Automatic - enabled by AALE bit (Bit 10) of DMA_SysBus_Mode register, enters low-power automatically when idle for programmed duration. Exit occurs when: AXI system restores clock and removes request; MAC initiates exit by setting cactive_o high on packet reception; or CSR slave port access occurs with different clock.</p>
+<p>EQOS-AXI 配置支持 AXI 规范定义的 low-power 接口。<kbd>DMA_SysBus_Mode</kbd> 寄存器的 Bits[31:30, 10] 控制 AXI master 在 low-power 模式下的行为。</p>
+
+<ul>
+  <li>Bit 31（<kbd>EN_LPI</kbd>）置位时，AXI Master 启用 low-power 特性。</li>
+  <li>Bit 10 决定 AXI Master 是否可以主动发起进入 low-power 状态。</li>
+  <li>Bit 30 控制因线路接收包而退出 low-power 的行为。</li>
+</ul>
+
+<p>当以下所有条件在 <kbd>AXI_LPI_Entry_Interval</kbd> register 编程值所指定的持续时间内保持为真时，AXI master 接受 low-power 请求并进入 low-power 模式：</p>
+
+<ul>
+  <li>MAC transmitter 和 receiver 处于 Idle 模式；</li>
+  <li>Tx 和 Rx DMA 引擎均处于 Idle 模式；</li>
+  <li>Transmit 和 Receive 数据路径或 queue 中没有数据；</li>
+  <li>Slave interface 处于 idle 状态。</li>
+</ul>
+
+<p>若 MAC 在 low-power 发起请求时处于 active 状态（非 idle），AXI master 等待 16 个 AXI 时钟周期。若周期结束后 MAC 仍为 active，则拒绝 low-power 请求。若 MAC 在 16 个周期内进入 idle，AXI master 继续监控 inactive 状态，持续时间为 <kbd>AXI_LPI_Entry_Timer</kbd> 指定的周期；若 MAC 在此期间保持 inactive，则接受 low-power 请求并进入 low-power 状态，否则拒绝请求。</p>
+
+<p>MAC 进入 low-power 状态并确认（<kbd>csysack_o</kbd> 拉低）后，当 <kbd>cactive_o</kbd> 拉低时，AXI 系统可以 gate-off 或移除 AXI 时钟。EQOS-AXI low-power 接口信号的时序和行为遵循 AXI 规范 Figure 12-2。</p>
+
+<h level="3">AXI System Initiated Low-Power Entry</h>
+<p>AXI 系统通过将 <kbd>csysreq_i</kbd> 置 0 向 AXI master 发起 low-power 模式请求。当 <kbd>EN_LPI</kbd> 置位时，AXI master 在响应前检查控制器内部数据路径的 active 状态。</p>
+
+<h level="3">Automatic AXI Low-Power Entry</h>
+<p>除系统发起的 low-power 进入外，DWC_ether_qos 还支持在控制器内部无活动达到配置时间后自动进入 AXI low-power 状态。该模式通过置位 <kbd>DMA_SysBus_Mode</kbd> Register 的 <kbd>AALE</kbd> bit（Bit 10）启用。</p>
+
+<ul>
+  <li>最小 idle 周期在 <kbd>AXI_LPI_Entry_Interval</kbd> register 中编程。</li>
+  <li>MAC 处于 inactive 状态达到编程时长后，自动通过拉低 <kbd>cactive_o</kbd> 发起 AXI low-power 模式。</li>
+  <li>AXI 系统可在此状态下 gate-off（禁用）AXI 时钟。</li>
+  <li>IDLE timer 在 MAC active 时加载编程值，MAC idle 时递减。</li>
+</ul>
+
+<h level="3">Coming Out of Low-Power Mode</h>
+<p>AXI Master 在以下任一情况下退出 low-power 模式：</p>
+
+<ol>
+  <li>AXI 系统恢复 AXI 时钟并通过移除 low-power 请求（<kbd>csysreq_i</kbd> 置高）发起退出；AXI Master 通过置高 <kbd>csysack_o</kbd> 和 <kbd>cactive_o</kbd> 确认并退出 low-power 状态。</li>
+  <li>MAC 自身在从线路接收到包时通过置高 <kbd>cactive_o</kbd> 发起 low-power 退出。若 <kbd>DMA_SysBus_Mode</kbd> register 的 Bit 30 置位，则仅在接收到有效的 magic packet 或 remote wake-up packet 时才发起退出。此时 <kbd>cactive_o</kbd> 的置位与 <kbd>clk_rx_i</kbd> 时钟同步，因为假设 AXI 时钟已缺失。</li>
+  <li>若 CSR slave port 使用与 AXI Master 时钟不同的时钟，MAC 在对任何 DMA 或 MTL 寄存器进行读/写访问时发起 low-power 退出。此时 <kbd>cactive_o</kbd> 的置位与 <kbd>clk_csr_i</kbd> 时钟同步，因为假设 AXI（<kbd>aclk_i</kbd>）时钟已缺失。</li>
+</ol>
+
+<warning>
+  <p>对于 AXI 系统发起的退出（<kbd>csysreq_i</kbd> 置位），时钟控制器应在置位 <kbd>csysreq_i</kbd> 的同时立即启用时钟。<kbd>cactive_o</kbd> 和 <kbd>csysack_o</kbd> 的置位与该时钟同步。</p>
+  <p>对于 MAC 发起的 low-power 退出，时钟控制器必须在 <kbd>cactive_o</kbd> 置高后立即恢复 AXI 时钟；否则可能影响 CSR 寄存器操作，尤其是连续写操作时的 CDC 同步电路行为异常。</p>
+</warning>
 
 <h level="3">Connections</h>
 

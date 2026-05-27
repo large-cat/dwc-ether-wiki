@@ -5,7 +5,33 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>Receive Engine always attempts to acquire an extra descriptor in anticipation of incoming packet. Descriptor acquisition is attempted when: (1) Bit 0 of Receive Control Register is set immediately after Run state; (2) Descriptor Tail pointer is ahead of Current Descriptor; (3) Packet reception completed but current descriptor not yet closed; (4) Receive poll demand issued (Tail Pointer update). Packet processing sequence: (1) MAC transfers received packets to MTL only if packet passes address filter (dropped in MAC unless Bit 31 of MAC_Packet_Filter is set); (2) If packet size &gt;= threshold or complete packet in store-and-forward mode, MTL requests DMA transfer; packets &lt;64 bytes are removed; (3) When interface ready, DMA transfers data - if single descriptor, sets both Last and First Descriptor bits; if multiple descriptors, sets First Descriptor bit; (4) DMA releases descriptors by resetting Own bit (RDES3[31]) when buffer full or last segment transferred; (5) If IOC (RDES3[30]) is set and Bit 6 of Interrupt Enable Register is set, DMA sets Bit 6 of Status register.</p>
+<h level="3">Receive Descriptor Acquisition</h>
+<p>Receive Engine 始终尝试多获取一个额外 descriptor，以应对即将到来的包。以下任一条件满足时，会尝试获取 descriptor：</p>
+
+<ul>
+  <li>对应 DMA channel Receive Control Register 的 Bit 0 在 Run 状态后立即置位；</li>
+  <li>Descriptor Tail pointer register 的值领先于 Rx DMA 已获取的 Current Descriptor；</li>
+  <li>控制器已完成包接收，但当前 Receive Descriptor 尚未关闭；</li>
+  <li>发出 Receive poll demand（更新 Tail Pointer register）。</li>
+</ul>
+
+<h level="3">Receive Packet Processing</h>
+<p>Receive 包处理序列如下：</p>
+
+<ol>
+  <li>MAC 仅在包通过地址过滤器后才将接收到的包传输到 MTL 内存；若地址过滤失败，包在 MAC 块中被丢弃（除非 <kbd>MAC_Packet_Filter</kbd> register 的 Bit 31 被置位）。</li>
+  <li>若包大小大于或等于 MTL Rx Queue 配置的可编程 threshold 字节数，或在 store-and-forward 模式下完整包已写入 queue，MTL 块请求 DMA 块开始将包数据传输到当前 descriptor 指向的 Receive Buffer。小于 64 字节的包（因冲突或提前终止）会从 MTL Receive Queue 中移除。</li>
+  <li>当 DMA 应用接口（AHB/AXI 或 MDC）就绪后，DMA 传输数据并设置：
+    <ul>
+      <li>若包可放入单个 descriptor，DMA 同时设置 Last Descriptor（<kbd>RDES3[28]</kbd>）和 First Descriptor（<kbd>RDES3[29]</kbd>）；</li>
+      <li>若包跨越多个 descriptor，DMA 设置 First Descriptor（<kbd>RDES3[29]</kbd>）以界定包的起始。</li>
+    </ul>
+  </li>
+  <li>DMA 通过将 Own bit（<kbd>RDES3[31]</kbd>）重置为 0 来释放 descriptor，原因可能是 Receive buffer 已满或包的最后一段已传输到 Receive buffer。接收包的状态在最后一个 descriptor 中更新。</li>
+  <li>若包 First 与 Last Descriptor 之间的任一 Descriptor 中设置了 IOC（<kbd>RDES3[30]</kbd>），且对应 DMA channel Interrupt Enable Register 的 Bit 6 被置位，则 DMA 设置对应 channel Status register 的 Bit 6。</li>
+</ol>
+
+<p>上述过程持续重复，直到 DMA 遇到归属应用的 descriptor 或 ring 中没有更多 descriptor。当 DMA 发现 descriptor 归属应用且对应 DMA channel Interrupt Enable Register 的 Bit 7 被置位时，Receive Process 设置对应 channel Status register 的 Bit 7，然后进入 Suspend 状态。Receive List 中的位置会被保留。</p>
 
 <h level="3">Connections</h>
 

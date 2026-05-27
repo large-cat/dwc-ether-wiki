@@ -1,15 +1,79 @@
 <h level="2">DWC Ethernet QoS Interrupt Architecture</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p141-150</code></p>
+  <p>Source: <code>ch2 p145-150</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>三级中断架构：</p>
-<p>- MAC层：链路状态、PMT事件、时间戳、LPI状态</p>
-<p>- MTL层：队列状态、FIFO溢出/下溢</p>
-<p>- DMA层：Tx/Rx完成、总线错误、描述符不可用</p>
-<p>INTM控制中断聚合，支持常规中断和脉冲中断模式。</p>
+<p>DWC_ether_qos 采用三级分层中断架构，事件先被捕获到状态寄存器，再通过对应的中断使能位控制 <code>sbd_intr_o</code> 信号的断言。</p>
+
+<h level="3">中断层级结构</h>
+
+<ul>
+  <li><em>MAC 层中断</em>：链路状态变化、PMT 事件、时间戳、LPI 状态、RGMII/SGMII/SMII/PCS 事件、通用输入 GPI</li>
+  <li><em>MTL 层中断</em>：队列状态异常、TxQ/RxQ FIFO 溢出/下溢、调试模式间接访问完成</li>
+  <li><em>DMA 层中断</em>：Tx/Rx 传输完成、总线错误、描述符不可用、FIFO 空/满</li>
+</ul>
+
+<p>在 EQOS-AXI 配置中，<kbd>DMA_Interrupt_Status</kbd> 寄存器作为第一级指示器，包含对应各 DMA 通道（TX/RX 对）、MTL 和 MAC 的位。软件需根据置位的位读取以下寄存器定位中断源：</p>
+<ul>
+  <li><kbd>MAC_Interrupt_Status</kbd> — MAC 中断状态</li>
+  <li><kbd>MTL_Interrupt_Status</kbd> — MTL 中断状态</li>
+  <li><kbd>DMA_CH(#i)_Status</kbd> — 各 DMA 通道状态</li>
+</ul>
+
+<h level="3">MAC 中断</h>
+
+<p>MAC 中断在 EQOS-CORE/EQOS-MTL 配置中通过 <code>mci_intr_o</code> 输出；在 EQOS-DMA/EQOS-AHB 配置中与其他事件合并到 <code>sbd_intr_o</code>。MAC 中断为电平类型，保持高电平直到应用/软件清除。</p>
+
+<p>MAC 中断默认禁用，需在 <kbd>MAC_Interrupt_Enable</kbd> 寄存器中使能对应位。中断状态位仅指示事件来源块，必须读取对应状态寄存器清除中断。例如，<kbd>MAC_Interrupt_Status</kbd> Bit 0 表示 RGMII/SGMII/SMII 链路状态变化，需读取 <kbd>MAC_PHYIF_Control_Status</kbd> 寄存器清除。</p>
+
+<p>默认情况下，MAC 中断状态位在读取包含中断源的寄存器时清除。若 <kbd>MAC_CSR_SW_Ctrl</kbd> 寄存器的 RCWE 位编程为 1，则需向对应中断源位写 1 清除。</p>
+
+<h level="3">MTL 中断</h>
+
+<p>MTL 中断主要为 TxQ 或 RxQ 的异常事件。<kbd>MTL_Interrupt_Status</kbd> 寄存器 Bits[7:0] 标识 8 个队列（Tx 或 Rx），应用需读取对应 <kbd>MTL_Q[n]_Interrupt_Status</kbd> 寄存器定位原因并写 1 清除。Bit[16] 表示 MAC core 事件；Bit[17] 与调试模式下 TxFIFO/RxFIFO 间接访问完成有关。</p>
+
+<h level="3">DMA 中断</h>
+
+<p><code>sbd_intr_o</code> 为电平信号，仅当所有使能的中断事件在其各自状态寄存器中清除、且 <kbd>DMA_Interrupt_Status</kbd> 所有位清零后才会解除断言。</p>
+
+<p><kbd>DMA_CH[n]_Status</kbd> 寄存器捕获对应 Tx DMA 和 Rx DMA 通道的所有中断事件，<kbd>DMA_CH[n]_Interrupt_Enable</kbd> 寄存器包含各事件的使能位。中断分为两组：</p>
+<ul>
+  <li><em>Normal 中断</em>（Bits[15:14] 中的 NIS）：正常包传输事件，如 TI（发送完成）、RI（接收完成）、TBU（发送缓冲不可用）</li>
+  <li><em>Abnormal 中断</em>（Bits[15:14] 中的 AIS）：错误事件，如总线错误、描述符错误</li>
+</ul>
+
+<p>中断事件通过向对应位写 1 清除。当所有使能的中断事件（含 NIS/AIS）清除后，DMA 通道中断源清除，<kbd>DMA_Interrupt_Status</kbd> 对应位也清除。</p>
+
+<important>
+  <p>中断不排队。若同一中断事件在驱动响应前再次发生，不会生成额外中断。例如，<kbd>DMA_CH[n]_Status</kbd> Bit 6（RI）表示一个或多个包已传输到应用缓冲区，驱动必须从上次记录位置扫描到第一个 DMA 拥有的描述符，以确定实际接收了多少包。</p>
+</important>
+
+<h level="3">中断聚合与调度</h>
+
+<p>为提升吞吐和性能，DWC_ether_qos 支持通过以下方式周期性调度中断，而非每个 DMA 传输都触发：</p>
+<ul>
+  <li>在发送描述符中设置 IOC 位（TDES2[31]），每隔指定数量的包触发一次中断</li>
+  <li>在接收描述符中设置 IOC 位（RDES3[30]），仅在特定间隔的接收描述符完成时生成 RI</li>
+  <li>使用 <kbd>DMA_CH[n]_Rx_Interrupt_Watchdog_Timer</kbd> 定时器：当 Rx DMA 完成包传输但未因 IOC 位置位而触发 RI 时，定时器启动；超时后自动设置 RI 位</li>
+</ul>
+
+<p><kbd>DMA_Mode</kbd> 寄存器 INTM 字段（Bit[17:16]）控制中断聚合模式：</p>
+<ul>
+  <li><code>INTM=0</code>：常规模式，每次传输完成事件产生脉冲中断</li>
+  <li><code>INTM=1</code>：脉冲中断模式，<code>sbd_intr_o</code> 不随 TI/RI 事件断言，仅 per-channel 信号反映状态</li>
+  <li><code>INTM=2</code>：中断排队模式，TI/RI 状态位在事件检测时置位、软件清除后若又有新事件则自动重新置位，但 <code>sbd_intr_o</code> 不基于此生成</li>
+</ul>
+
+<p>EQOS-AXI 还支持 per-channel 传输完成中断信号 <code>sbd_perch_tx_intr_o[]</code> 和 <code>sbd_perch_rx_intr_o[]</code>，其行为同样受 INTM 设置影响。</p>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_141_2_17.png" alt="Figure 2-17" />
+
+<img src="leaves/assets/ch2/figure_143_2_65.png" alt="Figure 2-65" />
 
 <h level="3">Connections</h>
 

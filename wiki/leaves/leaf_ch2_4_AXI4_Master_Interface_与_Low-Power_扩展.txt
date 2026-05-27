@@ -1,26 +1,48 @@
 <h level="2">AXI4 Master Interface 与 Low-Power 扩展</h>
 <info>
-  <p>Chapter: [[架构]]</p>
+  <p>Chapter: [[ch2]]</p>
   <p>Source: <code>ch2 p60 Architecture</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
 <p>AXI4 Master Interface（EQOS-AXI4 配置）在 AXI3 基础上增加以下信号：</p>
-<p>1. AxQOS 信号</p>
-<p>- arqos_m_o（读通道 QoS）</p>
-<p>- awqos_m_o（写通道 QoS）</p>
-<p>2. AxDOMAIN 信号</p>
-<p>- ardomain_m_o（读通道 Domain）</p>
-<p>- awdomain_m_o（写通道 Domain）</p>
-<p>- 若系统不支持 ACE-Lite，可悬空不连</p>
-<p>3. AXI Low-Power Interface</p>
-<p>- 通过 DMA_SysBus_Mode Bits[31:30, 10] 控制</p>
-<p>- Bit31 (EN_LPI): 使能低功耗特性</p>
-<p>- Bit30: 控制是否因接收报文而退出低功耗状态</p>
-<p>- Bit10: 控制 AXI Master 是否可以主动请求进入低功耗状态</p>
-<p>注意事项：</p>
-<p>- wid_m_o 信号在 AXI4 配置中可悬空</p>
-<p>- EOP 传输后可能产生大量 dummy write，建议将 AXI master write channel outstanding requests 配置为2个或更少</p>
+
+<ol>
+  <li><strong>AxQOS 信号</strong>
+    <ul>
+      <li><kbd>arqos_m_o</kbd>（读通道 QoS）</li>
+      <li><kbd>awqos_m_o</kbd>（写通道 QoS）</li>
+    </ul>
+  </li>
+  <li><strong>AxDOMAIN 信号</strong>
+    <ul>
+      <li><kbd>ardomain_m_o</kbd>（读通道 Domain）</li>
+      <li><kbd>awdomain_m_o</kbd>（写通道 Domain）</li>
+      <li>若系统不支持 ACE-Lite，可悬空不连</li>
+    </ul>
+  </li>
+  <li><strong>AXI Low-Power Interface</strong>
+    <ul>
+      <li>通过 <kbd>DMA_SysBus_Mode</kbd> Bits[31:30, 10] 控制</li>
+      <li>Bit31 (<kbd>EN_LPI</kbd>)：使能低功耗特性</li>
+      <li>Bit30：控制是否因接收报文而退出低功耗状态</li>
+      <li>Bit10：控制 AXI Master 是否可以主动请求进入低功耗状态</li>
+    </ul>
+  </li>
+</ol>
+
+<warning>
+  <p><kbd>wid_m_o</kbd> 信号在 AXI4 配置中可悬空（AXI4 已移除 WID）。</p>
+</warning>
+
+<important>
+  <p>EOP 传输后可能产生大量 dummy write，建议将 AXI master write channel outstanding requests 配置为 <kbd>2 个或更少</kbd>，以避免带宽浪费。</p>
+</important>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_60_2_19.png" alt="Figure 2-19" />
 
 <h level="3">Connections</h>
 

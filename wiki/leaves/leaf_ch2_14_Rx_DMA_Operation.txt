@@ -5,7 +5,28 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>In the Receive path, the DMA reads a packet from the MTL receive queue and writes it to packet data buffers of the corresponding DMA channel. ARI data at frame start indicates the channel number. Sequence: (1) Application sets up Rx descriptors (RDES0-RDES3) and sets Own bit (RDES3[31]), sets Tail Pointer; (2) When Bit 0 of Receive Control register is set, DMA enters Run state and looks for free descriptors; if none, enters Suspend; (3) DMA fetches next descriptor and decodes buffer address; (4) If IEEE 1588 timestamping enabled and timestamp available for previous packet, writes to RDES0/RDES1 and sets CTXT (RDES3[30]); (5) DMA processes incoming packets into data buffers; (6) If packet transfer not complete, closes current descriptor as intermediate; (7) DMA takes status from MTL, writes status word with Own bit cleared and Last Descriptor bit set; (8) Writes Frame Length to RDES3 and VLAN Tag to RDES0; (9) If timestamp enabled, stores timestamp and writes context descriptor; (10) If more descriptors available, repeats; otherwise Suspend.</p>
+<p>在 Receive 路径上，DMA 从 MTL receive queue 读取包，并将其写入对应 DMA channel 的 packet data buffer。帧起始处的 ARI 数据指示当前帧应写入的 channel 号；若只选中一个 DMA channel，则不提供该信息。</p>
+
+<p>Rx DMA 引擎的接收序列如下：</p>
+
+<ol>
+  <li>应用配置 Rx descriptors（<kbd>RDES0</kbd>–<kbd>RDES3</kbd>），设置 Own bit（<kbd>RDES3[31]</kbd>），并正确设置对应 DMA channel 的 Receive Descriptor Tail Pointer register。</li>
+  <li>对应 DMA channel Receive Control register 的 Bit 0 置位后，DMA 进入 Run 状态。
+    <ul>
+      <li>DMA 根据 Rx Current Descriptor 和 Descriptor Tail Pointer register 的值查找空闲 descriptor。</li>
+      <li>若无空闲 descriptor，DMA channel 进入 Suspend 状态并跳至步骤 11。</li>
+    </ul>
+  </li>
+  <li>DMA 获取 ring 中下一个可用 descriptor，并解码接收数据 buffer 地址。</li>
+  <li>若启用了 IEEE 1588 timestamping 且前一个包的时间戳可用，DMA 将时间戳（若有）写入当前 descriptor 的 <kbd>RDES0</kbd> 和 <kbd>RDES1</kbd>，并设置 <kbd>CTXT</kbd> 字段（<kbd>RDES3[30]</kbd>）。</li>
+  <li>DMA 处理传入的包并将其放入已获取 descriptor 的数据 buffer 中。</li>
+  <li>若当前包传输未完成，DMA 将当前 descriptor 关闭为中间 descriptor，然后跳至步骤 10。</li>
+  <li>DMA 从 MTL 获取接收帧的状态，将状态字写入当前 descriptor，清除 Own bit 并设置 Last Descriptor bit。</li>
+  <li>DMA 将 Frame Length 写入 <kbd>RDES3</kbd>，VLAN Tag 写入 <kbd>RDES0</kbd>；同时将 MAC control frame opcode、OAM control frame code 以及扩展状态信息（若有）写入最后一个 descriptor 的 <kbd>RDES1</kbd>。</li>
+  <li>若启用了 IEEE 1588 Timestamp 功能，DMA 存储时间戳（若有），并在当前包的最后一个 descriptor 之后（下一个可用 descriptor）写入 context descriptor。</li>
+  <li>若 Rx DMA Descriptor Ring 中还有更多 descriptor，返回步骤 3；否则进入 Suspend 状态（步骤 11）。</li>
+  <li>Receive DMA 在收到 Receive Poll demand 且应用推进了对应 channel 的 Receive Tail Pointer register 后退出 Suspend 状态。引擎返回步骤 2 并重新获取下一个 descriptor。</li>
+</ol>
 
 <h level="3">Connections</h>
 

@@ -1,33 +1,58 @@
 <h level="2">AHB Master Interface 关键操作与时序</h>
 <info>
-  <p>Chapter: [[架构]]</p>
+  <p>Chapter: [[ch2]]</p>
   <p>Source: <code>ch2 p51-53 Architecture</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
 <p>AHB Master Interface（EQOS-AHB 配置）操作细节：</p>
-<p>一、AHB Memory Read</p>
-<p>- 使用 INCR4 burst 从系统内存读取数据</p>
-<p>- 不产生 WRAP burst、locked 或 protected 传输（无 HLOCK/HPROT 信号）</p>
-<p>- DMA 仅在能完全接收 burst 数据时才请求 AHB Burst Read</p>
-<p>- 读数据无延迟直接推入 DMA（多通道时可能因共享内存产生延迟）</p>
-<p>二、AHB Memory Write</p>
-<p>- 使用 INCR4 burst 向系统内存写入 Ethernet 报文</p>
-<p>- Fixed burst 模式下，EOP 提前到达时剩余 beats 用 dummy data 填充</p>
-<p>- INCR 模式下可提前终止突发</p>
-<p>三、Early Burst Termination (EBT)</p>
-<p>- AHB master 收到 EBT 后重新请求总线，用 SINGLE 完成剩余传输</p>
-<p>四、Error Response 处理</p>
-<p>- ERROR 响应会停止该 DMA 所有后续传输</p>
-<p>- 通过 CSR 和 sbd_intr_o 中断报告 Fatal Bus Error</p>
-<p>- 应用可选择硬复位或软复位重启模块</p>
-<p>五、Split/Retry Response</p>
-<p>- 收到 RETRY/SPLIT 后立即重建事务并重新请求总线</p>
-<p>- hreq_o 仅在采样响应的第一周期 de-assert 一个时钟</p>
-<p>- SPLIT 响应时第二次 hreq_o 请求会被 AHB arbiter 屏蔽，直到 slave 准备好数据</p>
-<p>六、Descriptor Write-Back</p>
-<p>- 64-bit AHB 上，大端配置时32-bit status 写入 hwdata_o 高32位</p>
-<p>- 小端配置时32-bit descriptor data 写入低32位</p>
+
+<h level="3">一、AHB Memory Read</h>
+<ul>
+  <li>使用 INCR4 burst 从系统内存读取数据</li>
+  <li>不产生 WRAP burst、locked 或 protected 传输（无 <kbd>HLOCK</kbd> / <kbd>HPROT</kbd> 信号）</li>
+  <li>DMA 仅在能完全接收 burst 数据时才请求 AHB Burst Read</li>
+  <li>读数据无延迟直接推入 DMA（多通道时可能因共享内存产生延迟或插入 Busy 周期）</li>
+</ul>
+
+<h level="3">二、AHB Memory Write</h>
+<ul>
+  <li>使用 INCR4 burst 向系统内存写入 Ethernet 报文</li>
+  <li>Fixed burst 模式下，EOP 提前到达时剩余 beats 用 dummy data 填充</li>
+  <li>INCR 模式下可提前终止突发</li>
+</ul>
+
+<h level="3">三、Early Burst Termination (EBT)</h>
+<ul>
+  <li>AHB master 收到 EBT 后重新请求总线，用 SINGLE 完成剩余传输</li>
+</ul>
+
+<h level="3">四、Error Response 处理</h>
+<ul>
+  <li>ERROR 响应会停止该 DMA <em>所有后续传输</em></li>
+  <li>通过 CSR 和 <kbd>sbd_intr_o</kbd> 中断报告 <em>Fatal Bus Error</em></li>
+  <li>应用可选择硬复位或软复位重启模块</li>
+</ul>
+
+<h level="3">五、Split/Retry Response</h>
+<ul>
+  <li>收到 RETRY / SPLIT 后立即重建事务并重新请求总线</li>
+  <li><kbd>hreq_o</kbd> 仅在采样响应的第一周期 de-assert 一个时钟</li>
+  <li>SPLIT 响应时第二次 <kbd>hreq_o</kbd> 请求会被 AHB arbiter 屏蔽，直到 slave 准备好数据</li>
+</ul>
+
+<h level="3">六、Descriptor Write-Back</h>
+<ul>
+  <li>64-bit AHB 上，大端配置时 32-bit status 写入 <kbd>hwdata_o</kbd> 高 32 位</li>
+  <li>小端配置时 32-bit descriptor data 写入低 32 位</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_51_2_10.png" alt="Figure 2-10" />
+
+<img src="leaves/assets/ch2/figure_52_2_11.png" alt="Figure 2-11" />
 
 <h level="3">Connections</h>
 

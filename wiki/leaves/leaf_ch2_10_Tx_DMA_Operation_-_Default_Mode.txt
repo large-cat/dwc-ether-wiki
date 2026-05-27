@@ -5,7 +5,34 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The Tx DMA engine in default mode proceeds as follows: (1) Application sets up Transmit descriptor (TDES0-TDES3) and sets Own bit (TDES3[31]); (2) Application advances Descriptor Tail pointer; (3) DMA runs Arbitration cycle to select next Tx DMA channel; (4) DMA fetches descriptor from application memory; (5) If descriptor owned by application, Tail pointer equals Current pointer, or error occurs, transmission is suspended; (6) If DMA owns descriptor, it decodes buffer address; (7) DMA fetches data from system memory and transfers to MTL; (8) For multi-descriptor packets, intermediate descriptors are closed and process repeats; (9) When complete, timestamp (if enabled) is written to TDES0/TDES1 and status to TDES3, Own bit is cleared; (10) Interrupt is set if IOC (TDES2[31]) is set in Last Descriptor. In Suspend state, DMA retries descriptor acquisition.</p>
+<p>Default（Non-OSP）模式下，Tx DMA 引擎按以下步骤工作：</p>
+
+<ol>
+  <li>应用配置 Transmit descriptor（<kbd>TDES0</kbd>–<kbd>TDES3</kbd>），在数据 buffer 中准备好 Ethernet 包数据后，设置 Own bit（<kbd>TDES3[31]</kbd>）。</li>
+  <li>应用更新 Transmit Channel 的 Descriptor Tail pointer。</li>
+  <li>DMA 在 Run 状态下执行仲裁周期，选择下一个需要处理包的 Tx DMA channel。</li>
+  <li>DMA 从应用内存获取 descriptor。</li>
+  <li>若检测到以下任一条件，该 channel 的传输被挂起，对应 DMA channel Status Register 的 Bit 2 和 Bit 16 被置位，Tx 引擎跳至步骤 11：
+    <ul>
+      <li>Descriptor 归属应用（<kbd>TDES3[31]</kbd> = 0）</li>
+      <li>Ring Descriptor 模式下 Tail pointer 等于 Current Descriptor pointer</li>
+      <li>发生错误</li>
+    </ul>
+  </li>
+  <li>若 descriptor 归属 DMA（<kbd>TDES3[31]</kbd> = 1），DMA 解码 Transmit Data Buffer 地址。</li>
+  <li>DMA 从系统内存获取 Transmit 数据并传输到 MTL。</li>
+  <li>若 Ethernet 包跨多个 descriptor 存储，DMA 关闭中间 descriptor 并获取下一个 descriptor，重复步骤 3–7，直到包尾数据全部传输到 MTL。</li>
+  <li>包传输完成后，若启用了 IEEE 1588 Timestamp（Tx status 指示），DMA 将时间戳写入包含 EOP buffer 的 Tx descriptor（<kbd>TDES0</kbd> 和 <kbd>TDES1</kbd>），并将状态信息写入 <kbd>TDES3</kbd>，同时清除 Own bit。若未启用时间戳，DMA 不修改 <kbd>TDES0</kbd> 和 <kbd>TDES1</kbd>。</li>
+</ol>
+
+<info>
+  <p>默认情况下，Tx DMA 在当前 descriptor write 请求完成后才发起下一个 descriptor 请求。若通过设置 <kbd>DMA_Mode</kbd> 寄存器的 <kbd>DSPW</kbd> bit 启用 posted descriptor write，Tx DMA 在当前 descriptor write 请求发出后即可发起下一个请求，无需等待完成，从而提升吞吐量。</p>
+</info>
+
+<ol start="10">
+  <li>若 Last Descriptor 中设置了 IOC（<kbd>TDES2[31]</kbd>），对应 channel Status Register 的 Bit 0 在包传输完成后置位。DMA 引擎返回步骤 3。</li>
+  <li>Suspend 状态下，DMA 尝试重新获取 descriptor（返回步骤 3）。收到 Transmit Poll demand（写入 <kbd>DMA_CH0_TxDesc_Tail_Pointer</kbd>）且 Underflow Interrupt Status bit 被清除后触发 poll demand。若应用通过清除对应 DMA channel Transmit Control Register 的 Bit 0 停止 DMA，则 DMA 进入 Stop 状态。</li>
+</ol>
 
 <h level="3">Connections</h>
 

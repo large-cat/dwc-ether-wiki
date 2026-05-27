@@ -5,13 +5,45 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MAC接收路径模块：</p>
-<p>- RPE：前导码检测、帧定界</p>
-<p>- CRX：CRC校验验证FCS</p>
-<p>- RPC：FIFO缓冲管理与过滤决策</p>
-<p>- FRX：接收流控处理Pause帧</p>
-<p>- RBU：接收缓冲单元</p>
-<p>- AFM：地址过滤模块</p>
+<p>MAC 接收路径包含六个功能模块：<kbd>RPE</kbd>（Receive Protocol Engine）、<kbd>CRX</kbd>（Receive CRC）、<kbd>RPC</kbd>（Receive Packet Controller）、<kbd>FRX</kbd>（Receive Flow Control）、<kbd>RBU</kbd>（Receive Bus Interface Unit）、<kbd>AFM</kbd>（Address Filtering Module）。</p>
+
+<p><kbd>RPE</kbd> 接收状态机的工作流程：</p>
+<ol>
+  <li>当 <code>phy_rxdv_i</code> 有效时，状态机开始查找 SFD 字段（GMII 模式为字节 <code>0x5D</code>，MII 模式为 nibble <code>0xD</code>）。检测到 SFD 前丢弃所有数据。</li>
+  <li>检测到 SFD 后，将数据（从目的地址开始）发送到 <kbd>RPC</kbd> 模块。</li>
+  <li>若使能 IEEE 1588 Timestamp，RPE 在检测到 SFD 时捕获系统时间戳；若包未在 MAC 过滤阶段被丢弃，时间戳将随包传递给应用。</li>
+  <li>状态机解析 Length/Type 字段：若小于 1,536 且使能 Auto CRC/Pad Stripping（<kbd>MAC_Configuration</kbd> 寄存器 Bit 20），则仅发送 Length/Type 指定长度的数据并丢弃后续字节（含 FCS）。</li>
+  <li>默认启用 watchdog timer：超过 2,048 字节（Jumbo 包使能时为 10,240 字节）的包在 <kbd>RPE</kbd> 被截断。可通过 <kbd>MAC_Watchdog_Timeout</kbd> 寄存器 Bit 16 编程覆盖，或禁用 <kbd>MAC_Configuration</kbd> Bit 19。即使禁用 watchdog，超过 32 KB 的包仍会被截断。</li>
+</ol>
+
+<warning>
+  <p>在 AV 或 DCB 模式下，若启用额外 Rx 队列，长度小于等于 16 字节（pad stripping 后）的包即使在地址过滤通过且无 CRC 错误的情况下，也会在 MAC 接收器内部被丢弃。</p>
+</warning>
+
+<p><kbd>CRX</kbd> 接收 CRC 模块计算从目的地址到 FCS 字段的 32-bit CRC，使用与发送端相同的多项式。无论 Auto Pad/CRC strip 是否使能，<kbd>CRX</kbd> 都接收完整包以进行 CRC 校验。</p>
+
+<p><kbd>RPC</kbd> 接收包控制器包含一个参数化深度的 FIFO（默认 4 深、33 位宽）和两个读写状态机。主要功能：</p>
+<ul>
+  <li>将 8-bit 数据转换为 32-bit 输出到 <kbd>RBU</kbd></li>
+  <li>执行包过滤（基于 <kbd>AFM</kbd> 的过滤结果）</li>
+  <li>附加 IPC 计算的 IP Checksum</li>
+  <li>更新接收状态并转发给 <kbd>RBU</kbd></li>
+</ul>
+
+<p>若 <kbd>MAC_Packet_Filter</kbd> 寄存器的 RA 位为 1，<kbd>RPC</kbd> 在收到 4 字节数据后即开始向 <kbd>RBU</kbd> 传输，不自行丢弃任何包。若 RA 为 0，则根据目的地址或源地址过滤：收到前 14 字节（Type 字段）前不启动传输；若 <kbd>AFM</kbd> 报告 filter-fail，则在 <kbd>RPC</kbd> 丢弃该包。</p>
+
+<p><kbd>FRX</kbd> 接收流控模块在全双工模式下检测 Pause 帧并暂停指定时长的包发送。</p>
+
+<p><kbd>RBU</kbd> 接收总线接口单元将 <kbd>RPC</kbd> 的 32-bit 数据转换为 32/64/128-bit FIFO 协议输出到应用端（MRI 接口），并在大端模式下执行字节序转换。若使能 IEEE 1588 Timestamp，<kbd>RBU</kbd> 在 <code>mri_eop_o</code> 有效时输出 <code>mri_timestamp_o</code> 时间戳。</p>
+
+<p><kbd>AFM</kbd> 地址过滤模块探测 <kbd>RPE</kbd> 与 <kbd>CRX</kbd> 之间的 8-bit 接收数据路径，检查每个入包的目的地址和源地址。GMII 模式下需要 8/14 个时钟完成地址比较；MII 模式下需要 14/26 个时钟。<kbd>AFM</kbd> 从 CSR 获取物理地址和组播哈希表，以及 <kbd>Packet Filter</kbd> 寄存器参数。</p>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_131_2_63.png" alt="Figure 2-63" />
+
+<img src="leaves/assets/ch2/figure_131_2_64.png" alt="Figure 2-64" />
 
 <h level="3">Connections</h>
 

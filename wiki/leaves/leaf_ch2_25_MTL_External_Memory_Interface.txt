@@ -1,12 +1,113 @@
 <h level="2">MTL External Memory Interface</h>
 <info>
   <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p111-120</code></p>
+  <p>Source: <code>ch2 p111-117</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>MTL外部存储器接口使用同步双端口SRAM（SPRAM）进行数据缓冲。</p>
-<p>支持低功耗模式和高速模式，桥接应用时钟与MAC时钟域。</p>
+<p>DWC_ether_qos 提供通用内存接口，便于与任何厂商特定的双端口 RAM 互联，以实现 Tx queue 和 Rx queue。Tx 和 Rx 的内存接口完全相同，信号名中的 "x" 可替换为 "t"（Tx queue）或 "r"（Rx queue）。</p>
+
+<h level="3">同步双端口 SRAM 连接</h>
+
+<h level="4">低功耗同步双端口 SRAM 连接</h>
+<ul>
+  <li>同步双端口 SRAM 包含两个端口：Port A 和 Port B，均可用于读写操作</li>
+  <li>DWC_ether_qos（配置为同步 RAM 接口）将此 SRAM 用作异步 FIFO，用于跨时钟域传输</li>
+  <li>一个端口用于写入包数据，另一个端口用于读取包数据，读写发生在不同时钟域</li>
+  <li>SRAM 的 chip enable（CEN）和 write enable（WEN）连接到 MAC 的 chip select（<code>*_csn_o</code>）和 write enable（<code>*_wr_en_o</code>）信号</li>
+  <li>根据 CEN 和 WEN 的有效状态，DWC_ether_qos 内存接口信号可直接连接或反极性连接</li>
+  <li>连接 chip select 信号确保读写操作未调度时 SRAM I/O 驱动器关闭，降低功耗</li>
+  <li>若内存模块（如 Xilinx FPGA Block Select RAM）的读端口仅有单个使能（无 Output Enable），<code>xrc_rd_csn_o</code> 必须连接到使能端，并考虑极性</li>
+</ul>
+
+<h level="4">高速同步双端口 SRAM 连接</h>
+<ul>
+  <li>在功耗不是关键因素且内存访问时间至关重要的应用中，chip enable 和 read enable 信号可始终连接到有效高电平输入</li>
+  <li>通用内存接口信号可按图 2-54 连接到同步 SRAM</li>
+  <li>未使用的通用内存接口输出作为浮空输出</li>
+</ul>
+
+<h level="3">SPRAM 接口</h>
+<p>MAC 支持单端口 RAM（SPRAM）选项实现 MTL FIFO 缓冲区。在此配置中，每个发送和接收 FIFO 内存被拆分为两个 SPRAM 块（Odd 和 Even）。</p>
+
+<ul>
+  <li>与单个 DPRAM 实例（应用时钟在一个端口，GMII/MII 时钟在另一个端口）相比，每个 Tx 和 Rx FIFO 内存被拆分为两个 SPRAM 块</li>
+  <li>每个 SPRAM 块宽度与之前相同（DPRAM），但深度为总 FIFO 内存配置深度的一半，总内存空间保持不变</li>
+  <li>数据交替存储在 Odd 和 Even SPRAM 块中，基于 FIFO 指针的奇偶地址</li>
+  <li>由于内存用作 FIFO 结构，数据通常以顺序方式（递增地址）写入和读取</li>
+  <li>此架构使 Odd 和 Even SPRAM 的读写交替进行，实现单时钟周期内的同时读写，维持与 DPRAM 架构相当的数据传输吞吐量</li>
+  <li>允许向 AHB、AXI 等主机总线进行连续 burst 传输，有效利用总线带宽</li>
+</ul>
+
+<h level="4">SPRAM 数据流</h>
+<ul>
+  <li>发送方向：从 SPRAM 内存读取数据，通过 MTL 与 MAC 块之间 MTI 接口的小型异步寄存器 FIFO 从应用时钟域传输到 GMII TX 时钟域</li>
+  <li>接收方向：从 MAC 接收器在 GMII/MII RX 时钟域接收的数据，通过 MRI 接口的寄存器 FIFO 传输到应用时钟域</li>
+  <li>多 TX Queue 配置下，TXFIFO 读取侧有调度器，选择下一个要传输的 TxQueue</li>
+  <li>调度器逻辑继续在 GMII/MII 时钟域运行，以确保 AVB 相关的 CBS 算法不受影响</li>
+  <li>由于 TX 路径中存在异步 FIFO、调度器在 TX GMII/MII 时钟域而包数据从 SPRAM 在应用时钟域读取，SPRAM 配置可能支持的最小 IPG（Inter-Packet Gap）会受到影响</li>
+  <li>与 DPRAM 架构相比，需要额外的 CDC 同步器，增加包传输之间的延迟</li>
+  <li>SPRAM 配置的面积增加主要由于这些异步寄存器 FIFO</li>
+</ul>
+
+<h level="4">读写仲裁</h>
+<p>由于读写操作由独立引擎触发，可能在同一时钟内争用访问同一个 SPRAM 块。Read 和 Write Engines 之间有仲裁器处理争用：</p>
+<ul>
+  <li>TX FIFO：write 操作优先于 read 操作。read 操作延迟一个时钟，假设 write 操作在下一时钟切换到另一个内存（由于顺序写入）</li>
+  <li>RX FIFO：read 操作优先于 write 操作。write 操作延迟一个时钟，假设 read 操作在下一时钟切换到另一个内存（由于顺序读取）</li>
+</ul>
+
+<p>MAC 发送端不需要连续数据（例如，32-bit 配置以 1Gbps 模式运行时，MAC 发送端每 4 个 Tx 时钟周期需要 32-bit 字）。朝向 MAC 的小型异步 FIFO 深度选择为避免 underflow，在有机会从内存预取数据时进行预取。</p>
+
+<p>MAC 接收端除包开始和结束外不提供连续数据（例如，32-bit 配置以 100Mbps 模式运行时，MAC 接收端每 8 个 Rx 时钟周期提供 32-bit 字）。朝向 MTL 的小型异步 FIFO 深度选择为避免 overrun。</p>
+
+<h level="3">应用时钟频率要求</h>
+<p>由于 FIFO 内存需要同时读写传输，应用时钟频率必须使内存数据传输带宽至少为线路带宽的两倍。</p>
+
+<p>此外，由于 Odd 或 Even 单内存块的读写争用可能导致延迟，需要额外带宽。争用概率随队列数增加而增加（Tx 侧），尤其在 EQOS-AXI 和 EQOS-MTL 配置中，原因包括：</p>
+<ul>
+  <li>接收和写入不同队列的交错数据可能连续指向同一（奇或偶）内存</li>
+  <li>TX 侧调度器对每个包的控制字非顺序读写</li>
+  <li>RX 侧对每个包的状态字非顺序写入</li>
+</ul>
+
+<h level="4">最小应用时钟频率估计（避免 TX 路径异步 FIFO underflow）</h>
+<table>
+  <tr><th>Configuration</th><th>No of Tx Queues</th><th>DW = 32</th><th>DW = 64</th><th>DW = 128</th></tr>
+  <tr><td>EQOS-AXI, EQOS-MTL</td><td>2 or less</td><td>75 MHz</td><td>38 MHz</td><td>19 MHz</td></tr>
+  <tr><td></td><td>4 or less</td><td>125 MHz</td><td>62.5 MHz</td><td>31.25 MHz</td></tr>
+  <tr><td></td><td>6 or less</td><td>200 MHz</td><td>100 MHz</td><td>50 MHz</td></tr>
+  <tr><td></td><td>8 or less</td><td>250 MHz</td><td>125 MHz</td><td>62.5 MHz</td></tr>
+  <tr><td>EQOS-AHB, EQOS-DMA</td><td>Any</td><td>62.5 MHz</td><td>31.25 MHz</td><td>16 MHz</td></tr>
+</table>
+
+<p>100Mbps（MII 模式）时，最小应用时钟频率降低 10 倍。</p>
+
+<h level="4">RX 侧最小应用时钟频率</h>
+<table>
+  <tr><th>Configuration</th><th>No of Rx Queues</th><th>DW = 32</th><th>DW = 64</th><th>DW = 128</th></tr>
+  <tr><td>Any</td><td>Any</td><td>69 MHz</td><td>36 MHz</td><td>21 MHz</td></tr>
+</table>
+
+<p>100Mbps 模式下，应用时钟频率可降低 10 倍。</p>
+
+<warning>
+  <p>上述表格基于悲观的最坏情况假设，需在仿真中验证并后续更新。</p>
+</warning>
+
+<tip>
+  <ul>
+    <li>为处理线路上接收的小于 64 字节的有效帧，需进一步提高应用时钟频率，因为 RX 侧状态开销相当大</li>
+    <li>上述计算假设 12 字节 IPG 和 8 字节 preamble+SFD。为处理减少的 IPG 和 preamble，需进一步提高应用时钟频率，以在应用接口（MRI）上包之间的可用间隙中传输状态</li>
+  </ul>
+</tip>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_111_2_51.png" alt="Figure 2-51" />
+
+<img src="leaves/assets/ch2/figure_112_2_52.png" alt="Figure 2-52" />
 
 <h level="3">Connections</h>
 

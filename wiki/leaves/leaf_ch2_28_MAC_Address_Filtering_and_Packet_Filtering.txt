@@ -5,12 +5,46 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>AFM支持多种地址过滤：</p>
-<p>- 单播地址：多达32个MAC地址匹配</p>
-<p>- 组播地址：哈希表或精确匹配</p>
-<p>- 广播地址过滤</p>
-<p>- VLAN标签过滤</p>
-<p>RPC根据AFM结果决定接受或丢弃，Store-and-Forward模式可丢弃错误包。</p>
+<p><kbd>AFM</kbd>（Address Filtering Module）执行所有接收包的目的地址和源地址检查，将过滤状态报告给 <kbd>RPC</kbd> 模块。<kbd>AFM</kbd> 本身不丢弃包，仅报告过滤结果（是否丢弃、是否为组播/广播包）。</p>
+
+<p>AFM 支持的地址过滤类型：</p>
+<ul>
+  <li><em>单播地址过滤</em>：支持多达 32 个 MAC 地址精确匹配</li>
+  <li><em>组播地址过滤</em>：支持哈希表过滤或精确匹配</li>
+  <li><em>广播地址过滤</em>：可启用或禁用广播包接收</li>
+  <li><em>VLAN 标签过滤</em>：基于 VLAN Tag 匹配过滤</li>
+</ul>
+
+<p>地址检查基于 <kbd>Packet Filter</kbd> 寄存器参数。GMII 模式下，<kbd>AFM</kbd> 从包开始起用 8/14 个时钟比较目的地址/源地址；MII 模式下需要 14/26 个时钟。<kbd>AFM</kbd> 从 CSR 获取站点的物理 MAC 地址和组播哈希表。</p>
+
+<p><kbd>RPC</kbd>（Receive Packet Controller）根据 <kbd>AFM</kbd> 的过滤结果决定接受或丢弃包：</p>
+<ul>
+  <li>若 <kbd>MAC_Packet_Filter</kbd> 寄存器 RA 位为 1，<kbd>RPC</kbd> 接收所有包，不执行过滤</li>
+  <li>若 RA 位为 0，<kbd>RPC</kbd> 等待接收前 14 字节（Type 字段），然后检查 <kbd>AFM</kbd> 的 filter-fail 信号；若地址不匹配则丢弃</li>
+  <li>若 <kbd>AFM</kbd> 响应延迟，<kbd>RPC</kbd> 等待 FIFO 满后继续传输，但仍会在后续收到 filter-fail 时丢弃剩余数据并发送 Rx Status Word（packet-length 为零、CRC Error 和 Runt Error 位置位）</li>
+</ul>
+
+<p><kbd>RPC</kbd> 的 Store-and-Forward 模式可丢弃错误包（如 runt、CRC error）。应用可通过配置禁止接收坏包，但即使地址过滤通过，仍需在 <kbd>RPC</kbd> 层面进行二次过滤。</p>
+
+<p>接收状态字中的相关过滤状态位：</p>
+<ul>
+  <li>Bit 50 — Hash Filter Status：包通过 MAC 地址哈希过滤器</li>
+  <li>Bit 49 — DA Filter Fail：目的地址过滤失败</li>
+  <li>Bit 48 — SA Filter Fail：源地址过滤失败</li>
+  <li>Bit 47 — VLAN Filter Status：VLAN Tag 匹配过滤器</li>
+  <li>Bit 58:51 — MAC Address Match or Hash Value：匹配的 MAC 地址寄存器编号或哈希值</li>
+</ul>
+
+<tip>
+  <p>当 PMT 模块存在且配置为 power-down 模式时，<kbd>RPC</kbd> 丢弃所有接收包，不转发给应用。</p>
+</tip>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_131_2_63.png" alt="Figure 2-63" />
+
+<img src="leaves/assets/ch2/figure_131_2_64.png" alt="Figure 2-64" />
 
 <h level="3">Connections</h>
 

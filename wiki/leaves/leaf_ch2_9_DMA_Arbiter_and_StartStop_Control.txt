@@ -5,7 +5,63 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>The DMA arbiter performs arbitration between Tx and Rx channel accesses to the AHB master interface. Two arbitration types are supported: (1) Round-Robin Arbitration - when Bit 1 of DMA_Mode register is reset, bus is allocated in ratio set by Bits[14:12]; (2) Fixed-Priority Arbitration - when Bit 1 is set, Rx DMA gets priority over Tx DMA by default; when Bit 11 is also set, Tx DMA gets priority over Rx DMA. The DMA can be started/stopped by: (1) Programming ST bit in DMA_CH[n]_Tx_Control and SR bit in DMA_CH[n]_Rx_Control register; (2) Driving sbd_txdma_start_i[n] and sbd_rxdma_start_i[n] sideband signals. Sideband signal control has higher precedence.</p>
+<h level="3">DMA Arbiter（EQOS-DMA 与 EQOS-AHB 配置）</h>
+<p>DMA 模块内部的 Arbiter 负责仲裁 Tx 和 Rx 通道对 AHB master 接口的访问，支持两种仲裁模式：</p>
+
+<ul>
+  <li><strong>Round-Robin Arbitration：</strong> <kbd>DMA_Mode</kbd> 寄存器 Bit 1 为 0 时，当 Tx 和 Rx DMA 同时请求总线，arbiter 按 Bits[14:12] 配置的比率分配总线带宽。</li>
+  <li><strong>Fixed-Priority Arbitration：</strong> <kbd>DMA_Mode</kbd> 寄存器 Bit 1 为 1 时，默认 Rx DMA 优先于 Tx DMA；若 Bit 11 也置位，则 Tx DMA 优先于 Rx DMA。</li>
+</ul>
+
+<p>Rx DMA 仅在上一请求完成后才发起下一个请求。由于需要查询 MTL queue 数据可用性（<kbd>ari_rdy</kbd>、<kbd>ari_pbl</kbd> 及 <kbd>ari_rxwatermark</kbd>），单 DMA 模式下 Rx 请求不会与 Tx 请求重叠；多 Rx DMA 启用时可能出现重叠。</p>
+
+<h level="3">Start/Stop 控制</h>
+<p>DMA 可通过以下任一方式或两者同时启动/停止：</p>
+
+<ol>
+  <li>软件编程：<kbd>DMA_CH[n]_Tx_Control</kbd> 的 <kbd>ST</kbd> bit（Tx）和 <kbd>DMA_CH[n]_Rx_Control</kbd> 的 <kbd>SR</kbd> bit（Rx）。</li>
+  <li>Sideband 信号：驱动 <kbd>sbd_txdma_start_i[n]</kbd>（Tx）和 <kbd>sbd_rxdma_start_i[n]</kbd>（Rx）。</li>
+</ol>
+
+<important>
+  <p>Sideband 信号的 Start/Stop 控制具有更高优先级。</p>
+</important>
+
+<p>Sideband 与软件控制同时作用时的状态转换如下：</p>
+
+<table>
+  <tr>
+    <th>Sideband Start/Stop</th>
+    <th>Software Start/Stop</th>
+    <th>Current State</th>
+    <th>New State</th>
+    <th>说明</th>
+  </tr>
+  <tr>
+    <td>0</td><td>0</td><td>0</td><td>0</td><td>默认值/复位值</td>
+  </tr>
+  <tr>
+    <td>0 → 1</td><td>0</td><td>0</td><td>1</td><td>Sideband 启动 DMA</td>
+  </tr>
+  <tr>
+    <td>0</td><td>0 → 1</td><td>0</td><td>1</td><td>软件启动 DMA</td>
+  </tr>
+  <tr>
+    <td>1</td><td>1</td><td>x</td><td>1</td><td>两者同时启动</td>
+  </tr>
+  <tr>
+    <td>1 → 0</td><td>1/0</td><td>1</td><td>0</td><td>Sideband 停止 DMA</td>
+  </tr>
+  <tr>
+    <td>1/0</td><td>1 → 0</td><td>1</td><td>0</td><td>软件停止 DMA</td>
+  </tr>
+  <tr>
+    <td>0 → 1</td><td>1 → 0</td><td>x</td><td>1</td><td>同周期 Sideband 启动、软件停止 → 启动</td>
+  </tr>
+  <tr>
+    <td>1 → 0</td><td>0 → 1</td><td>x</td><td>0</td><td>同周期 Sideband 停止、软件启动 → 停止</td>
+  </tr>
+</table>
 
 <h level="3">Connections</h>
 

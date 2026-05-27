@@ -1,43 +1,75 @@
 <h level="2">AXI Master Interface Architecture</h>
 <info>
-  <p>Chapter: [[架构]]</p>
+  <p>Chapter: [[ch2]]</p>
   <p>Source: <code>ch2 p54-60 Architecture</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
 <p>AXI Master Interface（EQOS-AXI 配置）关键特性：</p>
-<p>一、Burst 拆分与选择</p>
-<p>- 基于 DMA 计数、软件可配置的 burst 使能位（BLEN256/128/64/32/16/8/4）和 burst 类型（INCR/INCR_ALIGNED）进行拆分</p>
-<p>- 自动处理 4KB 地址边界跨越（可选限制为1KB）</p>
-<p>- Burst Length 选择优先级：FB &gt; BLEN256 &gt; BLEN128 &gt; BLEN64 &gt; BLEN32 &gt; BLEN16 &gt; BLEN8 &gt; BLEN4</p>
-<p>- 支持最大 256 beats 突发长度（AXI3 标准最大为16）</p>
-<p>二、INCR vs INCR_ALIGNED Burst</p>
-<p>- INCR: 选择最大允许突发长度，非倍数请求会被拆分</p>
-<p>- INCR_ALIGNED: 额外保证每个突发长度与起始地址的低位对齐，先生成较小突发使后续能用最大固定长度</p>
-<p>三、Outstanding Transactions</p>
-<p>- 支持 4/8/16 个可配置 outstanding 读写请求</p>
-<p>- 通过 DMA_SysBus_Mode Bits[24:21] 和 Bits[19:16] 软件控制</p>
-<p>- Rx DMA 和 Tx DMA 均分 outstanding 配额（如8个则各4个）</p>
-<p>- 最少每通道2个 outstanding</p>
-<p>四、请求优先级</p>
-<p>- Descriptor 传输优先级高于 Data 传输</p>
-<p>- 同类型请求按先到先服务（FCFS）</p>
-<p>- 多通道时优先级：Channel 7 &gt; ... &gt; Channel 0</p>
-<p>- Rx Descriptor Read 优先级高于 Tx Data Read</p>
-<p>五、Reordering 与 Interleaving</p>
-<p>- 支持 Read 通道的数据重排序和数据交织（不同 AXI-ID）</p>
-<p>- 不支持 Write 通道的数据重排序（符合 AXI4 规范）</p>
-<p>- Rx DMA 仅生成 Descriptor Read，使用不同 ID</p>
-<p>六、AXI-ID 分配</p>
-<p>- ID[0]: 0=Rx DMA, 1=Tx DMA</p>
-<p>- ID[3:1]: DMA 通道号（启用 AV/DCB 时），否则为0</p>
-<p>七、Posted Writes</p>
-<p>- Rx Data Write 使用 Posted Write（提高流水线效率）</p>
-<p>- Descriptor Write 使用 Non-Posted Write（确保中断在数据写入后生成，避免竞态）</p>
-<p>八、错误处理</p>
-<p>- AXI Slave 错误响应对应 DMA 通道进入 STOP 状态</p>
-<p>- 仅影响出错的 DMA 通道，其他通道不受影响</p>
-<p>- 通过 sbd_intr_o 中断报告致命总线错误</p>
+
+<h level="3">一、Burst 拆分与选择</h>
+<ul>
+  <li>基于 DMA 计数、软件可配置的 burst 使能位（<kbd>BLEN256</kbd>/<kbd>BLEN128</kbd>/<kbd>BLEN64</kbd>/<kbd>BLEN32</kbd>/<kbd>BLEN16</kbd>/<kbd>BLEN8</kbd>/<kbd>BLEN4</kbd>）和 burst 类型（INCR / INCR_ALIGNED）进行拆分</li>
+  <li>自动处理 4KB 地址边界跨越（可选限制为 1KB）</li>
+  <li>Burst Length 选择优先级：<kbd>FB</kbd> &gt; BLEN256 &gt; BLEN128 &gt; BLEN64 &gt; BLEN32 &gt; BLEN16 &gt; BLEN8 &gt; BLEN4</li>
+  <li>支持最大 <kbd>256 beats</kbd> 突发长度（AXI3 标准最大为 16）</li>
+</ul>
+
+<h level="3">二、INCR vs INCR_ALIGNED Burst</h>
+<ul>
+  <li><em>INCR</em>：选择最大允许突发长度，非倍数请求会被拆分</li>
+  <li><em>INCR_ALIGNED</em>：额外保证每个突发长度与起始地址的低位对齐，先生成较小突发使后续能用最大固定长度</li>
+</ul>
+
+<h level="3">三、Outstanding Transactions</h>
+<ul>
+  <li>支持 4/8/16 个可配置 outstanding 读写请求</li>
+  <li>通过 <kbd>DMA_SysBus_Mode</kbd> Bits[24:21] 和 Bits[19:16] 软件控制</li>
+  <li>Rx DMA 和 Tx DMA <em>均分</em> outstanding 配额（如 8 个则各 4 个）</li>
+  <li>最少每通道 <kbd>2 个 outstanding</kbd></li>
+</ul>
+
+<h level="3">四、请求优先级</h>
+<ul>
+  <li>Descriptor 传输优先级高于 Data 传输</li>
+  <li>同类型请求按先到先服务（FCFS）</li>
+  <li>多通道时优先级：Channel 7 &gt; ... &gt; Channel 0</li>
+  <li>Rx Descriptor Read 优先级高于 Tx Data Read</li>
+</ul>
+
+<h level="3">五、Reordering 与 Interleaving</h>
+<ul>
+  <li>支持 Read 通道的数据重排序和数据交织（不同 AXI-ID）</li>
+  <li>不支持 Write 通道的数据重排序（符合 AXI4 规范）</li>
+  <li>Rx DMA 仅生成 Descriptor Read，使用不同 ID</li>
+</ul>
+
+<h level="3">六、AXI-ID 分配</h>
+<ul>
+  <li>ID[0]：0=Rx DMA, 1=Tx DMA</li>
+  <li>ID[3:1]：DMA 通道号（启用 AV/DCB 时），否则为 0</li>
+  <li>默认 AXI master ID 宽度为 4 bit，未使用位硬连线为 0</li>
+</ul>
+
+<h level="3">七、Posted Writes</h>
+<ul>
+  <li>Rx Data Write 使用 <em>Posted Write</em>（提高流水线效率）</li>
+  <li>Descriptor Write 使用 <em>Non-Posted Write</em>（确保中断在数据写入后生成，避免竞态）</li>
+</ul>
+
+<h level="3">八、错误处理</h>
+<ul>
+  <li>AXI Slave 错误响应对应 DMA 通道进入 STOP 状态</li>
+  <li>仅影响出错的 DMA 通道，其他通道不受影响</li>
+  <li>通过 <kbd>sbd_intr_o</kbd> 中断报告致命总线错误</li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_58_2_16.png" alt="Figure 2-16" />
+
+<img src="leaves/assets/ch2/figure_59_2_17.png" alt="Figure 2-17" />
 
 <h level="3">Connections</h>
 

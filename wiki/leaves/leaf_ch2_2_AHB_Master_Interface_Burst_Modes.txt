@@ -1,30 +1,52 @@
 <h level="2">AHB Master Interface Burst Modes</h>
 <info>
-  <p>Chapter: [[架构]]</p>
+  <p>Chapter: [[ch2]]</p>
   <p>Source: <code>ch2 p49-53 Architecture</code></p>
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>AHB Master Interface 支持3种 Burst Length Mode，通过 DMA_SysBus_Mode.FB 位选择：</p>
-<p>1. Fixed Burst Length Mode（固定突发长度）</p>
-<p>- AHB master 始终使用 SINGLE/INCR4/INCR8/INCR16 发起突发</p>
-<p>- 若被 SPLIT/RETRY/EBT 中断，默认用 INCR 或 SINGLE 重建剩余传输</p>
-<p>- 设置 DMA_SysBus_Mode.RIB=1 可确保始终用 INCRx + SINGLE 重建</p>
-<p>- 非标准突发会被拆分：如15拍拆为 INCR8 + INCR4 + 3xSINGLE</p>
-<p>- 超过16拍的突发会被拆分为多个固定长度突发：如32拍拆为 2xINCR16</p>
-<p>2. Unspecified Burst Length Mode（未指定突发长度）</p>
-<p>- AHB master 始终使用 INCR 发起传输</p>
-<p>- 一次性完成 DMA 请求的整个突发</p>
-<p>3. Mixed Burst Mode（混合模式）</p>
-<p>- DMA 请求 &lt;=16 拍时，使用固定长度突发（INCRx）</p>
-<p>- DMA 请求 &gt;16 拍时，使用 INCR 完成整个传输</p>
-<p>- 设置 DMA_SysBus_Mode.RB=1 确保 INCRx 被中断后仍用 INCRx 重建</p>
+<p>AHB Master Interface（EQOS-AHB 配置）支持 3 种 <em>Burst Length Mode</em>，通过 <kbd>DMA_SysBus_Mode.FB</kbd> 位选择：</p>
+
+<ol>
+  <li><strong>Fixed Burst Length Mode（固定突发长度）</strong>
+    <ul>
+      <li>AHB master 始终使用 SINGLE / INCR4 / INCR8 / INCR16 发起突发</li>
+      <li>若被 SPLIT / RETRY / EBT 中断，默认用 INCR 或 SINGLE 重建剩余传输</li>
+      <li>设置 <kbd>DMA_SysBus_Mode.RIB</kbd> = 1 可确保始终用 INCRx + SINGLE 重建</li>
+      <li>非标准突发会被拆分：如 15 拍拆为 INCR8 + INCR4 + 3×SINGLE</li>
+      <li>超过 16 拍的突发拆分为多个固定长度突发：如 32 拍拆为 2×INCR16</li>
+    </ul>
+  </li>
+  <li><strong>Unspecified Burst Length Mode（未指定突发长度）</strong>
+    <ul>
+      <li>AHB master 始终使用 INCR 发起传输</li>
+      <li>一次性完成 DMA 请求的整个突发</li>
+    </ul>
+  </li>
+  <li><strong>Mixed Burst Mode（混合模式）</strong>
+    <ul>
+      <li>DMA 请求 ≤16 拍时，使用固定长度突发（INCRx）</li>
+      <li>DMA 请求 &gt;16 拍时，使用 INCR 完成整个传输</li>
+      <li>设置 <kbd>DMA_SysBus_Mode.RB</kbd> = 1 确保 INCRx 被中断后仍用 INCRx 重建</li>
+    </ul>
+  </li>
+</ol>
+
 <p>其他关键特性：</p>
-<p>- 支持地址对齐（DMA_SysBus_Mode.AAL=1）</p>
-<p>- 支持 1K 边界自动拆分</p>
-<p>- 支持 32/64/128-bit 数据总线</p>
-<p>- Descriptor Status Write 可能限制为32-bit</p>
-<p>- 错误响应会停止该 DMA 所有后续传输，并通过 CSR/中断报告致命总线错误</p>
+<ul>
+  <li>支持地址对齐：<kbd>DMA_SysBus_Mode.AAL</kbd> = 1 时，所有 burst 传输按地址值对齐，以最少 beats 完成包传输</li>
+  <li>支持 1K 边界自动拆分</li>
+  <li>支持 32/64/128-bit 数据总线</li>
+  <li>Descriptor Status Write 可能限制为 32-bit</li>
+  <li>错误响应会停止该 DMA 所有后续传输，并通过 CSR / <kbd>sbd_intr_o</kbd> 中断报告 <em>Fatal Bus Error</em></li>
+</ul>
+
+
+<h level="3">参考图</h>
+
+<img src="leaves/assets/ch2/figure_51_2_10.png" alt="Figure 2-10" />
+
+<img src="leaves/assets/ch2/figure_52_2_11.png" alt="Figure 2-11" />
 
 <h level="3">Connections</h>
 

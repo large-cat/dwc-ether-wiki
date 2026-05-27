@@ -5,7 +5,27 @@
   <p>Confidence: <code>high</code></p>
 </info>
 
-<p>Tx and Rx data buffers have no restrictions on start address alignment. However, the DMA always initiates write transfers with address aligned to bus width, using dummy data in invalid byte lanes. The software driver must discard dummy bytes based on buffer start address and packet size. The DMA does not update size fields in descriptors; only status fields (RDES/TDES) are updated. The driver must perform size calculations. For Rx: when FD bit is set, valid data amount = buffer size minus data buffer pointer offset. For the last descriptor, driver must read packet length (PL bits of RDES3[14:0]) and subtract sum of preceding buffer sizes. Rx buffer size should be allocated aligned to system bus width even if start address is not aligned.</p>
+<h level="3">Buffer 地址对齐</h>
+<p>Tx 和 Rx 数据 buffer 的起始地址没有对齐限制。例如 32 位系统中，buffer 起始地址可以落在任意字节边界。但 DMA 发起写传输时，地址始终按总线宽度对齐，无效字节通道会填充 dummy data（旧数据）。软件驱动需根据 buffer 起始地址和包大小丢弃这些 dummy 字节。</p>
+
+<info>
+  <p><strong>示例 — Buffer Read：</strong> Tx buffer 地址为 <code>32'h00000FF2</code>（32-bit 总线），需传输 15 字节。DMA 从 <code>32'h00000FF0</code> 读取 5 个完整 word，但向 MTL Tx queue 传输时会丢弃前两个字节；最后一个 transfer 的后 3 个字节也会被忽略。DMA 始终确保向 MTL Tx queue 传输完整的 32-bit 数据，除非是包尾。</p>
+  <p><strong>示例 — Buffer Write：</strong> Rx buffer 地址为 <code>32'h0000FF2</code>（64-bit 总线），需写入 16 字节。DMA 从 <code>32'h00000FF0</code> 写入 3 个完整 word，但第一个 transfer 的前 2 字节和第三个 transfer 的后 6 字节为 dummy data。DMA 仅在当前包的第一个 Rx buffer 考虑偏移地址；中间和最后一个 buffer 忽略偏移，执行完整 word 写。</p>
+</info>
+
+<h level="3">Buffer 大小计算</h>
+<p>DMA 不更新 Tx/Rx descriptor 中的 size 字段，仅更新状态字段（RDES/TDES）。驱动必须自行计算有效数据量。</p>
+
+<ul>
+  <li>Tx DMA 按 <kbd>TDES2</kbd> 的 buffer size 字段精确传输指定字节数到 MAC。若 descriptor 标记为 First（<kbd>FD</kbd> bit of <kbd>TDES3</kbd>），DMA 将 buffer 的第一次传输标记为 SOP；若标记为 Last（<kbd>LD</kbd> bit），则将该 buffer 的最后一次传输标记为 EOP。</li>
+  <li>Rx DMA 持续向 buffer 写入数据，直到 buffer 满或从 MTL 收到 EOP。</li>
+  <li>当 <kbd>FD</kbd> bit 置位时，buffer 中有效数据量 = buffer size（<kbd>DMA Channel Receive Control register</kbd> 中配置）减去数据 buffer 指针偏移量。偏移量为 0 时表示指针已按数据总线宽度对齐。</li>
+  <li>对于最后一个 descriptor，buffer 可能未满。驱动必须读取 <kbd>RDES3[14:0]</kbd> 的 Packet Length（PL），减去该包前面所有 buffer 大小之和，得到最后一个 buffer 的有效数据量。</li>
+</ul>
+
+<tip>
+  <p>即使 Rx buffer 起始地址未按系统总线数据宽度对齐，软件仍应按总线宽度对齐的大小分配 buffer。例如分配 1,024 字节 buffer 起始于 <code>0x1000</code>，但 descriptor 中可写 <code>0x1002</code>。DMA 会在前两个地址写入 dummy data，实际有效空间为 1,022 字节。</p>
+</tip>
 
 <h level="3">Connections</h>
 
