@@ -10,7 +10,7 @@
       "created_at": "2026-05-21T11:21:16.449691",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch7_1_PTP一步法vs两步法时间戳.txt"
+        "leaves/leaf_ch7_PTP一步法vs两步法时间戳.txt"
       ]
     },
     {
@@ -21,7 +21,7 @@
       "created_at": "2026-05-21T11:21:16.452141",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch7_2_IEEE_1588系统时间格式.txt"
+        "leaves/leaf_ch7_IEEE_1588系统时间格式.txt"
       ]
     }
   ]

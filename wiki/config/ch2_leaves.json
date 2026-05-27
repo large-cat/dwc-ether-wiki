@@ -3,322 +3,322 @@
   "chapter_title": "架构",
   "leaves": [
     {
-      "id": "leaf_ch2_1",
+      "id": "leaf_ch2_CSR_Slave_Interface_Overview",
       "topic": "CSR Slave Interface Overview",
       "source": "ch2 p41-48 Architecture",
       "confidence": "high",
       "created_at": "2026-05-25T06:29:04.865343",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_1_CSR_Slave_Interface_Overview.txt"
+        "leaves/leaf_ch2_CSR_Slave_Interface_Overview.txt"
       ]
     },
     {
-      "id": "leaf_ch2_2",
+      "id": "leaf_ch2_AHB_Master_Interface_Burst_Modes",
       "topic": "AHB Master Interface Burst Modes",
       "source": "ch2 p49-53 Architecture",
       "confidence": "high",
       "created_at": "2026-05-25T06:29:24.819677",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_2_AHB_Master_Interface_Burst_Modes.txt"
+        "leaves/leaf_ch2_AHB_Master_Interface_Burst_Modes.txt"
       ]
     },
     {
-      "id": "leaf_ch2_3",
+      "id": "leaf_ch2_AXI_Master_Interface_Architecture",
       "topic": "AXI Master Interface Architecture",
       "source": "ch2 p54-60 Architecture",
       "confidence": "high",
       "created_at": "2026-05-25T06:29:50.296667",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_3_AXI_Master_Interface_Architecture.txt"
+        "leaves/leaf_ch2_AXI_Master_Interface_Architecture.txt"
       ]
     },
     {
-      "id": "leaf_ch2_4",
+      "id": "leaf_ch2_AXI4_Master_Interface_与_Low_Power_扩展",
       "topic": "AXI4 Master Interface 与 Low-Power 扩展",
       "source": "ch2 p60 Architecture",
       "confidence": "high",
       "created_at": "2026-05-25T06:30:03.665227",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_4_AXI4_Master_Interface_与_Low-Power_扩展.txt"
+        "leaves/leaf_ch2_AXI4_Master_Interface_与_Low-Power_扩展.txt"
       ]
     },
     {
-      "id": "leaf_ch2_5",
+      "id": "leaf_ch2_AHB_Master_Interface_关键操作与时序",
       "topic": "AHB Master Interface 关键操作与时序",
       "source": "ch2 p51-53 Architecture",
       "confidence": "high",
       "created_at": "2026-05-25T06:30:20.239117",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_5_AHB_Master_Interface_关键操作与时序.txt"
+        "leaves/leaf_ch2_AHB_Master_Interface_关键操作与时序.txt"
       ]
     },
     {
-      "id": "leaf_ch2_6",
+      "id": "leaf_ch2_DMA_Controller_Overview",
       "topic": "DMA Controller Overview",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:30:50.547125",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_6_DMA_Controller_Overview.txt"
+        "leaves/leaf_ch2_DMA_Controller_Overview.txt"
       ]
     },
     {
-      "id": "leaf_ch2_7",
+      "id": "leaf_ch2_DMA_Application_Bus_Burst_Access",
       "topic": "DMA Application Bus Burst Access",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:30:58.372338",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_7_DMA_Application_Bus_Burst_Access.txt"
+        "leaves/leaf_ch2_DMA_Application_Bus_Burst_Access.txt"
       ]
     },
     {
-      "id": "leaf_ch2_8",
+      "id": "leaf_ch2_DMA_Buffer_Alignment_and_Size_Calculations",
       "topic": "DMA Buffer Alignment and Size Calculations",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:06.045221",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_8_DMA_Buffer_Alignment_and_Size_Calculations.txt"
+        "leaves/leaf_ch2_DMA_Buffer_Alignment_and_Size_Calculations.txt"
       ]
     },
     {
-      "id": "leaf_ch2_9",
+      "id": "leaf_ch2_DMA_Arbiter_and_Start_Stop_Control",
       "topic": "DMA Arbiter and Start/Stop Control",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:13.994080",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_9_DMA_Arbiter_and_StartStop_Control.txt"
+        "leaves/leaf_ch2_DMA_Arbiter_and_StartStop_Control.txt"
       ]
     },
     {
-      "id": "leaf_ch2_10",
+      "id": "leaf_ch2_Tx_DMA_Operation_Default_Mode",
       "topic": "Tx DMA Operation - Default Mode",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:23.431571",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_10_Tx_DMA_Operation_-_Default_Mode.txt"
+        "leaves/leaf_ch2_Tx_DMA_Operation_-_Default_Mode.txt"
       ]
     },
     {
-      "id": "leaf_ch2_11",
+      "id": "leaf_ch2_Tx_DMA_Operation_OSP_Mode",
       "topic": "Tx DMA Operation - OSP Mode",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:33.277391",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_11_Tx_DMA_Operation_-_OSP_Mode.txt"
+        "leaves/leaf_ch2_Tx_DMA_Operation_-_OSP_Mode.txt"
       ]
     },
     {
-      "id": "leaf_ch2_12",
+      "id": "leaf_ch2_Tx_DMA_Packet_Processing_and_Suspension",
       "topic": "Tx DMA Packet Processing and Suspension",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:41.648051",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_12_Tx_DMA_Packet_Processing_and_Suspension.txt"
+        "leaves/leaf_ch2_Tx_DMA_Packet_Processing_and_Suspension.txt"
       ]
     },
     {
-      "id": "leaf_ch2_13",
+      "id": "leaf_ch2_DMA_Transmit_Channel_Arbitration",
       "topic": "DMA Transmit Channel Arbitration",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:31:49.815165",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_13_DMA_Transmit_Channel_Arbitration.txt"
+        "leaves/leaf_ch2_DMA_Transmit_Channel_Arbitration.txt"
       ]
     },
     {
-      "id": "leaf_ch2_14",
+      "id": "leaf_ch2_Rx_DMA_Operation",
       "topic": "Rx DMA Operation",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:32:00.746210",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_14_Rx_DMA_Operation.txt"
+        "leaves/leaf_ch2_Rx_DMA_Operation.txt"
       ]
     },
     {
-      "id": "leaf_ch2_15",
+      "id": "leaf_ch2_Rx_DMA_Descriptor_Acquisition_and_Packet_Processing",
       "topic": "Rx DMA Descriptor Acquisition and Packet Processing",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:32:11.331320",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_15_Rx_DMA_Descriptor_Acquisition_and_Packet_Processing.txt"
+        "leaves/leaf_ch2_Rx_DMA_Descriptor_Acquisition_and_Packet_Processing.txt"
       ]
     },
     {
-      "id": "leaf_ch2_16",
+      "id": "leaf_ch2_DMA_Error_Response_Handling",
       "topic": "DMA Error Response Handling",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:32:19.322336",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_16_DMA_Error_Response_Handling.txt"
+        "leaves/leaf_ch2_DMA_Error_Response_Handling.txt"
       ]
     },
     {
-      "id": "leaf_ch2_17",
+      "id": "leaf_ch2_DMA_Native_Interface_EQOS_DMA",
       "topic": "DMA Native Interface (EQOS-DMA)",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:32:28.879318",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_17_DMA_Native_Interface_EQOS-DMA.txt"
+        "leaves/leaf_ch2_DMA_Native_Interface_EQOS-DMA.txt"
       ]
     },
     {
-      "id": "leaf_ch2_18",
+      "id": "leaf_ch2_AXI_Low_Power_Interface",
       "topic": "AXI Low-Power Interface",
       "source": "QA enrichment",
       "confidence": "high",
       "created_at": "2026-05-25T06:32:38.819877",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_18_AXI_Low-Power_Interface.txt"
+        "leaves/leaf_ch2_AXI_Low-Power_Interface.txt"
       ]
     },
     {
-      "id": "leaf_ch2_19",
+      "id": "leaf_ch2_MTL_Layer_Overview_and_Data_Path",
       "topic": "MTL Layer Overview and Data Path",
       "source": "ch2 p83",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:25.283002",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_19_MTL_Layer_Overview_and_Data_Path.txt"
+        "leaves/leaf_ch2_MTL_Layer_Overview_and_Data_Path.txt"
       ]
     },
     {
-      "id": "leaf_ch2_20",
+      "id": "leaf_ch2_MTL_Transmit_Control_Word_Format",
       "topic": "MTL Transmit Control Word Format",
       "source": "ch2 p83-88",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:25.301889",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_20_MTL_Transmit_Control_Word_Format.txt"
+        "leaves/leaf_ch2_MTL_Transmit_Control_Word_Format.txt"
       ]
     },
     {
-      "id": "leaf_ch2_21",
+      "id": "leaf_ch2_MTL_Transmit_Operation_and_DMA_Data_Flow",
       "topic": "MTL Transmit Operation and DMA Data Flow",
       "source": "ch2 p88-95",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:25.321208",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_21_MTL_Transmit_Operation_and_DMA_Data_Flow.txt"
+        "leaves/leaf_ch2_MTL_Transmit_Operation_and_DMA_Data_Flow.txt"
       ]
     },
     {
-      "id": "leaf_ch2_22",
+      "id": "leaf_ch2_MTL_Transmit_Status_Word_and_Timing",
       "topic": "MTL Transmit Status Word and Timing",
       "source": "ch2 p95-96",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:25.340341",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_22_MTL_Transmit_Status_Word_and_Timing.txt"
+        "leaves/leaf_ch2_MTL_Transmit_Status_Word_and_Timing.txt"
       ]
     },
     {
-      "id": "leaf_ch2_23",
+      "id": "leaf_ch2_MTL_Receive_Path_Operation",
       "topic": "MTL Receive Path Operation",
       "source": "ch2 p96-100",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:25.360256",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_23_MTL_Receive_Path_Operation.txt"
+        "leaves/leaf_ch2_MTL_Receive_Path_Operation.txt"
       ]
     },
     {
-      "id": "leaf_ch2_24",
+      "id": "leaf_ch2_MTL_Receive_Status_Word_Format",
       "topic": "MTL Receive Status Word Format",
       "source": "ch2 p101-110",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.682947",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_24_MTL_Receive_Status_Word_Format.txt"
+        "leaves/leaf_ch2_MTL_Receive_Status_Word_Format.txt"
       ]
     },
     {
-      "id": "leaf_ch2_25",
+      "id": "leaf_ch2_MTL_External_Memory_Interface",
       "topic": "MTL External Memory Interface",
       "source": "ch2 p111-120",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.701603",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_25_MTL_External_Memory_Interface.txt"
+        "leaves/leaf_ch2_MTL_External_Memory_Interface.txt"
       ]
     },
     {
-      "id": "leaf_ch2_26",
+      "id": "leaf_ch2_MAC_Transmit_Protocol_Engine",
       "topic": "MAC Transmit Protocol Engine",
       "source": "ch2 p121-130",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.720906",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_26_MAC_Transmit_Protocol_Engine.txt"
+        "leaves/leaf_ch2_MAC_Transmit_Protocol_Engine.txt"
       ]
     },
     {
-      "id": "leaf_ch2_27",
+      "id": "leaf_ch2_MAC_Receive_Path_Architecture",
       "topic": "MAC Receive Path Architecture",
       "source": "ch2 p131-140",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.739898",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_27_MAC_Receive_Path_Architecture.txt"
+        "leaves/leaf_ch2_MAC_Receive_Path_Architecture.txt"
       ]
     },
     {
-      "id": "leaf_ch2_28",
+      "id": "leaf_ch2_MAC_Address_Filtering_and_Packet_Filtering",
       "topic": "MAC Address Filtering and Packet Filtering",
       "source": "ch2 p131-140",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.759978",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_28_MAC_Address_Filtering_and_Packet_Filtering.txt"
+        "leaves/leaf_ch2_MAC_Address_Filtering_and_Packet_Filtering.txt"
       ]
     },
     {
-      "id": "leaf_ch2_29",
+      "id": "leaf_ch2_DWC_Ethernet_QoS_Interrupt_Architecture",
       "topic": "DWC Ethernet QoS Interrupt Architecture",
       "source": "ch2 p141-150",
       "confidence": "high",
       "created_at": "2026-05-25T06:59:57.776993",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch2_29_DWC_Ethernet_QoS_Interrupt_Architecture.txt"
+        "leaves/leaf_ch2_DWC_Ethernet_QoS_Interrupt_Architecture.txt"
       ]
     }
   ]

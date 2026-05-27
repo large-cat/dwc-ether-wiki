@@ -10,7 +10,7 @@
       "created_at": "2026-05-21T11:21:16.454488",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch8_1_EST时间感知调度器.txt"
+        "leaves/leaf_ch8_EST时间感知调度器.txt"
       ]
     },
     {
@@ -21,7 +21,7 @@
       "created_at": "2026-05-21T11:21:16.456714",
       "status": "active",
       "content_path": [
-        "leaves/leaf_ch8_2_帧抢占机制.txt"
+        "leaves/leaf_ch8_帧抢占机制.txt"
       ]
     }
   ]
