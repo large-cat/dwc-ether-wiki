@@ -21,9 +21,10 @@ flowchart LR
     MEM["System Memory"]
     CPU["Host CPU"]
 
+    SLAVE["CSR Slave\n(AHB/AXI/APB)"]
+
     subgraph BUS["AMBA Bus"]
         MASTER["AXI/AHB Master"]
-        SLAVE["CSR Slave\n(AHB/AXI/APB)"]
     end
 
     subgraph EQOS["DWC_ether_qos Core"]
@@ -60,6 +61,7 @@ flowchart LR
 
     style MEM fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
     style CPU fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style SLAVE fill:#fef3c7,stroke:#d97706,color:#78350f
     style BUS fill:#fef3c7,stroke:#d97706,color:#78350f
     style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
     style DMA fill:#dcfce7,stroke:#22c55e,color:#14532d
