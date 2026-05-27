@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { BookOpen, Search, ChevronRight, Layers, Cpu, Zap, Shield } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { BookOpen, Search, Layers, Cpu, Zap, Shield } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import type { Chapter, ChapterLeavesConfig, Leaf } from '@/types/wiki'
@@ -29,7 +28,6 @@ const statusLabel: Record<string, string> = {
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set())
   const [tree, setTree] = useState<{ chapters: Chapter[]; metadata: any } | null>(null)
   const [allLeaves, setAllLeaves] = useState<Leaf[]>([])
 
@@ -81,15 +79,6 @@ export default function Home() {
       })
     : chapters
 
-  const toggleChapter = (id: string) => {
-    setExpandedChapters((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
@@ -138,47 +127,38 @@ export default function Home() {
           </h2>
 
           {filteredChapters.map((ch: Chapter) => {
-            const isExpanded = expandedChapters.has(ch.id)
             const chLeaves = allLeaves.filter((l: Leaf) => l.id.startsWith(`leaf_${ch.id}_`))
 
             return (
-              <Card key={ch.id} className="overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                <div className="p-4 flex items-center gap-4 cursor-pointer" onClick={() => toggleChapter(ch.id)}>
-                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">
+              <Link
+                key={ch.id}
+                to={`/chapter/${ch.id}`}
+                className="block p-3 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition-colors border-b border-slate-200 dark:border-slate-800 last:border-b-0"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 p-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 dark:text-slate-400 mt-0.5">
                     {getChapterIcon(ch.id)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {ch.number && <Badge variant="secondary" className="text-xs">第{ch.number}章</Badge>}
                       <span className="text-xs text-slate-400">{statusLabel[ch.status as keyof typeof statusLabel] || ch.status}</span>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">{ch.title_cn}</h3>
+                      <h3 className="font-semibold text-sm text-slate-900 dark:text-white">{ch.title_cn}</h3>
+                      <span className="text-xs text-slate-400 ml-auto">p.{ch.page_start}–{ch.page_end}</span>
                     </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{ch.description}</p>
-                    <p className="text-xs text-slate-400 mt-1">p.{ch.page_start}–{ch.page_end}</p>
-                  </div>
-                  <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                </div>
-
-                {isExpanded && (
-                  <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-3">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{ch.description}</p>
                     {chLeaves.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">包含知识点</p>
-                        <div className="flex flex-wrap gap-2">
-                          {chLeaves.map((leaf: Leaf) => (
-                            <span key={leaf.id} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs text-slate-600 dark:text-slate-400">
-                              {leaf.topic}
-                            </span>
-                          ))}
-                        </div>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {chLeaves.map((leaf: Leaf) => (
+                          <span key={leaf.id} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[11px] text-slate-600 dark:text-slate-400">
+                            {leaf.topic}
+                          </span>
+                        ))}
                       </div>
                     )}
-                    <Link to={`/chapter/${ch.id}`} className="block text-center py-2 text-sm text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 rounded transition-colors">
-                      查看详情 →
-                    </Link>
                   </div>
-                )}
-              </Card>
+                </div>
+              </Link>
             )
           })}
         </div>

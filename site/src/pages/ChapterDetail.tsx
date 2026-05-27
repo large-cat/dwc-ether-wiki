@@ -157,9 +157,9 @@ export default function ChapterDetail() {
 
             {/* Chapter Content — leaves rendered as document sections */}
             {chLeaves.length > 0 && (
-              <div className="mb-10">
+              <div className="mb-4">
                 {chLeaves.map((leaf: Leaf) => (
-                  <section key={leaf.id} id={leaf.id} className="mb-8 scroll-mt-24">
+                  <section key={leaf.id} id={leaf.id} className="mb-3 scroll-mt-24">
                     <LeafContent leaf={leaf} />
                   </section>
                 ))}
