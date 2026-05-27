@@ -1,10 +1,4 @@
 <h level="2">MAC Transmit Protocol Engine</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p121-130</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>MAC 发送路径由六个模块组成：<kbd>TBU</kbd>（Transmit Bus Interface）、<kbd>TPC</kbd>（Transmit Packet Controller）、<kbd>TPE</kbd>（Transmit Protocol Engine）、<kbd>STX</kbd>（Transmit Scheduler）、<kbd>CTX</kbd>（Transmit CRC Generator）、<kbd>FTX</kbd>（Transmit Flow Control）。</p>
 
 <p><kbd>TPE</kbd> 是核心协议引擎，包含发送状态机，负责生成 <em>Preamble</em>、<em>SFD</em>、处理半双工冲突、载波扩展和包突发。其工作流程如下：</p>

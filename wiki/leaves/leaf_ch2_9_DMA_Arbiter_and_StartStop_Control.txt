@@ -1,10 +1,4 @@
 <h level="2">DMA Arbiter and Start/Stop Control</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <h level="3">DMA Arbiter（EQOS-DMA 与 EQOS-AHB 配置）</h>
 <p>DMA 模块内部的 Arbiter 负责仲裁 Tx 和 Rx 通道对 AHB master 接口的访问，支持两种仲裁模式：</p>
 

@@ -1,10 +1,4 @@
 <h level="2">MAC Receive Path Architecture</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p131-140</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>MAC 接收路径包含六个功能模块：<kbd>RPE</kbd>（Receive Protocol Engine）、<kbd>CRX</kbd>（Receive CRC）、<kbd>RPC</kbd>（Receive Packet Controller）、<kbd>FRX</kbd>（Receive Flow Control）、<kbd>RBU</kbd>（Receive Bus Interface Unit）、<kbd>AFM</kbd>（Address Filtering Module）。</p>
 
 <p><kbd>RPE</kbd> 接收状态机的工作流程：</p>

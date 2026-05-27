@@ -1,10 +1,4 @@
 <h level="2">MTL External Memory Interface</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p111-117</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DWC_ether_qos 提供通用内存接口，便于与任何厂商特定的双端口 RAM 互联，以实现 Tx queue 和 Rx queue。Tx 和 Rx 的内存接口完全相同，信号名中的 "x" 可替换为 "t"（Tx queue）或 "r"（Rx queue）。</p>
 
 <h level="3">同步双端口 SRAM 连接</h>

@@ -1,10 +1,4 @@
 <h level="2">MTL Receive Path Operation</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p96-111</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>MTL Rx 模块从 MAC 接收数据包并推入 Rx Queue。队列状态（fill level）在超过配置的接收阈值（<kbd>MTL_RxQ0_Operation_Mode</kbd> 的 RTC bits[1:0]）或完整包接收后通知应用或 DMA。</p>
 
 <h level="3">Receive Operation 通用流程</h>

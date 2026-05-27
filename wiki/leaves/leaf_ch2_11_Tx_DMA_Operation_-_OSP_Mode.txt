@@ -1,10 +1,4 @@
 <h level="2">Tx DMA Operation - OSP Mode</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>OSP（Operate on Second Packet）模式下，对应 DMA channel Transmit Control Register 的 Bit 4 置位后，Transmit 进程可同时获取两个包，而无需先关闭第一个包的状态 descriptor。第一个包传输完成后，DMA 立即轮询 Transmit Descriptor list 获取第二个包；若第二个包有效，则先传输第二个包，再写入第一个包的状态信息。</p>
 
 <p>OSP 模式下 Run 状态的 Tx DMA 工作流程：</p>

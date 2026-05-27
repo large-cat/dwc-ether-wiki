@@ -1,10 +1,4 @@
 <h level="2">CSR Slave Interface Overview</h>
-<info>
-  <p>Chapter: [[ch2]]</p>
-  <p>Source: <code>ch2 p41-48 Architecture</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DWC_ether_qos 提供 4 种 <em>CSR Slave Interface</em> 用于访问配置和状态寄存器空间。可通过 coreConsultant 的 <em>CSR Interface</em> 选项选择其中一种：</p>
 
 <ol>

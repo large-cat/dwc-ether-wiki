@@ -1,10 +1,4 @@
 <h level="2">DMA Buffer Alignment and Size Calculations</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <h level="3">Buffer 地址对齐</h>
 <p>Tx 和 Rx 数据 buffer 的起始地址没有对齐限制。例如 32 位系统中，buffer 起始地址可以落在任意字节边界。但 DMA 发起写传输时，地址始终按总线宽度对齐，无效字节通道会填充 dummy data（旧数据）。软件驱动需根据 buffer 起始地址和包大小丢弃这些 dummy 字节。</p>
 

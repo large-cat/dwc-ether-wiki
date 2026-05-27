@@ -1,10 +1,4 @@
 <h level="2">MTL Transmit Status Word and Timing</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p92-96</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>当 Ethernet 包传输到 MAC 且 MAC 完成发送后，MTL 通过 <code>ati_txstatus_val_o[]</code> 提供发送状态有效性指示。应用通过 <code>ati_txstatus_ack_i</code> 信号读取状态。</p>
 
 <h level="3">单队列配置</h>

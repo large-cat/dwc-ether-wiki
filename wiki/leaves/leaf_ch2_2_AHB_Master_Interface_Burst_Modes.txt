@@ -1,10 +1,4 @@
 <h level="2">AHB Master Interface Burst Modes</h>
-<info>
-  <p>Chapter: [[ch2]]</p>
-  <p>Source: <code>ch2 p49-53 Architecture</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>AHB Master Interface（EQOS-AHB 配置）支持 3 种 <em>Burst Length Mode</em>，通过 <kbd>DMA_SysBus_Mode.FB</kbd> 位选择：</p>
 
 <ol>

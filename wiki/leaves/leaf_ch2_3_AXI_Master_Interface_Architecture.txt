@@ -1,10 +1,4 @@
 <h level="2">AXI Master Interface Architecture</h>
-<info>
-  <p>Chapter: [[ch2]]</p>
-  <p>Source: <code>ch2 p54-60 Architecture</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>AXI Master Interface（EQOS-AXI 配置）关键特性：</p>
 
 <h level="3">一、Burst 拆分与选择</h>

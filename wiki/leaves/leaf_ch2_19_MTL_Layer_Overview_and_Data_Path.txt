@@ -1,10 +1,4 @@
 <h level="2">MTL Layer Overview and Data Path</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p83</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p><em>MAC Transaction Layer（MTL）</em> 提供 FIFO 内存接口，用于缓冲和调节系统内存与 MAC 之间的数据包。MTL 还负责在应用时钟域与 MAC 时钟域之间传输数据。</p>
 
 <p>MTL 包含两条数据路径：</p>

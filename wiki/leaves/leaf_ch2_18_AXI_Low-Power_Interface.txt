@@ -1,10 +1,4 @@
 <h level="2">AXI Low-Power Interface</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>EQOS-AXI 配置支持 AXI 规范定义的 low-power 接口。<kbd>DMA_SysBus_Mode</kbd> 寄存器的 Bits[31:30, 10] 控制 AXI master 在 low-power 模式下的行为。</p>
 
 <ul>

@@ -1,10 +1,4 @@
 <h level="2">AXI4 Master Interface 与 Low-Power 扩展</h>
-<info>
-  <p>Chapter: [[ch2]]</p>
-  <p>Source: <code>ch2 p60 Architecture</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>AXI4 Master Interface（EQOS-AXI4 配置）在 AXI3 基础上增加以下信号：</p>
 
 <ol>

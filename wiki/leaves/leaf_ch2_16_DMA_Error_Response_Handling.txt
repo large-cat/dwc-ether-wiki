@@ -1,10 +1,4 @@
 <h level="2">DMA Error Response Handling</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>对于 DMA channel 发起的任何数据传输，若 slave 回复 error response，DMA 会停止所有操作，并更新对应 DMA channel Status Register 中的 error bits 和 Fatal Bus Error bit。应用可以选择对 DWC_ether_qos 执行复位，或重新初始化 DMA descriptor list 后重新启动。其他 DMA channel 不受该错误影响。</p>
 
 <p>不同配置下的 error response 路径：</p>

@@ -1,10 +1,4 @@
 <h level="2">Rx DMA Descriptor Acquisition and Packet Processing</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <h level="3">Receive Descriptor Acquisition</h>
 <p>Receive Engine 始终尝试多获取一个额外 descriptor，以应对即将到来的包。以下任一条件满足时，会尝试获取 descriptor：</p>
 

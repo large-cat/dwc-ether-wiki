@@ -1,10 +1,4 @@
 <h level="2">Tx DMA Operation - Default Mode</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>Default（Non-OSP）模式下，Tx DMA 引擎按以下步骤工作：</p>
 
 <ol>

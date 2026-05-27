@@ -1,10 +1,4 @@
 <h level="2">MAC Address Filtering and Packet Filtering</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p131-140</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p><kbd>AFM</kbd>（Address Filtering Module）执行所有接收包的目的地址和源地址检查，将过滤状态报告给 <kbd>RPC</kbd> 模块。<kbd>AFM</kbd> 本身不丢弃包，仅报告过滤结果（是否丢弃、是否为组播/广播包）。</p>
 
 <p>AFM 支持的地址过滤类型：</p>

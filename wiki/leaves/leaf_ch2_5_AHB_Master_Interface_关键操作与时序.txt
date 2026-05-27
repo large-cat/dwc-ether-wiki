@@ -1,10 +1,4 @@
 <h level="2">AHB Master Interface 关键操作与时序</h>
-<info>
-  <p>Chapter: [[ch2]]</p>
-  <p>Source: <code>ch2 p51-53 Architecture</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>AHB Master Interface（EQOS-AHB 配置）操作细节：</p>
 
 <h level="3">一、AHB Memory Read</h>

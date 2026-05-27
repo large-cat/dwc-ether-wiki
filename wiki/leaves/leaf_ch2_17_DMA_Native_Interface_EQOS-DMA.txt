@@ -1,10 +1,4 @@
 <h level="2">DMA Native Interface (EQOS-DMA)</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>子系统可配置为 EQOS-DMA 模式，使 DMA 在应用侧使用原生 FIFO-like 接口，CSR 端口使用 MCI（可选 APB）接口。DMA 的所有功能和特性与前面章节描述的一致。</p>
 
 <p>在原生接口上，DMA 使用简单的硬件协议发起数据或 descriptor 传输。DMA 始终以下列正确值启动事务：地址总线、传输大小、burst 长度以及传输类型（读或写）。</p>

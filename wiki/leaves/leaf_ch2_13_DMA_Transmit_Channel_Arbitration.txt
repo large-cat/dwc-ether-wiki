@@ -1,10 +1,4 @@
 <h level="2">DMA Transmit Channel Arbitration</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DMA Arbiter 为多个尝试访问 <em>Bus Interface Unit (BIU)</em> 的 DMA 提供仲裁。当 Tx queue 中有请求时，arbiter 先判断请求类型：descriptor fetch 或 packet buffer fetch。<em>Descriptor fetch 请求优先级高于 packet buffer fetch 请求。</em></p>
 
 <ul>

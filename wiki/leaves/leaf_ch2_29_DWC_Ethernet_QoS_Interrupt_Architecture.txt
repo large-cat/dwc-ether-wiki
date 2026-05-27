@@ -1,10 +1,4 @@
 <h level="2">DWC Ethernet QoS Interrupt Architecture</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p145-150</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DWC_ether_qos 采用三级分层中断架构，事件先被捕获到状态寄存器，再通过对应的中断使能位控制 <code>sbd_intr_o</code> 信号的断言。</p>
 
 <h level="3">中断层级结构</h>

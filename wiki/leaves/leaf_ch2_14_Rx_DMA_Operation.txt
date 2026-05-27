@@ -1,10 +1,4 @@
 <h level="2">Rx DMA Operation</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>在 Receive 路径上，DMA 从 MTL receive queue 读取包，并将其写入对应 DMA channel 的 packet data buffer。帧起始处的 ARI 数据指示当前帧应写入的 channel 号；若只选中一个 DMA channel，则不提供该信息。</p>
 
 <p>Rx DMA 引擎的接收序列如下：</p>

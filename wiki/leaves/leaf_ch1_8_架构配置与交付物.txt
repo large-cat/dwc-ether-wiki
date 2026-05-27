@@ -1,10 +1,4 @@
 <h level="2">架构配置与交付物</h>
-<info>
-  <p>Chapter: [[ch1]]</p>
-  <p>Source: <code>ch1 p23-40 Product Overview</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DWC_ether_qos 可通过 coreConsultant 配置为以下架构：</p>
 
 <ul>

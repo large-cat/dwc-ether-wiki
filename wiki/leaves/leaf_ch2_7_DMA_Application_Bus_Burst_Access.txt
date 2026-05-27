@@ -1,10 +1,4 @@
 <h level="2">DMA Application Bus Burst Access</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>QA enrichment</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>DMA 引擎尝试以 <kbd>PBL</kbd>（Programmable Burst Length）字段配置的最大 burst size 传输数据。Rx 和 Tx descriptor 的读取始终使用最大可能的 burst 长度（受 PBL 或 <code>16 * 8 / bus_width</code> 限制），以在 16 字节读取时达到最高效率。</p>
 
 <ul>

@@ -1,10 +1,4 @@
 <h level="2">MTL Transmit Operation and DMA Data Flow</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p88-95</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>MTL 发送操作支持两种主要模式，由 <kbd>MTL_TxQ0_Operation_Mode</kbd> 的 TTC 位配置：</p>
 
 <h level="3">Threshold Mode（Cut-Through）</h>

@@ -1,10 +1,4 @@
 <h level="2">MTL Transmit Control Word Format</h>
-<info>
-  <p>Chapter: [[架构]]</p>
-  <p>Source: <code>ch2 p83-89</code></p>
-  <p>Confidence: <code>high</code></p>
-</info>
-
 <p>MTL 发送控制字（Transmit Control Word）通过 ATI 接口从应用或 DMA 传输到 MTL，包含每个数据包的控制信息。控制字数量取决于配置和使能的选项。</p>
 
 <h level="3">控制字组成</h>
