@@ -14,63 +14,131 @@
 
 <h level="3">系统级框图</h>
 
-<p>Figure 1-1 展示了 DWC_ether_qos 的系统级框图（System-Level Block Diagram）。数据通路自左向右：System Memory 通过 AXI/AHB Master 与 DMA Controller 交互；DMA Arbiter 仲裁所有通道的收发路径；MTL（MAC Transaction Layer）的 Tx/Rx Queues 桥接 DMA 与 MAC Core；MAC 的 Transmit/Receive Protocol Engine 完成帧处理后，经 PHY Interface MUX 发往外部 PHY。CSR Slave Interface 为 Host CPU 提供 Control &amp; Status 访问；Interrupt Controller、Timestamp Module 和 MDIO/SMA 为辅助模块。</p>
+<p>下图展示 DWC_ether_qos 在 SoC 中的位置和分层数据流向：Host Memory 与 CPU 通过 AMBA Bus（AXI/AHB Master + CSR Slave）与 Core 交互；数据经 DMA、MTL 队列层、MAC Core 处理后，通过 PHY Interface 发往外部网络。</p>
 
 <diagram type="mermaid"><![CDATA[
 flowchart LR
+  subgraph Host["Host / SoC"]
     MEM["System Memory"]
-    CPU["Host CPU"]
+    CPU["CPU"]
+  end
 
-    SLAVE["CSR Slave\n(AHB/AXI/APB)"]
+  subgraph Bus["AMBA Bus"]
+    AXI["AXI Master\n(数据)"]
+    AHB["AHB Master\n(数据)"]
+    SLAVE["AHB/AXI/APB Slave\n(CSR寄存器)"]
+  end
 
-    subgraph BUS["AMBA Bus"]
-        MASTER["AXI/AHB Master"]
-    end
+  subgraph EQOS["DWC_ether_qos Core"]
+    DMA["DMA Block\n(最多8Tx+8Rx通道)"]
+    MTL["MTL Transaction Layer\n(Tx/Rx FIFO + 队列)"]
+    MAC["MAC Core\n(帧处理 + 过滤)"]
+  end
 
+  subgraph PHY_IF["PHY Interface"]
+    MUX["Interface MUX"]
+    GMII["GMII/MII"]
+    RGMII["RGMII"]
+    SGMII["SGMII"]
+    RMII["RMII\n(10/100 only)"]
+  end
+
+  subgraph EXT["External"]
+    PHY_CHIP["External PHY"]
+    NET["Ethernet Network"]
+  end
+
+  MEM <--> AXI & AHB
+  CPU --> SLAVE
+  AXI & AHB <--> DMA
+  SLAVE --> MAC & DMA & MTL
+  DMA <--> MTL
+  MTL <--> MAC
+  MAC --> MUX
+  MUX --> GMII & RGMII & SGMII & RMII
+  GMII & RGMII & SGMII & RMII --> PHY_CHIP
+  PHY_CHIP <--> NET
+
+  style Host fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+  style Bus fill:#fef3c7,stroke:#d97706,color:#78350f
+  style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
+  style PHY_IF fill:#fce7f3,stroke:#db2777,color:#831843
+  style EXT fill:#e0e7ff,stroke:#6366f1,color:#312e81
+]]></diagram>
+
+<h level="3">Core 内部结构</h>
+
+<p>Figure 1-1 进一步展示了 Core 内部的子组件：Host DMA Interface（AXI/AHB Master）和 CSR Slave Interface（AHB/AXI/APB）是 Core 对外的两个主接口；DMA Controller 内嵌 DMA Arbiter 和最多 8 组 Tx/Rx Channel；MTL 包含独立的 Tx Queues 和 Rx Queues；MAC Core 包含 Transmit Protocol Engine 和 Receive Protocol Engine；帧处理完成后经 PHY Interface MUX 输出。</p>
+
+<diagram type="mermaid"><![CDATA[
+flowchart LR
     subgraph EQOS["DWC_ether_qos Core"]
         direction LR
-        DMA["DMA Controller\n(DMA Arbiter\nup to 8 Tx/Rx Channels)"]
-        MTL["MTL\n(Tx Queues / Rx Queues)"]
-        MAC["MAC Core\n(Tx Protocol Engine\nRx Protocol Engine)"]
+
+        HOST_DMA["Host DMA Interface\n(AXI/AHB Master)"]
+        CSR["CSR Slave Interface\n(AHB/AXI/APB)"]
+
+        subgraph DMA["DMA Controller"]
+            ARB["DMA Arbiter\n(up to 8 Tx/Rx Channels)"]
+        end
+
+        subgraph MTL["MTL (MAC Transaction Layer)"]
+            TXQ["Tx Queues"]
+            RXQ["Rx Queues"]
+        end
+
+        subgraph MAC["MAC Core"]
+            TXE["Transmit\nProtocol Engine"]
+            RXE["Receive\nProtocol Engine"]
+        end
+
+        MUX["PHY Interface MUX"]
     end
 
-    subgraph PHY_IF["PHY Interface"]
-        MUX["Interface MUX"]
-        PORT["MII / GMII / RGMII\nSGMII / RMII / SMII"]
-    end
-
-    PHY["External PHY"]
-    NET["Ethernet Network"]
-
-    SB["Sideband Modules\nInterrupt Controller / Timestamp / MDIO / SMA"]
-
-    MEM <--"Data"--> MASTER
-    CPU --"Control & Status"--> SLAVE
-    MASTER <--"Data"--> DMA
-    SLAVE --"CSR"--> DMA & MTL & MAC
+    HOST_DMA <--> DMA
+    CSR -- "Control & Status" --> DMA & MTL & MAC
     DMA <--> MTL
     MTL <--> MAC
     MAC --> MUX
-    MUX --> PORT
-    PORT --> PHY
-    PHY <--"Media"--> NET
-    DMA -.->|"Events/INT"| SB
-    MTL -.->|"Events/INT"| SB
-    MAC -.->|"Events/INT"| SB
-    MAC <-.->|"PTP / Sync"| SB
 
-    style MEM fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    style CPU fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    style SLAVE fill:#fef3c7,stroke:#d97706,color:#78350f
-    style BUS fill:#fef3c7,stroke:#d97706,color:#78350f
     style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
-    style DMA fill:#dcfce7,stroke:#22c55e,color:#14532d
-    style MTL fill:#dcfce7,stroke:#22c55e,color:#14532d
-    style MAC fill:#dcfce7,stroke:#22c55e,color:#14532d
-    style SB fill:#f0fdf4,stroke:#16a34a,stroke-dasharray: 5 5,color:#14532d
-    style PHY_IF fill:#fce7f3,stroke:#db2777,color:#831843
+    style DMA fill:#fce7f3,stroke:#db2777,color:#831843
+    style MTL fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    style MAC fill:#faf5ff,stroke:#a855f7,color:#6b21a8
+]]></diagram>
+
+<h level="3">辅助模块（Sideband）</h>
+
+<p>Interrupt Controller 汇总 DMA、MTL、MAC 的事件并产生中断；Timestamp Module 与 MAC Core 交互完成 PTP 时钟同步；MDIO/SMA 用于外部 PHY 的管理和状态访问。这些模块通过独立的事件/控制线连接到 Core，不占用主数据通路。</p>
+
+<diagram type="mermaid"><![CDATA[
+flowchart LR
+    subgraph EQOS["DWC_ether_qos Core"]
+        DMA["DMA Controller"]
+        MTL["MTL"]
+        MAC["MAC Core"]
+    end
+
+    subgraph SB["Sideband Modules"]
+        INT["Interrupt Controller"]
+        TS["Timestamp Module"]
+        MDIO["MDIO / SMA"]
+    end
+
+    PHY["External PHY"]
+
+    DMA -.->|"Events/INT"| INT
+    MTL -.->|"Events/INT"| INT
+    MAC -.->|"Events/INT"| INT
+    MAC <-.->|"PTP / Sync"| TS
+    MDIO <--> PHY
+
+    style EQOS fill:#f0fdf4,stroke:#16a34a,color:#14532d
+    style SB fill:#fef3c7,stroke:#d97706,color:#78350f
+    style INT fill:#fff7ed,stroke:#f97316,color:#7c2d12
+    style TS fill:#fff7ed,stroke:#f97316,color:#7c2d12
+    style MDIO fill:#fff7ed,stroke:#f97316,color:#7c2d12
     style PHY fill:#e0e7ff,stroke:#6366f1,color:#312e81
-    style NET fill:#e0e7ff,stroke:#6366f1,color:#312e81
 ]]></diagram>
 
 <h level="3">Connections</h>
