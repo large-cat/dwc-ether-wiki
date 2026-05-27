@@ -27,7 +27,7 @@ function XmlContent({ xml }: { xml: string }): React.ReactElement {
       const error = doc.querySelector('parsererror')
       if (error) {
         return (
-          <div className="my-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
+          <div className="my-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
             XML parse error — content may be malformed
           </div>
         )
@@ -35,7 +35,7 @@ function XmlContent({ xml }: { xml: string }): React.ReactElement {
       return <>{renderXmlNodes(doc.documentElement.childNodes)}</>
     } catch {
       return (
-        <div className="my-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
+        <div className="my-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
           XML parse error — content may be malformed
         </div>
       )
@@ -69,7 +69,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
   switch (tag) {
     case 'p':
       return (
-        <p key={key} className="text-[15px] text-slate-700 dark:text-slate-300 leading-[1.75] my-3">
+        <p key={key} className="text-[15px] text-slate-700 dark:text-slate-300 leading-[1.75] my-2">
           {children}
         </p>
       )
@@ -78,23 +78,23 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
       const level = parseInt(el.getAttribute('level') || '2')
       if (level >= 3) {
         return (
-          <h4 key={key} className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-5 mb-2">
+          <h4 key={key} className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3 mb-1">
             {children}
           </h4>
         )
       }
       return (
-        <h3 key={key} className="text-base font-semibold text-slate-900 dark:text-white mt-6 mb-3 pb-1 border-b border-slate-200 dark:border-slate-700">
+        <h3 key={key} className="text-base font-semibold text-slate-900 dark:text-white mt-4 mb-2 pb-1 border-b border-slate-200 dark:border-slate-700">
           {children}
         </h3>
       )
     }
 
     case 'ul':
-      return <ul key={key} className="my-3 space-y-1.5 ml-1">{children}</ul>
+      return <ul key={key} className="my-2 space-y-1 ml-1">{children}</ul>
 
     case 'ol':
-      return <ol key={key} className="my-3 space-y-1.5 ml-1 list-decimal list-inside">{children}</ol>
+      return <ol key={key} className="my-2 space-y-1 ml-1 list-decimal list-inside">{children}</ol>
 
     case 'li': {
       const parent = el.parentElement
@@ -135,7 +135,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'info':
       return (
-        <div key={key} className="my-4 pl-3 border-l-2 border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 py-2 pr-2 rounded-r">
+        <div key={key} className="my-3 pl-3 border-l-2 border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 py-2 pr-2 rounded-r">
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
             <div>{children}</div>
@@ -145,7 +145,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'warning':
       return (
-        <div key={key} className="my-4 pl-3 border-l-2 border-amber-400 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/10 py-2 pr-2 rounded-r">
+        <div key={key} className="my-3 pl-3 border-l-2 border-amber-400 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/10 py-2 pr-2 rounded-r">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <div>{children}</div>
@@ -155,7 +155,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'tip':
       return (
-        <div key={key} className="my-4 pl-3 border-l-2 border-green-400 dark:border-green-500 bg-green-50/50 dark:bg-green-900/10 py-2 pr-2 rounded-r">
+        <div key={key} className="my-3 pl-3 border-l-2 border-green-400 dark:border-green-500 bg-green-50/50 dark:bg-green-900/10 py-2 pr-2 rounded-r">
           <div className="flex items-start gap-2">
             <Lightbulb className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
             <div>{children}</div>
@@ -165,7 +165,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'important':
       return (
-        <div key={key} className="my-4 pl-3 border-l-2 border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/10 py-2 pr-2 rounded-r">
+        <div key={key} className="my-3 pl-3 border-l-2 border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/10 py-2 pr-2 rounded-r">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
             <div>{children}</div>
@@ -175,7 +175,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'question':
       return (
-        <div key={key} className="my-4 pl-3 border-l-2 border-purple-400 dark:border-purple-500 bg-purple-50/50 dark:bg-purple-900/10 py-2 pr-2 rounded-r">
+        <div key={key} className="my-3 pl-3 border-l-2 border-purple-400 dark:border-purple-500 bg-purple-50/50 dark:bg-purple-900/10 py-2 pr-2 rounded-r">
           <div className="flex items-start gap-2">
             <HelpCircle className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
             <div>{children}</div>
@@ -185,7 +185,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
 
     case 'table':
       return (
-        <div key={key} className="my-4 overflow-x-auto">
+        <div key={key} className="my-3 overflow-x-auto">
           <Table>{children}</Table>
         </div>
       )
@@ -218,7 +218,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
       const offset = el.getAttribute('offset') || ''
       const addr = el.getAttribute('addr') || ''
       return (
-        <div key={key} className="my-4 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+        <div key={key} className="my-3 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-mono text-sm font-semibold text-slate-800 dark:text-slate-200">{name}</span>
             {(offset || addr) && <span className="text-xs font-mono text-slate-400">{offset || addr}</span>}
@@ -258,7 +258,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
     case 'quote': {
       const source = el.getAttribute('source') || ''
       return (
-        <blockquote key={key} className="my-4 pl-4 border-l-2 border-slate-300 dark:border-slate-600 italic text-slate-600 dark:text-slate-400">
+        <blockquote key={key} className="my-3 pl-4 border-l-2 border-slate-300 dark:border-slate-600 italic text-slate-600 dark:text-slate-400">
           {children}
           {source && <footer className="text-xs text-slate-400 mt-1 not-italic">— {source}</footer>}
         </blockquote>
@@ -283,7 +283,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
       const type = el.getAttribute('type') || 'mermaid'
       const chart = el.textContent || ''
       if (type === 'mermaid' && chart.trim()) {
-        return <FlowChart key={key} chart={chart.trim()} className="my-4" />
+        return <FlowChart key={key} chart={chart.trim()} className="my-3" />
       }
       return null
     }
@@ -297,7 +297,7 @@ function renderXmlNode(node: ChildNode, key: number): React.ReactNode | null {
           key={key}
           src={`${import.meta.env.BASE_URL}${src}`}
           alt={alt}
-          className="my-4 max-w-full rounded-lg border border-slate-200 dark:border-slate-700"
+          className="my-3 max-w-full rounded-lg border border-slate-200 dark:border-slate-700"
           loading="lazy"
         />
       )
@@ -333,7 +333,7 @@ export default function LeafContent({ leaf }: LeafContentProps) {
   }, [leaf.id])
 
   return (
-    <article className="py-2">
+    <article className="py-0">
       {loading ? (
         <div className="text-sm text-slate-400">Loading content...</div>
       ) : (
